@@ -19,7 +19,7 @@ namespace bernd_box {
 /**
  * List of connected analog peripherials
  */
-struct AdcElement {
+struct AdcSensor {
   uint pin_id;
   std::string name;
   float scaling_factor;
@@ -40,16 +40,17 @@ class Adc {
     return value;
   }
 
-  uint getElementCount() const { return elements_.size(); }
+  uint getSensorCount() const { return elements_.size(); }
 
  private:
   /// List of connected analog peripherials
-  const std::array<AdcElement, 5> elements_ = {
+  const std::array<AdcSensor, 6> elements_ = {
       {{32, "tds", 1.0, "mg/L"},    // Total dissolved solids
        {33, "ec", 1.0, "mS/cm"},    // Electrical conductivity
-       {34, "acidity", 2.3, "pH"},  // Acidity
+       {34, "acidity", 1.0, "pH"},  // Acidity
        {35, "turbidity", 1.0, ""},  // Clarity of the water
-       {36, "secret", 1.0, ""}}};   // Some other parameter
+       {36, "vn", 1.0, ""},         // Some other parameter
+       {39, "vp", 1.0, ""}}};       // Some other parameter
 };
 
 }  // namespace bernd_box
