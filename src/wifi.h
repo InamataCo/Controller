@@ -2,6 +2,10 @@
  * Wifi related functionality
  *
  * Functionality includes conencting to wifi
+ *
+ * \author Moritz Ulmer <moritz.ulmer@posteo.de>
+ * \date 2018
+ * \copyright Apache License 2.0
  */
 
 #ifndef BERND_BOX_WIFI_H
@@ -59,6 +63,8 @@ class Wifi {
     Serial.print("IP Address ");
     Serial.println(WiFi.localIP());
   }
+
+  bool isConnected() { return WiFi.status() == WL_CONNECTED; }
 
  private:
   const char* ssid_;
