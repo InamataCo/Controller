@@ -34,18 +34,12 @@ void setup() {
     Serial.println("Could not connect to the MQTT broker. Restarting\n");
     ESP.restart();
   }
-
-  for (int i = 0; i < 10; i++) {
-    digitalWrite(2, HIGH);
-    delay(500);
-    digitalWrite(2, LOW);
-    delay(500);
-  }
-
-  // Setup ADCs
 }
 
 void loop() {
+  // Turn the blue on-board LED on during the loop
+  digitalWrite(2, HIGH);
+
   if (!wifi.isConnected()) {
     Serial.println("Disconnected from WiFi. Restarting");
     ESP.restart();
@@ -59,6 +53,9 @@ void loop() {
     mqtt.send(adc.getSensorName(i), value);
     delay(1);
   }
+
+  // Turn the blue on-board LED off before sleeping
+  digitalWrite(2, LOW);
 
   delay(1000);
 }
