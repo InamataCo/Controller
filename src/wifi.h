@@ -60,8 +60,8 @@ class Wifi {
   }
 
   void printState() {
-    Serial.print("IP Address ");
-    Serial.println(WiFi.localIP());
+    Serial.printf("Connected: %d\n", isConnected());
+    Serial.printf("IP Address: %s\n", WiFi.localIP().toString().c_str());
   }
 
   bool isConnected() { return WiFi.status() == WL_CONNECTED; }

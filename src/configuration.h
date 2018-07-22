@@ -22,7 +22,6 @@ const char* password = "your-password";
 // MQTT
 const char* mqtt_server = "192.168.0.1";
 const char* client_id = "fiona_box1";
-const std::chrono::duration<int> mqtt_reconnect_wait = std::chrono::seconds(5);
 
 }  // namespace bernd_box
 

@@ -42,6 +42,14 @@ class Adc {
 
   uint getSensorCount() const { return elements_.size(); }
 
+  const std::string& getSensorName(uint element_id) const {
+    if (element_id < elements_.size()) {
+      return elements_[element_id].name;
+    } else {
+      return empty_;
+    }
+  }
+
  private:
   /// List of connected analog peripherials
   const std::array<AdcSensor, 6> elements_ = {
@@ -51,6 +59,7 @@ class Adc {
        {35, "turbidity", 1.0, ""},  // Clarity of the water
        {36, "vn", 1.0, ""},         // Some other parameter
        {39, "vp", 1.0, ""}}};       // Some other parameter
+  const std::string empty_ = "";
 };
 
 }  // namespace bernd_box
