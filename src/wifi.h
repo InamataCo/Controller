@@ -32,8 +32,7 @@ class Wifi {
    * @return True if successful
    */
   bool connect(std::chrono::duration<int> timeout) {
-    Serial.print("Connecting to ");
-    Serial.println(ssid_);
+    Serial.printf("WiFi: Attempting to connect to %s\n", ssid_);
 
     WiFi.begin(ssid_, password_);
 

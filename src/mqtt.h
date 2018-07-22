@@ -14,13 +14,15 @@ class Mqtt {
       : client_(wifiClient),
         client_id_(client_id),
         server_ip_address_(mqtt_server),
-        server_port_(1883) {}
+        server_port_(1883) {
+    client_.setServer(server_ip_address_, server_port_);
+  }
 
   /**
    * Loop until connected to MQTT server or tries exceeded
    */
   bool connect(uint max_attempts = 1) {
-    client_.setServer(server_ip_address_, server_port_);
+    Serial.printf("MQTT: Attempting to connect to %s\n", server_ip_address_);
 
     for (uint connect_attempts = 0;
          !client_.connected() && connect_attempts < max_attempts;

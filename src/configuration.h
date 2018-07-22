@@ -18,6 +18,7 @@ namespace bernd_box {
 // WiFi
 const char* ssid = "your-ssid";
 const char* password = "your-password";
+const std::chrono::seconds wifi_connect_timeout(20);
 
 // MQTT
 const char* mqtt_server = "192.168.0.1";
