@@ -62,6 +62,9 @@ void loop() {
     delay(1);
   }
 
+  mqtt.send("boolean", true);
+  mqtt.send("integer", -11);
+
   // Turn the blue on-board LED off before sleeping
   digitalWrite(2, LOW);
 
