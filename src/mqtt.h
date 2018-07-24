@@ -48,6 +48,13 @@ class Mqtt {
   }
 
   /**
+   * Checks whether the ESP is connected to an MQTT broker
+   *
+   * \return isConnected True if connected
+   */
+  bool isConnected() { return client_.connected(); }
+
+  /**
    * Send a double value on a topic
    *
    * \param name Suffix of the topic to publish on

@@ -17,10 +17,10 @@ bernd_box::Mqtt mqtt(wifiClient, bernd_box::client_id, bernd_box::mqtt_server);
 
 void setup() {
   Serial.begin(115200);
-  pinMode(2, OUTPUT);
+  pinMode(bernd_box::status_led, OUTPUT);
 
   // Try to connect to Wifi within wifi_connect_timeout, else restart
-  digitalWrite(2, HIGH);
+  digitalWrite(bernd_box::status_led, HIGH);
   if (wifi.connect(bernd_box::wifi_connect_timeout) == false) {
     Serial.printf("WiFi: Could not connect to %s. Restarting\n",
                   bernd_box::ssid);
@@ -29,8 +29,8 @@ void setup() {
   wifi.printState();
 
   // Try to connect to the MQTT broker 3 times, else restart
-  digitalWrite(2, LOW);
-  if (mqtt.connect(3) == false) {
+  digitalWrite(bernd_box::status_led, LOW);
+  if (mqtt.connect(bernd_box::connection_attempts) == false) {
     Serial.println("MQTT: Could not connect to broker. Restarting\n");
     ESP.restart();
   }
@@ -38,7 +38,7 @@ void setup() {
 
 void loop() {
   // Turn the blue on-board LED on during the loop
-  digitalWrite(2, HIGH);
+  digitalWrite(bernd_box::status_led, HIGH);
 
   // If not connected to WiFi, attempt to reconnect. Finally reboot
   if (!wifi.isConnected()) {
@@ -46,6 +46,15 @@ void loop() {
     if (wifi.connect(bernd_box::wifi_connect_timeout) == false) {
       Serial.printf("WiFi: Could not connect to %s. Restarting\n",
                     bernd_box::ssid);
+      ESP.restart();
+    }
+  }
+
+  // If not connected to an MQTT broker, attempt to reconnect. Else reboot
+  if (!mqtt.isConnected()) {
+    Serial.println("MQTT: Disconnected. Attempting to reconnect");
+    if (mqtt.connect(bernd_box::connection_attempts) == false) {
+      Serial.println("MQTT: Could not connect to broker. Restarting\n");
       ESP.restart();
     }
   }
@@ -62,11 +71,11 @@ void loop() {
     delay(1);
   }
 
+  // Test sending boolean and negative integer values
   mqtt.send("boolean", true);
   mqtt.send("integer", -11);
 
   // Turn the blue on-board LED off before sleeping
-  digitalWrite(2, LOW);
-
+  digitalWrite(bernd_box::status_led, LOW);
   delay(1000);
 }

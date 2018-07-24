@@ -21,8 +21,12 @@ const char* password = "your-password";
 const std::chrono::seconds wifi_connect_timeout(20);
 
 // MQTT
-const char* mqtt_server = "192.168.0.1";
-const char* client_id = "fiona_box1";
+const char* mqtt_server = "192.168.1.140";
+const char* client_id = "bernd_box_1";
+const uint connection_attempts = 3;  // Maximum attempts before aborting
+
+// Pins
+const uint status_led = 2;  // Pin to the status on-board LED
 
 }  // namespace bernd_box
 

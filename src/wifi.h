@@ -18,6 +18,10 @@ namespace bernd_box {
 
 class Wifi {
  public:
+  /**
+   * WiFi helper class that deals with connection time-outs and checking its
+   * state
+   */
   Wifi(const char* ssid, const char* password)
       : ssid_(ssid),
         password_(password),
@@ -28,8 +32,8 @@ class Wifi {
    *
    * Blocks until the connection has been made
    *
-   * @param timeout The length of time to wait until aborting
-   * @return True if successful
+   * \param timeout The length of time to wait until aborting
+   * \return True if successful
    */
   bool connect(std::chrono::duration<int> timeout) {
     Serial.printf("WiFi: Attempting to connect to %s\n", ssid_);
@@ -58,11 +62,19 @@ class Wifi {
     return connected;
   }
 
+  /**
+   * Prints the current WiFi state to the serial terminal
+   */
   void printState() {
     Serial.printf("Connected: %d\n", isConnected());
     Serial.printf("IP Address: %s\n", WiFi.localIP().toString().c_str());
   }
 
+  /**
+   * Checks whether the ESP is connected to WiFi
+   *
+   * \return isConnected True if connected
+   */
   bool isConnected() { return WiFi.status() == WL_CONNECTED; }
 
  private:
