@@ -20,3 +20,5 @@ When powering the board with USB, connect the ground cable to the GND pin. This 
 ## Formatting
 
 The Google C++ code style is used. It is recommended to use clang-format to automatically format your code with the provided `.clang-format` file.
+
+Temperature is 1-wire interface

@@ -96,12 +96,12 @@ class Adc {
  private:
   /// List of connected analog peripherials
   const std::array<AdcSensor, 6> elements_ = {
-      {{32, "tds", 1.0, "mg/L"},       // Total dissolved solids
-       {33, "ec", 1.0, "mS/cm"},       // Electrical conductivity
-       {34, "acidity", 1.0, "pH"},     // Acidity
-       {35, "turbidity", 1.0, "NTU"},  // Clarity of the water
-       {36, "vn", 1.0, ""},            // Some other parameter
-       {39, "vp", 1.0, ""}}};          // Some other parameter
+      {{32, "saturated_oxygen", 1.0, "SO2"},  // Total dissolved oxygen
+       {33, "conductivity", 1.0, "mS/cm"},    // Electrical conductivity
+       {34, "acidity", 1.0, "pH"},            // Acidity
+       {35, "turbidity", 1.0, "NTU"},         // Clarity of the water
+       {36, "vn", 1.0, ""},                   // Some other parameter
+       {39, "vp", 1.0, ""}}};                 // Some other parameter
 
   /// Returned when name of invalid sensor is requested
   const std::string empty_ = "";
