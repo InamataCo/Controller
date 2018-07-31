@@ -75,6 +75,11 @@ class Io {
 
   virtual ~Io() {}
 
+  /**
+   * Performs initialization of the connected sensors
+   *
+   * \return True if it was successful
+   */
   bool init() {
     bool success = true;
     // Set the status LED GPIO to output
@@ -97,6 +102,10 @@ class Io {
       success = false;
     }
 
+    if (!isSensorIdNamingValid()) {
+      success = false;
+    }
+
     return success;
   }
 
@@ -113,6 +122,12 @@ class Io {
     }
   }
 
+  /**
+   * Reads the value from the specified sensor
+   *
+   * \param sensor_id ID of the sensor to read out the value
+   * \return Value read from the sensor, NAN if an error occured
+   */
   float read(Sensor sensor_id) {
     // If no matching sensors are found, return NAN
     float value = NAN;
@@ -181,6 +196,27 @@ class Io {
   }
 
  private:
+  /**
+   * Checks if the sensor naming in the maps do not overlap
+   *
+   * \return True if they are valid
+   */
+  bool isSensorIdNamingValid() {
+    bool valid = true;
+
+    for (auto& i : adcs_) {
+      for (auto& j : dallases_) {
+        if (i.first == j.first) {
+          valid = false;
+          Serial.printf("Same ID (%d) used by adcs_ and dallases_\n",
+                        static_cast<uint>(i.first));
+        }
+      }
+    }
+
+    return valid;
+  }
+
   /// Returned when name of invalid sensor is requested
   const std::string empty_ = "";
 

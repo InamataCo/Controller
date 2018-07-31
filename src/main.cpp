@@ -35,6 +35,12 @@ void setup() {
     Serial.println("MQTT: Could not connect to broker. Restarting\n");
     ESP.restart();
   }
+
+  // Try to configure the IO devices, else restart
+  if (io.init()) {
+    Serial.println("IO: Initialization failed. Restarting\n");
+    ESP.restart();
+  }
 }
 
 void loop() {
