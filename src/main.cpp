@@ -13,9 +13,9 @@
 
 WiFiClient wifiClient;
 
-bernd_box::Wifi wifi(bernd_box::ssid, bernd_box::password);
 bernd_box::Io io;
 bernd_box::Mqtt mqtt(wifiClient, bernd_box::client_id, bernd_box::mqtt_server);
+bernd_box::Wifi wifi(bernd_box::ssid, bernd_box::password);
 
 void setup() {
   Serial.begin(115200);
@@ -60,21 +60,17 @@ void loop() {
     }
   }
 
-  // Read all Io. Then print and send them over MQTT
+  // Read all sensors. Then print and send them over MQTT
   Serial.printf("\n%-10s|%-4s|%-15s|%s\n", "Sensor", "Pin", "Value", "Unit");
   Serial.printf("----------|----|---------------|----\n");
-  for (uint i = 0; i < io.getSensorCount(); i++) {
-    float value = io.read(i);
+  for (auto& it : io.adcs_) {
+    float value = io.readAnalog(it.first);
 
-    Serial.printf("%-10s|%-4i|%-15f|%s\n", io.getSensorName(i).c_str(),
-                  io.getSensorPin(i), value, io.getSensorUnit(i).c_str());
-    mqtt.send(io.getSensorName(i), value);
+    Serial.printf("%-10s|%-4i|%-15f|%s\n", it.second.name.c_str(),
+                  it.second.pin_id, value, it.second.unit.c_str());
+    mqtt.send(it.second.name.c_str(), value);
     delay(1);
   }
-
-  // Test sending boolean and negative integer values
-  mqtt.send("boolean", true);
-  mqtt.send("integer", -11);
 
   // Turn the blue on-board LED off before sleeping
   io.setStatusLed(false);
