@@ -10,15 +10,19 @@
 #define BERND_BOX_IO_H
 
 #include <Arduino.h>
+#include <BH1750.h>
 #include <DallasTemperature.h>
+#include <Max44009.h>
 #include <OneWire.h>
 
+// STD C++ includes placed after Arduino.h
 #include <cmath>
 #include <map>
 #include <string>
 
 namespace bernd_box {
 
+/// Unique IDs of all connected sensors
 enum class Sensor {
   kWaterTemperature,
   kSaturatedOxygen,
@@ -26,12 +30,12 @@ enum class Sensor {
   kAciditiy,
   kTurbidity,
   kLightLevel,
+  kLightLevel2,
+  kLightLevel3,
   kUnknown
 };
 
-/**
- * List of connected analog peripherials
- */
+/// Sensor type of analog peripherials
 struct AdcSensor {
   uint pin_id;
   std::string name;
@@ -39,8 +43,24 @@ struct AdcSensor {
   std::string unit;
 };
 
+/// Sensor type of Dallas temperature sensors
 struct DallasSensor {
   DeviceAddress address;
+  std::string name;
+  std::string unit;
+};
+
+/// Sensor type of BH1750 light sensors
+struct Bh1750Sensor {
+  BH1750::Mode mode;
+  BH1750 interface;
+  std::string name;
+  std::string unit;
+};
+
+/// Sensor type of MAX44009
+struct Max44009Sensor {
+  Max44009 interface;
   std::string name;
   std::string unit;
 };
@@ -50,17 +70,21 @@ class Io {
   // Pin to the status on-board LED
   const uint status_led_pin_ = 2;
 
-  // TODO: verify the correct pin for the temperature 1-wire bus
+  // List of connected Dallas temperature sensors
   const uint one_wire_pin_ = 3;
   std::map<Sensor, DallasSensor> dallases_ = {
       {{Sensor::kWaterTemperature}, {{0}, "water_temperature", "°C"}}};
 
-  // const i2c_slk_pin_ = 4;
-  // const i2c_sda_pin_ = 5;
-
-  // BH1750 lightMeter(0x23);
-  // BH1750 lightMeter_2(0x5C);
-  // Max44009 myLux(0x4A);  // default addr
+  /// List of connected BH1750 and MAX44009 light sensors
+  const uint i2c_scl_pin_ = 4;
+  const uint i2c_sda_pin_ = 5;
+  std::map<Sensor, Bh1750Sensor> bh1750s_ = {
+      {{Sensor::kLightLevel},
+       {BH1750::CONTINUOUS_LOW_RES_MODE, BH1750(0x23), "light_level", "lx"}},
+      {{Sensor::kLightLevel2},
+       {BH1750::ONE_TIME_LOW_RES_MODE, BH1750(0x5C), "light_level2", "lx"}}};
+  std::map<Sensor, Max44009Sensor> max44009s_ = {
+      {{Sensor::kLightLevel3}, {Max44009(0xCB), "light_level3", "lx"}}};
 
   /// List of connected analog peripherials
   const std::map<Sensor, AdcSensor> adcs_ = {
@@ -85,9 +109,14 @@ class Io {
     // Set the status LED GPIO to output
     pinMode(status_led_pin_, OUTPUT);
 
+    // Start Wire for the BH1750 light sensors, then set the sense mode
+    Wire.begin(i2c_sda_pin_, i2c_scl_pin_);
+    for (auto& it : bh1750s_) {
+      it.second.interface.begin(it.second.mode);
+    }
+
     // Start up the Dallas Temperature library
     dallas_.begin();
-
     // locate devices on the bus
     uint dallas_count = dallas_.getDeviceCount();
     Serial.printf("Found %d temperature senors\n", dallas_count);
@@ -102,6 +131,7 @@ class Io {
       success = false;
     }
 
+    // Check if no sensor IDs are reused among different types
     if (!isSensorIdNamingValid()) {
       success = false;
     }
@@ -137,8 +167,19 @@ class Io {
       value = readAnalog(sensor_id);
     }
 
+    // If no sensor has been found, check the temperature sensors
     if (value == NAN) {
       value = readTemperature(sensor_id);
+    }
+
+    // If no sensor has been found, check the light sensors
+    if (value == NAN) {
+      value = readBh1750Light(sensor_id);
+    }
+
+    // If no sensor has been found, check the light sensors
+    if (value == NAN) {
+      value = readMax44009Light(sensor_id);
     }
 
     return value;
@@ -165,7 +206,7 @@ class Io {
   /**
    * Gets the temperature
    *
-   * \param sensor_id ID of the temperature sensor, defaults to the first one
+   * \param sensor_id ID of the temperature sensor
    * \return Temperature in Celsius, NAN if sensor is not found
    */
   float readTemperature(Sensor sensor_id) {
@@ -187,12 +228,54 @@ class Io {
         Serial.println();
         temperature_c = NAN;
       }
-    } else {
-      Serial.printf("Sensor not registered: %d\n",
-                    static_cast<uint>(sensor_id));
     }
 
     return temperature_c;
+  }
+
+  /**
+   * Gets the light level of the Bh1750 light sensors
+   *
+   * Error values can be 0 or 65536, but are also valid readings. To avoid
+   * false-positives, don't check for these values.
+   *
+   * \param sensor_id ID of the light sensor
+   * \return Light level in lux, NAN if an error occured
+   */
+  float readBh1750Light(Sensor sensor_id) {
+    float lux = NAN;
+
+    const auto& it = bh1750s_.find(sensor_id);
+
+    // If the sensor was found in the registered list
+    if (it != bh1750s_.end()) {
+      lux = it->second.interface.readLightLevel();
+    }
+
+    return lux;
+  }
+
+  /**
+   * Gets the light level of the MAX44009 light sensors
+   *
+   * \param sensor_id ID of the light sensor
+   * \return Light level in lux, NAN if an error occured
+   */
+  float readMax44009Light(Sensor sensor_id) {
+    float lux = NAN;
+
+    const auto& it = max44009s_.find(sensor_id);
+
+    // If the sensor was found in the registered list
+    if (it != max44009s_.end()) {
+      lux = it->second.interface.getLux();
+      int error = it->second.interface.getError();
+      if (error != 0) {
+        Serial.printf("MAX44009 error while reading: %d\n", error);
+      }
+    }
+
+    return lux;
   }
 
  private:
@@ -204,16 +287,34 @@ class Io {
   bool isSensorIdNamingValid() {
     bool valid = true;
 
+    // Compare adcs with dallases and bh1750s
     for (auto& i : adcs_) {
       for (auto& j : dallases_) {
         if (i.first == j.first) {
           valid = false;
-          Serial.printf("Same ID (%d) used by adcs_ and dallases_\n",
+          Serial.printf("Same ID (%d) used by adcs and dallases\n",
+                        static_cast<uint>(i.first));
+        }
+      }
+      for (auto& j : bh1750s_) {
+        if (i.first == j.first) {
+          valid = false;
+          Serial.printf("Same ID (%d) used by adcs and bh1750s\n",
                         static_cast<uint>(i.first));
         }
       }
     }
 
+    // Compare dallases_ with bh1750s
+    for (auto& i : dallases_) {
+      for (auto& j : bh1750s_) {
+        if (i.first == j.first) {
+          valid = false;
+          Serial.printf("Same ID (%d) used by dallases and bh1750s\n",
+                        static_cast<uint>(i.first));
+        }
+      }
+    }
     return valid;
   }
 
