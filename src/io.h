@@ -16,6 +16,7 @@
 #include <OneWire.h>
 
 // STD C++ includes placed after Arduino.h
+#include <algorithm>
 #include <cmath>
 #include <map>
 #include <string>
@@ -97,9 +98,12 @@ class Io {
       {{Sensor::kUnknown}, {36, "vn", 1.0, ""}},
       {{Sensor::kUnknown}, {36, "vn", 1.0, ""}}};
 
-  Io() : one_wire_(one_wire_pin_) {}
+  // Configure acidity related measurement
+  static const uint aciditiy_sample_count_ = 30;
 
-  virtual ~Io() {}
+  Io();
+
+  virtual ~Io();
 
   /**
    * Performs initialization of the connected sensors
@@ -158,6 +162,26 @@ class Io {
    */
   float readMax44009Light(Sensor sensor_id);
 
+  /**
+   * Takes an acidity measurement and saves it in the ring buffer
+   */
+  void takeAcidityMeasurement();
+
+  /**
+   * Clears all acidity measurements
+   */
+  void clearAcidityMeasurements();
+
+  /**
+   * Gets the median value of the acidity measurements
+   */
+  float getMedianAcidityMeasurement();
+
+  /**
+   * Returns true if the acidity measurement buffer is full
+   */
+  bool isAcidityMeasurementFull();
+
  private:
   /**
    * Checks if the sensor naming in the maps do not overlap
@@ -172,6 +196,10 @@ class Io {
   // Interface to Dallas temperature sensors
   OneWire one_wire_;
   DallasTemperature dallas_;
+
+  // Buffer for the acidity samples
+  std::array<float, aciditiy_sample_count_> acidity_samples_{};
+  uint acidity_sample_index_ = 0;
 };
 
 }  // namespace bernd_box

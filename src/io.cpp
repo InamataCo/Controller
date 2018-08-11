@@ -2,6 +2,10 @@
 
 namespace bernd_box {
 
+Io::Io() : one_wire_(one_wire_pin_) { acidity_samples_.fill(NAN); }
+
+Io::~Io() {}
+
 bool Io::init() {
   bool success = true;
   // Set the status LED GPIO to output
@@ -137,6 +141,61 @@ float Io::readMax44009Light(Sensor sensor_id) {
 
   return lux;
 }
+
+void Io::takeAcidityMeasurement() {
+  if (acidity_sample_index_ < acidity_samples_.size()) {
+    acidity_samples_[acidity_sample_index_] = readAnalog(Sensor::kAciditiy);
+    acidity_sample_index_++;
+
+    if (acidity_sample_index_ >= acidity_samples_.size()) {
+      acidity_sample_index_ = 0;
+    }
+  } else {
+    Serial.printf(
+        "Error updating acidity sensor. acidity_sample_index_ (%d) greater "
+        "than acidity_samples_ size (%d)\n",
+        acidity_sample_index_, acidity_samples_.size());
+  }
+}
+
+void Io::clearAcidityMeasurements() {
+  for (auto& it : acidity_samples_) {
+    it = NAN;
+  }
+
+  acidity_sample_index_ = 0;
+}
+
+float Io::getMedianAcidityMeasurement() {
+  size_t samples_count;
+
+  // Find how many measurements have been stored
+  if (isAcidityMeasurementFull()) {
+    samples_count = acidity_samples_.size();
+  } else {
+    samples_count = 0;
+
+    // Find the first element before a NaN element
+    while (acidity_samples_[samples_count] != NAN &&
+           samples_count < acidity_samples_.size()) {
+      samples_count++;
+    }
+  }
+
+  // Copy all valid measurements to a temporary buffer
+  std::vector<float> samples(samples_count);
+  std::copy(acidity_samples_.begin(), &(acidity_samples_.at(samples_count)),
+            samples.begin());
+
+  // Sorts the lower half of the buffer
+  std::nth_element(samples.begin(), samples.begin() + samples.size() / 2,
+                   samples.end());
+
+  // Returns the middle element
+  return samples.at(samples.size() / 2);
+}
+
+bool Io::isAcidityMeasurementFull() { return acidity_samples_.back() == NAN; }
 
 bool Io::isSensorIdNamingValid() {
   bool valid = true;
