@@ -78,11 +78,13 @@ class Io {
   /// List of connected BH1750 and MAX44009 light sensors
   const uint i2c_scl_pin_ = 4;
   const uint i2c_sda_pin_ = 5;
+
   std::map<Sensor, Bh1750Sensor> bh1750s_ = {
       {{Sensor::kLightLevel},
        {BH1750::CONTINUOUS_LOW_RES_MODE, BH1750(0x23), "light_level", "lx"}},
       {{Sensor::kLightLevel2},
        {BH1750::ONE_TIME_LOW_RES_MODE, BH1750(0x5C), "light_level2", "lx"}}};
+
   std::map<Sensor, Max44009Sensor> max44009s_ = {
       {{Sensor::kLightLevel3}, {Max44009(0xCB), "light_level3", "lx"}}};
 
@@ -104,53 +106,14 @@ class Io {
    *
    * \return True if it was successful
    */
-  bool init() {
-    bool success = true;
-    // Set the status LED GPIO to output
-    pinMode(status_led_pin_, OUTPUT);
-
-    // Start Wire for the BH1750 light sensors, then set the sense mode
-    Wire.begin(i2c_sda_pin_, i2c_scl_pin_);
-    for (auto& it : bh1750s_) {
-      it.second.interface.begin(it.second.mode);
-    }
-
-    // Start up the Dallas Temperature library
-    dallas_.begin();
-    // locate devices on the bus
-    uint dallas_count = dallas_.getDeviceCount();
-    Serial.printf("Found %d temperature senors\n", dallas_count);
-    if (dallas_count == dallases_.size()) {
-      uint index = 0;
-      for (auto it = dallases_.begin(); it != dallases_.end(); ++it) {
-        dallas_.getAddress(it->second.address, index);
-        index++;
-      }
-    } else {
-      Serial.printf("Expected to find %d sensors\n", dallases_.size());
-      success = false;
-    }
-
-    // Check if no sensor IDs are reused among different types
-    if (!isSensorIdNamingValid()) {
-      success = false;
-    }
-
-    return success;
-  }
+  bool init();
 
   /**
    * Turns the status LED on or off
    *
    * \param state True to turn the LED on
    */
-  void setStatusLed(bool state) {
-    if (state == true) {
-      digitalWrite(status_led_pin_, HIGH);
-    } else {
-      digitalWrite(status_led_pin_, LOW);
-    }
-  }
+  void setStatusLed(bool state);
 
   /**
    * Reads the value from the specified sensor
@@ -158,32 +121,7 @@ class Io {
    * \param sensor_id ID of the sensor to read out the value
    * \return Value read from the sensor, NAN if an error occured
    */
-  float read(Sensor sensor_id) {
-    // If no matching sensors are found, return NAN
-    float value = NAN;
-
-    // If no sensor has been found, check analog sensors
-    if (value == NAN) {
-      value = readAnalog(sensor_id);
-    }
-
-    // If no sensor has been found, check the temperature sensors
-    if (value == NAN) {
-      value = readTemperature(sensor_id);
-    }
-
-    // If no sensor has been found, check the light sensors
-    if (value == NAN) {
-      value = readBh1750Light(sensor_id);
-    }
-
-    // If no sensor has been found, check the light sensors
-    if (value == NAN) {
-      value = readMax44009Light(sensor_id);
-    }
-
-    return value;
-  }
+  float read(Sensor sensor_id);
 
   /**
    * Reads the analog value of the sensor with the given ID
@@ -191,17 +129,7 @@ class Io {
    * \param sensor_id The id of the sensor
    * \return Value in specified unit. NAN on error or not found
    */
-  float readAnalog(Sensor sensor_id) {
-    float value = NAN;
-
-    auto it = adcs_.find(sensor_id);
-    if (it != adcs_.end()) {
-      value = analogRead(it->second.pin_id);
-      value *= it->second.scaling_factor;
-    }
-
-    return value;
-  }
+  float readAnalog(Sensor sensor_id);
 
   /**
    * Gets the temperature
@@ -209,29 +137,7 @@ class Io {
    * \param sensor_id ID of the temperature sensor
    * \return Temperature in Celsius, NAN if sensor is not found
    */
-  float readTemperature(Sensor sensor_id) {
-    float temperature_c = NAN;
-
-    auto it = dallases_.find(sensor_id);
-
-    // If the sensor was found in the registered list
-    if (it != dallases_.end()) {
-      temperature_c = dallas_.getTempC(it->second.address);
-
-      // If the value is invalid, print its ID and address
-      if (temperature_c == DEVICE_DISCONNECTED_C) {
-        Serial.printf("Dallas sensor (%d) not connected: ",
-                      static_cast<uint>(sensor_id));
-        for (uint i = 0; i < sizeof(DeviceAddress); i++) {
-          Serial.print(it->second.address[i]);
-        }
-        Serial.println();
-        temperature_c = NAN;
-      }
-    }
-
-    return temperature_c;
-  }
+  float readTemperature(Sensor sensor_id);
 
   /**
    * Gets the light level of the Bh1750 light sensors
@@ -242,18 +148,7 @@ class Io {
    * \param sensor_id ID of the light sensor
    * \return Light level in lux, NAN if an error occured
    */
-  float readBh1750Light(Sensor sensor_id) {
-    float lux = NAN;
-
-    const auto& it = bh1750s_.find(sensor_id);
-
-    // If the sensor was found in the registered list
-    if (it != bh1750s_.end()) {
-      lux = it->second.interface.readLightLevel();
-    }
-
-    return lux;
-  }
+  float readBh1750Light(Sensor sensor_id);
 
   /**
    * Gets the light level of the MAX44009 light sensors
@@ -261,22 +156,7 @@ class Io {
    * \param sensor_id ID of the light sensor
    * \return Light level in lux, NAN if an error occured
    */
-  float readMax44009Light(Sensor sensor_id) {
-    float lux = NAN;
-
-    const auto& it = max44009s_.find(sensor_id);
-
-    // If the sensor was found in the registered list
-    if (it != max44009s_.end()) {
-      lux = it->second.interface.getLux();
-      int error = it->second.interface.getError();
-      if (error != 0) {
-        Serial.printf("MAX44009 error while reading: %d\n", error);
-      }
-    }
-
-    return lux;
-  }
+  float readMax44009Light(Sensor sensor_id);
 
  private:
   /**
@@ -284,39 +164,7 @@ class Io {
    *
    * \return True if they are valid
    */
-  bool isSensorIdNamingValid() {
-    bool valid = true;
-
-    // Compare adcs with dallases and bh1750s
-    for (auto& i : adcs_) {
-      for (auto& j : dallases_) {
-        if (i.first == j.first) {
-          valid = false;
-          Serial.printf("Same ID (%d) used by adcs and dallases\n",
-                        static_cast<uint>(i.first));
-        }
-      }
-      for (auto& j : bh1750s_) {
-        if (i.first == j.first) {
-          valid = false;
-          Serial.printf("Same ID (%d) used by adcs and bh1750s\n",
-                        static_cast<uint>(i.first));
-        }
-      }
-    }
-
-    // Compare dallases_ with bh1750s
-    for (auto& i : dallases_) {
-      for (auto& j : bh1750s_) {
-        if (i.first == j.first) {
-          valid = false;
-          Serial.printf("Same ID (%d) used by dallases and bh1750s\n",
-                        static_cast<uint>(i.first));
-        }
-      }
-    }
-    return valid;
-  }
+  bool isSensorIdNamingValid();
 
   /// Returned when name of invalid sensor is requested
   const std::string empty_ = "";

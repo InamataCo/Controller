@@ -4,6 +4,8 @@
  * \copyright Apache License 2.0
  */
 
+#include <Timer.h>
+
 // io.h has to be included before mqtt.h
 #include "io.h"
 
