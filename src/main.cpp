@@ -10,8 +10,8 @@
 #include "io.h"
 
 #include "configuration.h"
+#include "connectivity.h"
 #include "mqtt.h"
-#include "wifi.h"
 
 WiFiClient wifiClient;
 Timer timer;
@@ -31,8 +31,6 @@ void updateAciditySensor();
 
 // If not connected to WiFi, attempt to reconnect. Finally reboot
 void checkConnectivity() {
-  io.setStatusLed(true);
-
   if (!wifi.isConnected()) {
     Serial.println("WiFi: Disconnected. Attempting to reconnect");
     if (wifi.connect(bernd_box::wifi_connect_timeout) == false) {
@@ -51,7 +49,7 @@ void checkConnectivity() {
     }
   }
 
-  io.setStatusLed(false);
+  mqtt.receive();
 }
 
 // Read and then print the analog sensors
@@ -116,13 +114,13 @@ void setup() {
   }
 
   // Try to configure the IO devices, else restart
-  if (io.init()) {
+  if (io.init() != bernd_box::Result::kSuccess) {
     Serial.println("IO: Initialization failed. Restarting\n");
     ESP.restart();
   }
 
-  checkConnectivityId = timer.every(1000, checkConnectivity);
-  readAnalogSensorsId = timer.every(1000, readAnalogSensors);
+  checkConnectivityId = timer.every(100, checkConnectivity);
+  // readAnalogSensorsId = timer.every(1000, readAnalogSensors);
 }
 
 void loop() { timer.update(); }

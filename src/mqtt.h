@@ -55,6 +55,13 @@ class Mqtt {
   bool isConnected() { return client_.connected(); }
 
   /**
+   * Non-blocking receive call
+   *
+   * Handles the incoming messages and keeps the MQTT connection alive
+   */
+  void receive() { client_.loop(); }
+
+  /**
    * Send a double value on a topic
    *
    * \param name Suffix of the topic to publish on

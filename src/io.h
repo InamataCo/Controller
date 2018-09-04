@@ -14,6 +14,7 @@
 #include <DallasTemperature.h>
 #include <Max44009.h>
 #include <OneWire.h>
+#include "SparkFunBME280.h"
 
 // STD C++ includes placed after Arduino.h
 #include <algorithm>
@@ -22,6 +23,8 @@
 #include <string>
 
 namespace bernd_box {
+
+enum class Result { kSuccess, kFailure };
 
 /// Unique IDs of all connected sensors
 enum class Sensor {
@@ -33,6 +36,9 @@ enum class Sensor {
   kLightLevel,
   kLightLevel2,
   kLightLevel3,
+  kAirTemperature,
+  kAirPressure,
+  kAirHumidity,
   kUnknown
 };
 
@@ -66,28 +72,50 @@ struct Max44009Sensor {
   std::string unit;
 };
 
+/// Sensor type of BME280 air sensors
+struct Bme280Sensor {
+  uint address;
+  std::string name;
+  std::string unit;
+};
+
 class Io {
  public:
   // Pin to the status on-board LED
   const uint status_led_pin_ = 2;
 
   // List of connected Dallas temperature sensors
-  const uint one_wire_pin_ = 3;
+  const uint one_wire_pin_ = 32;
   std::map<Sensor, DallasSensor> dallases_ = {
-      {{Sensor::kWaterTemperature}, {{0}, "water_temperature", "°C"}}};
+      // {{Sensor::kWaterTemperature}, {{0}, "water_temperature", "°C"}},
+  };
 
   /// List of connected BH1750 and MAX44009 light sensors
-  const uint i2c_scl_pin_ = 4;
-  const uint i2c_sda_pin_ = 5;
+  const uint i2c_scl_pin_ = 21;
+  const uint i2c_sda_pin_ = 20;
 
+  /// List of connected BME280 sensor paramters
+  const std::map<Sensor, Bme280Sensor> bme280s_ = {
+      {{Sensor::kAirTemperature}, {0x77, "air_temperature", "°C"}},
+      {{Sensor::kAirPressure}, {0x77, "air_pressure", "Pa"}},
+      {{Sensor::kAirHumidity}, {0x77, "air_humidity", "%"}},
+  };
+  /// List of connected BME280 sensors
+  std::map<uint, BME280> bme280sensors_ = {{{0x77}, {BME280()}}};
+
+  /// List of BH1750 sensors
   std::map<Sensor, Bh1750Sensor> bh1750s_ = {
-      {{Sensor::kLightLevel},
-       {BH1750::CONTINUOUS_LOW_RES_MODE, BH1750(0x23), "light_level", "lx"}},
-      {{Sensor::kLightLevel2},
-       {BH1750::ONE_TIME_LOW_RES_MODE, BH1750(0x5C), "light_level2", "lx"}}};
+      // {{Sensor::kLightLevel},
+      //  {BH1750::CONTINUOUS_LOW_RES_MODE, BH1750(0x23), "light_level",
+      //  "lx"}},
+      // {{Sensor::kLightLevel2},
+      //  {BH1750::ONE_TIME_LOW_RES_MODE, BH1750(0x5C), "light_level2",
+      //  "lx"}},
+  };
 
   std::map<Sensor, Max44009Sensor> max44009s_ = {
-      {{Sensor::kLightLevel3}, {Max44009(0xCB), "light_level3", "lx"}}};
+      {{Sensor::kLightLevel3}, {Max44009(0xCB), "light_level3", "lx"}},
+  };
 
   /// List of connected analog peripherials
   const std::map<Sensor, AdcSensor> adcs_ = {
@@ -96,7 +124,8 @@ class Io {
       {{Sensor::kAciditiy}, {34, "acidity", 1.0, "pH"}},
       {{Sensor::kTurbidity}, {35, "turbidity", 1.0, "NTU"}},
       {{Sensor::kUnknown}, {36, "vn", 1.0, ""}},
-      {{Sensor::kUnknown}, {36, "vn", 1.0, ""}}};
+      {{Sensor::kUnknown}, {36, "vn", 1.0, ""}},
+  };
 
   // Configure acidity related measurement
   static const uint aciditiy_sample_count_ = 30;
@@ -110,7 +139,7 @@ class Io {
    *
    * \return True if it was successful
    */
-  bool init();
+  Result init();
 
   /**
    * Turns the status LED on or off

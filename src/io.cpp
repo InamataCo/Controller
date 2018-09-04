@@ -2,26 +2,45 @@
 
 namespace bernd_box {
 
-Io::Io() : one_wire_(one_wire_pin_) { acidity_samples_.fill(NAN); }
+Io::Io() : one_wire_(one_wire_pin_), dallas_(&one_wire_) {
+  acidity_samples_.fill(NAN);
+}
 
 Io::~Io() {}
 
-bool Io::init() {
-  bool success = true;
+Result Io::init() {
+  Result result = Result::kSuccess;
   // Set the status LED GPIO to output
   pinMode(status_led_pin_, OUTPUT);
 
-  // Start Wire for the BH1750 light sensors, then set the sense mode
+  // Start I2C for the relevant sensors
   Wire.begin(i2c_sda_pin_, i2c_scl_pin_);
+
+  // Set the sense mode of the BH1750 sensors
   for (auto& it : bh1750s_) {
     it.second.interface.begin(it.second.mode);
+  }
+
+  // Check that the addresses match and then init the BME280 sensors
+  for (auto& it : bme280s_) {
+    if (bme280sensors_.find(it.second.address) == bme280sensors_.end()) {
+      Serial.printf(
+          "BME280: No matching sensor found for address (0x%X) that is used by "
+          "a sensor parameter in bme280s_.\n",
+          it.second.address);
+      result = Result::kFailure;
+    }
+  }
+  for (auto& it : bme280sensors_) {
+    it.second.setI2CAddress(it.first);
+    it.second.beginI2C(Wire);
   }
 
   // Start up the Dallas Temperature library
   dallas_.begin();
   // locate devices on the bus
   uint dallas_count = dallas_.getDeviceCount();
-  Serial.printf("Found %d temperature senors\n", dallas_count);
+  Serial.printf("Found %d Dallas temperature senors\n", dallas_count);
   if (dallas_count == dallases_.size()) {
     uint index = 0;
     for (auto it = dallases_.begin(); it != dallases_.end(); ++it) {
@@ -30,15 +49,15 @@ bool Io::init() {
     }
   } else {
     Serial.printf("Expected to find %d sensors\n", dallases_.size());
-    success = false;
+    result = Result::kFailure;
   }
 
   // Check if no sensor IDs are reused among different types
   if (!isSensorIdNamingValid()) {
-    success = false;
+    result = Result::kFailure;
   }
 
-  return success;
+  return result;
 }
 
 void Io::setStatusLed(bool state) {
