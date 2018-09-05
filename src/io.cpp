@@ -161,6 +161,46 @@ float Io::readMax44009Light(Sensor sensor_id) {
   return lux;
 }
 
+float Io::readBme280Air(Sensor sensor_id) {
+  float value = NAN;
+
+  const auto& it = bme280s_.find(sensor_id);
+
+  // If the sensor parameter was found in the registered list
+  if (it != bme280s_.end()) {
+    const auto& interface = bme280sensors_.find(it->second.address);
+    // If the sensor with the respective address exists
+    if (interface != bme280sensors_.end()) {
+      switch (it->second.parameter) {
+        case Bme280Parameter::kAltitudeFeet:
+          value = interface->second.readFloatAltitudeFeet();
+          break;
+        case Bme280Parameter::kAltitudeMeters:
+          value = interface->second.readFloatAltitudeMeters();
+          break;
+        case Bme280Parameter::kHumidity:
+          value = interface->second.readFloatHumidity();
+          break;
+        case Bme280Parameter::kPressure:
+          value = interface->second.readFloatPressure();
+          break;
+        case Bme280Parameter::kTemperatureC:
+          value = interface->second.readTempC();
+          break;
+        case Bme280Parameter::kTemperatureF:
+          value = interface->second.readTempF();
+          break;
+        default:
+          Serial.printf("BME280 parameter (%d) not handled by readBme280Air",
+                        static_cast<int>(it->second.parameter));
+          value = NAN;
+      }
+    }
+  }
+
+  return value;
+}
+
 void Io::takeAcidityMeasurement() {
   if (acidity_sample_index_ < acidity_samples_.size()) {
     acidity_samples_[acidity_sample_index_] = readAnalog(Sensor::kAciditiy);

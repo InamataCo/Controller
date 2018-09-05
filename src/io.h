@@ -73,8 +73,18 @@ struct Max44009Sensor {
 };
 
 /// Sensor type of BME280 air sensors
+enum class Bme280Parameter {
+  kTemperatureC,
+  kTemperatureF,
+  kAltitudeFeet,
+  kAltitudeMeters,
+  kHumidity,
+  kPressure,
+};
+
 struct Bme280Sensor {
   uint address;
+  Bme280Parameter parameter;
   std::string name;
   std::string unit;
 };
@@ -91,14 +101,17 @@ class Io {
   };
 
   /// List of connected BH1750 and MAX44009 light sensors
-  const uint i2c_scl_pin_ = 21;
-  const uint i2c_sda_pin_ = 20;
+  const uint i2c_scl_pin_ = 22;
+  const uint i2c_sda_pin_ = 21;
 
   /// List of connected BME280 sensor paramters
   const std::map<Sensor, Bme280Sensor> bme280s_ = {
-      {{Sensor::kAirTemperature}, {0x77, "air_temperature", "°C"}},
-      {{Sensor::kAirPressure}, {0x77, "air_pressure", "Pa"}},
-      {{Sensor::kAirHumidity}, {0x77, "air_humidity", "%"}},
+      {{Sensor::kAirTemperature},
+       {0x77, Bme280Parameter::kTemperatureC, "air_temperature", "°C"}},
+      {{Sensor::kAirPressure},
+       {0x77, Bme280Parameter::kPressure, "air_pressure", "Pa"}},
+      {{Sensor::kAirHumidity},
+       {0x77, Bme280Parameter::kHumidity, "air_humidity", "%"}},
   };
   /// List of connected BME280 sensors
   std::map<uint, BME280> bme280sensors_ = {{{0x77}, {BME280()}}};
@@ -190,6 +203,8 @@ class Io {
    * \return Light level in lux, NAN if an error occured
    */
   float readMax44009Light(Sensor sensor_id);
+
+  float readBme280Air(Sensor sensor_id);
 
   /**
    * Takes an acidity measurement and saves it in the ring buffer

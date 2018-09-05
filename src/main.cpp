@@ -29,6 +29,9 @@ void readAnalogSensors();
 int8_t updateAciditySensorId;
 void updateAciditySensor();
 
+int8_t readAirSensorsId;
+void readAirSensors();
+
 // If not connected to WiFi, attempt to reconnect. Finally reboot
 void checkConnectivity() {
   if (!wifi.isConnected()) {
@@ -94,6 +97,19 @@ void updateAciditySensor() {
   io.setStatusLed(false);
 }
 
+void readAirSensors() {
+  io.setStatusLed(true);
+
+  for (const auto& bme : io.bme280s_) {
+    float value = io.readBme280Air(bme.first);
+    Serial.printf("The %s is %f %s\n", bme.second.name.c_str(), value,
+                  bme.second.unit.c_str());
+    mqtt.send(bme.second.name.c_str(), value);
+  }
+
+  io.setStatusLed(false);
+}
+
 void setup() {
   Serial.begin(115200);
 
@@ -121,6 +137,7 @@ void setup() {
 
   checkConnectivityId = timer.every(100, checkConnectivity);
   // readAnalogSensorsId = timer.every(1000, readAnalogSensors);
+  readAirSensorsId = timer.every(10000, readAirSensors);
 }
 
 void loop() { timer.update(); }
