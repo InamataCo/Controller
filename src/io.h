@@ -127,7 +127,7 @@ class Io {
   };
 
   std::map<Sensor, Max44009Sensor> max44009s_ = {
-      {{Sensor::kLightLevel3}, {Max44009(0xCB), "light_level3", "lx"}},
+      {{Sensor::kLightLevel3}, {Max44009(0x4A), "ambient_brightness", "lx"}},
   };
 
   /// List of connected analog peripherials

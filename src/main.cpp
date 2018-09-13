@@ -13,6 +13,8 @@
 #include "connectivity.h"
 #include "mqtt.h"
 
+//----------------------------------------------------------------------------
+// Global instances
 WiFiClient wifiClient;
 Timer timer;
 
@@ -20,6 +22,8 @@ bernd_box::Io io;
 bernd_box::Mqtt mqtt(wifiClient, bernd_box::client_id, bernd_box::mqtt_server);
 bernd_box::Wifi wifi(bernd_box::ssid, bernd_box::password);
 
+//----------------------------------------------------------------------------
+// List of available tasks
 int8_t checkConnectivityId;
 void checkConnectivity();
 
@@ -32,7 +36,13 @@ void updateAciditySensor();
 int8_t readAirSensorsId;
 void readAirSensors();
 
-// If not connected to WiFi, attempt to reconnect. Finally reboot
+int8_t readLightSensorsId;
+void readLightSensors();
+
+//----------------------------------------------------------------------------
+// Implementations of available tasks
+
+// If not connected to WiFi and MQTT, attempt to reconnect. Restart on fail
 void checkConnectivity() {
   if (!wifi.isConnected()) {
     Serial.println("WiFi: Disconnected. Attempting to reconnect");
@@ -76,6 +86,8 @@ void readAnalogSensors() {
   io.setStatusLed(false);
 }
 
+// Take multiple acidity readings and average them. Task stops after enough
+// measurements have been collected.
 void updateAciditySensor() {
   io.setStatusLed(true);
 
@@ -97,6 +109,7 @@ void updateAciditySensor() {
   io.setStatusLed(false);
 }
 
+// Reads, prints and then sends all air sensor parameters
 void readAirSensors() {
   io.setStatusLed(true);
 
@@ -105,6 +118,21 @@ void readAirSensors() {
     Serial.printf("The %s is %f %s\n", bme.second.name.c_str(), value,
                   bme.second.unit.c_str());
     mqtt.send(bme.second.name.c_str(), value);
+  }
+
+  io.setStatusLed(false);
+}
+
+// Reads, prints and then sends all light sensors
+void readLightSensors() {
+  io.setStatusLed(true);
+
+  for (const auto& max44009 : io.max44009s_) {
+    float value = io.readMax44009Light(max44009.first);
+    Serial.printf("Ambient brightness (ID: %u) is %f %s\n",
+                  static_cast<int>(max44009.first), value,
+                  max44009.second.unit.c_str());
+    mqtt.send(max44009.second.name.c_str(), value);
   }
 
   io.setStatusLed(false);
@@ -138,6 +166,7 @@ void setup() {
   checkConnectivityId = timer.every(100, checkConnectivity);
   // readAnalogSensorsId = timer.every(1000, readAnalogSensors);
   readAirSensorsId = timer.every(10000, readAirSensors);
+  readLightSensorsId = timer.every(10000, readLightSensors);
 }
 
 void loop() { timer.update(); }
