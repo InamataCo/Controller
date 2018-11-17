@@ -13,6 +13,8 @@
 #include "connectivity.h"
 #include "mqtt.h"
 
+const uint pump_pin = 13;
+
 //----------------------------------------------------------------------------
 // Global instances
 WiFiClient wifiClient;
@@ -38,6 +40,9 @@ void readAirSensors();
 
 int8_t readLightSensorsId;
 void readLightSensors();
+
+int8_t togglePumpStateId;
+void togglePumpState();
 
 //----------------------------------------------------------------------------
 // Implementations of available tasks
@@ -69,19 +74,21 @@ void checkConnectivity() {
 void readAnalogSensors() {
   io.setStatusLed(true);
 
-  // Start a measurement series for the acidity sensor
-  updateAciditySensorId = timer.every(30, updateAciditySensor);
-
   // Read all sensors. Then print and send them over MQTT
   Serial.printf("\n%-10s|%-4s|%-15s|%s\n", "Sensor", "Pin", "Value", "Unit");
   Serial.printf("----------|----|---------------|----\n");
-  for (auto& it : io.adcs_) {
-    float value = io.readAnalog(it.first);
+  const auto& sensor = io.adcs_.find(bernd_box::Sensor::kTotalDissolvedSolids);
+  float value = io.readAnalog(sensor->first);
+  Serial.printf("%-10s|%-4i|%-15f|%s\n", sensor->second.name.c_str(),
+                sensor->second.pin_id, value, sensor->second.unit.c_str());
+  mqtt.send(sensor->second.name.c_str(), value);
+  // for (auto& it : io.adcs_) {
+  //   float value = io.readAnalog(it.first);
 
-    Serial.printf("%-10s|%-4i|%-15f|%s\n", it.second.name.c_str(),
-                  it.second.pin_id, value, it.second.unit.c_str());
-    mqtt.send(it.second.name.c_str(), value);
-  }
+  //   Serial.printf("%-10s|%-4i|%-15f|%s\n", it.second.name.c_str(),
+  //                 it.second.pin_id, value, it.second.unit.c_str());
+  //   mqtt.send(it.second.name.c_str(), value);
+  // }
 
   io.setStatusLed(false);
 }
@@ -138,6 +145,18 @@ void readLightSensors() {
   io.setStatusLed(false);
 }
 
+bool isPumpOn = false;
+
+void togglePumpState() {
+  if (isPumpOn) {
+    digitalWrite(pump_pin, LOW);
+    isPumpOn = false;
+  } else {
+    digitalWrite(pump_pin, HIGH);
+    isPumpOn = true;
+  }
+}
+
 void setup() {
   Serial.begin(115200);
 
@@ -163,10 +182,17 @@ void setup() {
     ESP.restart();
   }
 
+  io.disableAllAnalog();
+
+  pinMode(pump_pin, OUTPUT);
+  digitalWrite(pump_pin, HIGH);
+
   checkConnectivityId = timer.every(100, checkConnectivity);
-  // readAnalogSensorsId = timer.every(1000, readAnalogSensors);
-  readAirSensorsId = timer.every(10000, readAirSensors);
-  readLightSensorsId = timer.every(10000, readLightSensors);
+  readAnalogSensorsId = timer.every(1000, readAnalogSensors);
+  togglePumpStateId = timer.every(1000 * 30, togglePumpState);
+  // readAirSensorsId = timer.every(10000, readAirSensors);
+  // readLightSensorsId = timer.every(10000, readLightSensors);
+  // updateAciditySensorId = timer.every(30, updateAciditySensor);
 }
 
 void loop() { timer.update(); }

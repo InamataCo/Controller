@@ -14,48 +14,47 @@ Result Io::init() {
   pinMode(status_led_pin_, OUTPUT);
 
   // Start I2C for the relevant sensors
-  Wire.begin(i2c_sda_pin_, i2c_scl_pin_);
+  // Wire.begin(i2c_sda_pin_, i2c_scl_pin_);
 
   // Set the sense mode of the BH1750 sensors
-  for (auto& it : bh1750s_) {
-    it.second.interface.begin(it.second.mode);
-  }
+  // for (auto& it : bh1750s_) {
+  //   it.second.interface.begin(it.second.mode);
+  // }
 
   // Check that the addresses match and then init the BME280 sensors
-  for (auto& it : bme280s_) {
-    if (bme280sensors_.find(it.second.address) == bme280sensors_.end()) {
-      Serial.printf(
-          "BME280: No matching sensor found for address (0x%X) that is used by "
-          "a sensor parameter in bme280s_.\n",
-          it.second.address);
-      result = Result::kFailure;
-    }
-  }
-  for (auto& it : bme280sensors_) {
-    it.second.setI2CAddress(it.first);
-    it.second.beginI2C(Wire);
-  }
+  // for (auto& it : bme280s_) {
+  //   if (bme280sensors_.find(it.second.address) == bme280sensors_.end()) {
+  //     Serial.printf(
+  //         "BME280: No matching sensor found for address (0x%X) that is used
+  //         by " "a sensor parameter in bme280s_.\n", it.second.address);
+  //     result = Result::kFailure;
+  //   }
+  // }
+  // for (auto& it : bme280sensors_) {
+  //   it.second.setI2CAddress(it.first);
+  //   it.second.beginI2C(Wire);
+  // }
 
   // Start up the Dallas Temperature library
-  dallas_.begin();
-  // locate devices on the bus
-  uint dallas_count = dallas_.getDeviceCount();
-  Serial.printf("Found %d Dallas temperature senors\n", dallas_count);
-  if (dallas_count == dallases_.size()) {
-    uint index = 0;
-    for (auto it = dallases_.begin(); it != dallases_.end(); ++it) {
-      dallas_.getAddress(it->second.address, index);
-      index++;
-    }
-  } else {
-    Serial.printf("Expected to find %d sensors\n", dallases_.size());
-    result = Result::kFailure;
-  }
+  // dallas_.begin();
+  // // locate devices on the bus
+  // uint dallas_count = dallas_.getDeviceCount();
+  // Serial.printf("Found %d Dallas temperature senors\n", dallas_count);
+  // if (dallas_count == dallases_.size()) {
+  //   uint index = 0;
+  //   for (auto it = dallases_.begin(); it != dallases_.end(); ++it) {
+  //     dallas_.getAddress(it->second.address, index);
+  //     index++;
+  //   }
+  // } else {
+  //   Serial.printf("Expected to find %d sensors\n", dallases_.size());
+  //   result = Result::kFailure;
+  // }
 
-  // Check if no sensor IDs are reused among different types
-  if (!isSensorIdNamingValid()) {
-    result = Result::kFailure;
-  }
+  // // Check if no sensor IDs are reused among different types
+  // if (!isSensorIdNamingValid()) {
+  //   result = Result::kFailure;
+  // }
 
   return result;
 }
@@ -100,11 +99,38 @@ float Io::readAnalog(Sensor sensor_id) {
 
   auto it = adcs_.find(sensor_id);
   if (it != adcs_.end()) {
+    enableAnalog(it->first);
     value = analogRead(it->second.pin_id);
     value *= it->second.scaling_factor;
   }
 
   return value;
+}
+
+void Io::enableAnalog(Sensor sensor_id) {
+  auto it = adcs_.find(sensor_id);
+  if (it != adcs_.end()) {
+    if (it->second.enable_pin_id >= 0) {
+      digitalWrite(it->second.enable_pin_id, HIGH);
+    }
+  }
+}
+
+void Io::disableAnalog(Sensor sensor_id) {
+  auto it = adcs_.find(sensor_id);
+  if (it != adcs_.end()) {
+    if (it->second.enable_pin_id >= 0) {
+      digitalWrite(it->second.enable_pin_id, LOW);
+    }
+  }
+}
+
+void Io::disableAllAnalog() {
+  for (const auto& it : adcs_) {
+    if (it.second.enable_pin_id >= 0) {
+      digitalWrite(it.second.enable_pin_id, LOW);
+    }
+  }
 }
 
 float Io::readTemperature(Sensor sensor_id) {

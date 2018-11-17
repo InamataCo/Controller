@@ -10,11 +10,6 @@
 #define BERND_BOX_IO_H
 
 #include <Arduino.h>
-#include <BH1750.h>
-#include <DallasTemperature.h>
-#include <Max44009.h>
-#include <OneWire.h>
-#include "SparkFunBME280.h"
 
 // STD C++ includes placed after Arduino.h
 #include <algorithm>
@@ -22,72 +17,11 @@
 #include <map>
 #include <string>
 
+#include "sensor_types.h"
+
 namespace bernd_box {
 
 enum class Result { kSuccess, kFailure };
-
-/// Unique IDs of all connected sensors
-enum class Sensor {
-  kWaterTemperature,
-  kSaturatedOxygen,
-  kConductivity,
-  kAciditiy,
-  kTurbidity,
-  kLightLevel,
-  kLightLevel2,
-  kLightLevel3,
-  kAirTemperature,
-  kAirPressure,
-  kAirHumidity,
-  kUnknown
-};
-
-/// Sensor type of analog peripherials
-struct AdcSensor {
-  uint pin_id;
-  std::string name;
-  float scaling_factor;
-  std::string unit;
-};
-
-/// Sensor type of Dallas temperature sensors
-struct DallasSensor {
-  DeviceAddress address;
-  std::string name;
-  std::string unit;
-};
-
-/// Sensor type of BH1750 light sensors
-struct Bh1750Sensor {
-  BH1750::Mode mode;
-  BH1750 interface;
-  std::string name;
-  std::string unit;
-};
-
-/// Sensor type of MAX44009
-struct Max44009Sensor {
-  Max44009 interface;
-  std::string name;
-  std::string unit;
-};
-
-/// Sensor type of BME280 air sensors
-enum class Bme280Parameter {
-  kTemperatureC,
-  kTemperatureF,
-  kAltitudeFeet,
-  kAltitudeMeters,
-  kHumidity,
-  kPressure,
-};
-
-struct Bme280Sensor {
-  uint address;
-  Bme280Parameter parameter;
-  std::string name;
-  std::string unit;
-};
 
 class Io {
  public:
@@ -97,7 +31,7 @@ class Io {
   // List of connected Dallas temperature sensors
   const uint one_wire_pin_ = 32;
   std::map<Sensor, DallasSensor> dallases_ = {
-      // {{Sensor::kWaterTemperature}, {{0}, "water_temperature", "°C"}},
+      {{Sensor::kWaterTemperature}, {{0}, "water_temperature", "°C"}},
   };
 
   /// List of connected BH1750 and MAX44009 light sensors
@@ -118,12 +52,10 @@ class Io {
 
   /// List of BH1750 sensors
   std::map<Sensor, Bh1750Sensor> bh1750s_ = {
-      // {{Sensor::kLightLevel},
-      //  {BH1750::CONTINUOUS_LOW_RES_MODE, BH1750(0x23), "light_level",
-      //  "lx"}},
-      // {{Sensor::kLightLevel2},
-      //  {BH1750::ONE_TIME_LOW_RES_MODE, BH1750(0x5C), "light_level2",
-      //  "lx"}},
+      {{Sensor::kLightLevel},
+       {BH1750::CONTINUOUS_LOW_RES_MODE, BH1750(0x23), "light_level", "lx"}},
+      {{Sensor::kLightLevel2},
+       {BH1750::ONE_TIME_LOW_RES_MODE, BH1750(0x5C), "light_level2", "lx"}},
   };
 
   std::map<Sensor, Max44009Sensor> max44009s_ = {
@@ -132,12 +64,13 @@ class Io {
 
   /// List of connected analog peripherials
   const std::map<Sensor, AdcSensor> adcs_ = {
-      {{Sensor::kSaturatedOxygen}, {32, "saturated_oxygen", 1.0, "SO2"}},
-      {{Sensor::kConductivity}, {33, "conductivity", 1.0, "mS/cm"}},
-      {{Sensor::kAciditiy}, {34, "acidity", 1.0, "pH"}},
-      {{Sensor::kTurbidity}, {35, "turbidity", 1.0, "NTU"}},
-      {{Sensor::kUnknown}, {36, "vn", 1.0, ""}},
-      {{Sensor::kUnknown}, {36, "vn", 1.0, ""}},
+      {{Sensor::kTurbidity}, {32, "turbidity", 1.0, "NTU", 12}},
+      {{Sensor::kUnknown}, {33, "vn", 1.0, "", -1}},
+      {{Sensor::kAciditiy}, {34, "acidity", 1.0, "pH", 27}},
+      {{Sensor::kTotalDissolvedSolids},
+       {35, "total_dissolved_solids", 1.0, "mg/l", 14}},
+      {{Sensor::kDissolvedOxygen}, {36, "dissolved_oxygen", 1.0, "SO2", 25}},
+      {{Sensor::kConductivity}, {37, "conductivity", 1.0, "mS/cm", 26}},
   };
 
   // Configure acidity related measurement
@@ -176,6 +109,10 @@ class Io {
    * \return Value in specified unit. NAN on error or not found
    */
   float readAnalog(Sensor sensor_id);
+
+  void enableAnalog(Sensor sensor_id);
+  void disableAnalog(Sensor sensor_id);
+  void disableAllAnalog();
 
   /**
    * Gets the temperature
