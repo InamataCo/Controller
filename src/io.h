@@ -21,17 +21,18 @@
 
 namespace bernd_box {
 
-enum class Result { kSuccess, kFailure };
+enum class Result { kSuccess, kFailure, kNotReady, kDeviceDisconnected };
 
 class Io {
  public:
   // Pin to the status on-board LED
   const uint status_led_pin_ = 2;
 
-  // List of connected Dallas temperature sensors
-  const uint one_wire_pin_ = 32;
+  // List of connected Dallas temperature sensors (DS18B20)
+  const uint one_wire_pin_ = 15;
   std::map<Sensor, DallasSensor> dallases_ = {
-      {{Sensor::kWaterTemperature}, {{0}, "water_temperature", "°C"}},
+      {{Sensor::kWaterTemperature},
+       {{0}, DallasResolution::b12, "water_temperature", "°C"}},
   };
 
   /// List of connected BH1750 and MAX44009 light sensors
@@ -39,28 +40,28 @@ class Io {
   const uint i2c_sda_pin_ = 21;
 
   /// List of connected BME280 sensor paramters
-  const std::map<Sensor, Bme280Sensor> bme280s_ = {
+  const std::map<Sensor, Bme280Sensor> bme280s_ = {}; /*
       {{Sensor::kAirTemperature},
        {0x77, Bme280Parameter::kTemperatureC, "air_temperature", "°C"}},
       {{Sensor::kAirPressure},
        {0x77, Bme280Parameter::kPressure, "air_pressure", "Pa"}},
       {{Sensor::kAirHumidity},
        {0x77, Bme280Parameter::kHumidity, "air_humidity", "%"}},
-  };
+  };*/
   /// List of connected BME280 sensors
-  std::map<uint, BME280> bme280sensors_ = {{{0x77}, {BME280()}}};
+  std::map<uint, BME280> bme280sensors_ = {/*{{0x77}, {BME280()}}*/};
 
   /// List of BH1750 sensors
-  std::map<Sensor, Bh1750Sensor> bh1750s_ = {
-      {{Sensor::kLightLevel},
-       {BH1750::CONTINUOUS_LOW_RES_MODE, BH1750(0x23), "light_level", "lx"}},
-      {{Sensor::kLightLevel2},
-       {BH1750::ONE_TIME_LOW_RES_MODE, BH1750(0x5C), "light_level2", "lx"}},
-  };
+  std::map<Sensor, Bh1750Sensor> bh1750s_ = {}; /*
+       {{Sensor::kLightLevel},
+        {BH1750::CONTINUOUS_LOW_RES_MODE, BH1750(0x23), "light_level", "lx"}},
+       {{Sensor::kLightLevel2},
+        {BH1750::ONE_TIME_LOW_RES_MODE, BH1750(0x5C), "light_level2", "lx"}},
+   };*/
 
-  std::map<Sensor, Max44009Sensor> max44009s_ = {
+  std::map<Sensor, Max44009Sensor> max44009s_ = {}; /*
       {{Sensor::kLightLevel3}, {Max44009(0x4A), "ambient_brightness", "lx"}},
-  };
+  };*/
 
   /// List of connected analog peripherials
   const std::map<Sensor, AdcSensor> adcs_ = {
@@ -75,6 +76,7 @@ class Io {
 
   // Configure acidity related measurement
   static const uint aciditiy_sample_count_ = 30;
+  static const uint temperature_sample_count_ = 5;
 
   Io();
 
@@ -111,16 +113,75 @@ class Io {
   float readAnalog(Sensor sensor_id);
 
   void enableAnalog(Sensor sensor_id);
+
   void disableAnalog(Sensor sensor_id);
+
   void disableAllAnalog();
 
   /**
-   * Gets the temperature
+   * Gets the temperature in sync mode (~800ms blocking)
    *
    * \param sensor_id ID of the temperature sensor
    * \return Temperature in Celsius, NAN if sensor is not found
    */
-  float readTemperature(Sensor sensor_id);
+  float readDallasTemperature(Sensor sensor_id);
+
+  /**
+   * Gets last stored temperature from temperature buffer
+   *
+   * \return Temperature in °C
+   */
+  Measurement getDallasTemperatureSample();
+
+  /**
+   * Sets the temperature in the temperature ring buffer
+   *
+   * \param temperature The temperature in °C
+   */
+  void setDallasTemperatureSample(const float temperature_c, Sensor sensorId);
+
+  /**
+   * Requests the selected Dallas sensor to acquire the current temperature
+   *
+   * The duration of the process depends on the set resolution (100ms - 800ms)
+   *
+   * \param sensor The one-wire address of the Dallas sensor
+   * \param millisToWait Returns the expected wait time depending on the
+   * resolution
+   * \return kSuccess on success, kDeviceDisconnected if the sensor could not be
+   * found
+   */
+  Result requestDallasTemperatureUpdate(const DallasSensor& sensor,
+                                        int& millisToWait);
+
+  /**
+   * Returns the temperature in °C is possible from selected sensor
+   *
+   * On error, the temperature_c variable will be set to NAN.
+   *
+   * \param sensor The sensor from which the temperature should be read
+   *
+   * \param asyncMode If true, requestTemperatureUpdate() has to have been
+   * called and the appropriate time waited. It will not block. If it is false,
+   * it will block until the sensor has acquired the temperature. This can take
+   * up to 800ms.
+   *
+   * \param temperature_c The variable
+   * where the temperature will be returned
+   *
+   * \return kSuccess on success, kNotReady if the read was too soon after the
+   * request, kDeviceDisconnected if the device could not be found
+   */
+  Result readDallasTemperature(const DallasSensor& sensor, bool asyncMode,
+                               float& temperature_c);
+
+  /**
+   * Converts the 8 byte Dallas DeviceAddress uint8_t array to a 64bit integer
+   *
+   * \param address Pointer to the 8 byte uint8_t array
+   * \return Integer representation of the address
+   */
+  long dallasAddressToInt(const uint8_t* address);
 
   /**
    * Gets the light level of the Bh1750 light sensors
@@ -177,6 +238,10 @@ class Io {
   // Interface to Dallas temperature sensors
   OneWire one_wire_;
   DallasTemperature dallas_;
+
+  // Buffer for the last temperature measurement <°C, millis timestamp>
+  std::array<Measurement, temperature_sample_count_> temperature_samples_{};
+  uint temperature_sample_index_ = 0;
 
   // Buffer for the acidity samples
   std::array<float, aciditiy_sample_count_> acidity_samples_{};

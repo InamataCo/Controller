@@ -16,12 +16,14 @@
 namespace bernd_box {
 
 // WiFi
-const char* ssid = "your-ssid";
-const char* password = "your-password";
+// const char* ssid = "SDGintern";
+// const char* password = "8037473183859244";
+const char* ssid = "PROTOHAUS";
+const char* password = "PH-Wlan-2016#";
 const std::chrono::seconds wifi_connect_timeout(20);
 
 // MQTT
-const char* mqtt_server = "192.168.1.140";
+const char* mqtt_server = "192.168.0.55";
 const char* client_id = "bernd_box_1";
 const uint connection_attempts = 3;  // Maximum attempts before aborting
 

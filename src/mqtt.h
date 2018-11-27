@@ -138,12 +138,16 @@ class Mqtt {
    * \param who From which function the error originates
    * \param message String stating the error
    */
-  void sendError(const std::string& who, const std::string& message) {
+  void sendError(const std::string& who, const std::string& message,
+                 bool additional_serial_log = true) {
     std::string error = who;
     error += ": ";
     error += message;
     client_.publish(error_topic.c_str(), error.c_str());
-    Serial.println(error.c_str());
+
+    if (additional_serial_log == true) {
+      Serial.println(error.c_str());
+    }
   }
 
  private:

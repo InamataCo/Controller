@@ -14,47 +14,50 @@ Result Io::init() {
   pinMode(status_led_pin_, OUTPUT);
 
   // Start I2C for the relevant sensors
-  // Wire.begin(i2c_sda_pin_, i2c_scl_pin_);
+  Wire.begin(i2c_sda_pin_, i2c_scl_pin_);
 
   // Set the sense mode of the BH1750 sensors
-  // for (auto& it : bh1750s_) {
-  //   it.second.interface.begin(it.second.mode);
-  // }
+  for (auto& it : bh1750s_) {
+    it.second.interface.begin(it.second.mode);
+  }
 
   // Check that the addresses match and then init the BME280 sensors
-  // for (auto& it : bme280s_) {
-  //   if (bme280sensors_.find(it.second.address) == bme280sensors_.end()) {
-  //     Serial.printf(
-  //         "BME280: No matching sensor found for address (0x%X) that is used
-  //         by " "a sensor parameter in bme280s_.\n", it.second.address);
-  //     result = Result::kFailure;
-  //   }
-  // }
-  // for (auto& it : bme280sensors_) {
-  //   it.second.setI2CAddress(it.first);
-  //   it.second.beginI2C(Wire);
-  // }
+  for (auto& it : bme280s_) {
+    if (bme280sensors_.find(it.second.address) == bme280sensors_.end()) {
+      Serial.printf(
+          "BME280: No matching sensor found for address (0x%X) that is used by "
+          "a sensor parameter in bme280s_.\n",
+          it.second.address);
+      result = Result::kFailure;
+    }
+  }
+  for (auto& it : bme280sensors_) {
+    it.second.setI2CAddress(it.first);
+    it.second.beginI2C(Wire);
+  }
 
-  // Start up the Dallas Temperature library
-  // dallas_.begin();
-  // // locate devices on the bus
-  // uint dallas_count = dallas_.getDeviceCount();
-  // Serial.printf("Found %d Dallas temperature senors\n", dallas_count);
-  // if (dallas_count == dallases_.size()) {
-  //   uint index = 0;
-  //   for (auto it = dallases_.begin(); it != dallases_.end(); ++it) {
-  //     dallas_.getAddress(it->second.address, index);
-  //     index++;
-  //   }
-  // } else {
-  //   Serial.printf("Expected to find %d sensors\n", dallases_.size());
-  //   result = Result::kFailure;
-  // }
+  // Start up the Dallas Temperature library in asynchronous mode
+  Serial.println("Starting Dallas Temperature library in async mode");
+  dallas_.begin();
+  dallas_.setWaitForConversion(false);
 
-  // // Check if no sensor IDs are reused among different types
-  // if (!isSensorIdNamingValid()) {
-  //   result = Result::kFailure;
-  // }
+  // Locate and set up devices on the bus
+  auto dallas = dallases_.begin();
+  for (int i = 0; dallas != dallases_.end(); dallas++, i++) {
+    if (!dallas_.getAddress(dallas->second.address, i)) {
+      Serial.printf("Unable to find Dallas sensor for device %i named %s\n", i,
+                    dallas->second.name.c_str());
+      result = Result::kFailure;
+    } else {
+      Serial.printf("Found Dallas sensor (%lX) for device %i named %s\n",
+                    dallasAddressToInt(dallas->second.address), i,
+                    dallas->second.name.c_str());
+      dallas_.setResolution(dallas->second.address,
+                            uint8_t(dallas->second.resolution), false);
+      Serial.printf("Set resolution to %i bits\n",
+                    int(dallas->second.resolution));
+    }
+  }
 
   return result;
 }
@@ -78,7 +81,7 @@ float Io::read(Sensor sensor_id) {
 
   // If no sensor has been found, check the temperature sensors
   if (value == NAN) {
-    value = readTemperature(sensor_id);
+    value = readDallasTemperature(sensor_id);
   }
 
   // If no sensor has been found, check the light sensors
@@ -133,28 +136,123 @@ void Io::disableAllAnalog() {
   }
 }
 
-float Io::readTemperature(Sensor sensor_id) {
+float Io::readDallasTemperature(Sensor sensor_id) {
   float temperature_c = NAN;
 
   auto it = dallases_.find(sensor_id);
 
   // If the sensor was found in the registered list
   if (it != dallases_.end()) {
-    temperature_c = dallas_.getTempC(it->second.address);
+    Result result = readDallasTemperature(it->second, false, temperature_c);
 
-    // If the value is invalid, print its ID and address
-    if (temperature_c == DEVICE_DISCONNECTED_C) {
-      Serial.printf("Dallas sensor (%d) not connected: ",
-                    static_cast<uint>(sensor_id));
-      for (uint i = 0; i < sizeof(DeviceAddress); i++) {
-        Serial.print(it->second.address[i]);
-      }
-      Serial.println();
-      temperature_c = NAN;
+    switch (result) {
+      case Result::kDeviceDisconnected:
+        Serial.printf("Dallas sensor (%lx) with sensor ID %d not connected: ",
+                      dallasAddressToInt(it->second.address),
+                      static_cast<uint>(sensor_id));
+        break;
+      case Result::kNotReady:
+        Serial.printf(
+            "Dallas sensor (%lx) with sensor ID %d not ready (async mode): ",
+            dallasAddressToInt(it->second.address),
+            static_cast<uint>(sensor_id));
+        break;
+      default:
+        break;
     }
   }
 
   return temperature_c;
+}
+
+Measurement Io::getDallasTemperatureSample() {
+  return temperature_samples_[temperature_sample_index_];
+}
+
+void Io::setDallasTemperatureSample(const float temperature_c,
+                                    Sensor sensorId) {
+  if (temperature_sample_index_ < temperature_samples_.size()) {
+    temperature_samples_[temperature_sample_index_] = {temperature_c, millis(),
+                                                       sensorId};
+    temperature_sample_index_++;
+
+    if (temperature_sample_index_ >= temperature_samples_.size()) {
+      temperature_sample_index_ = 0;
+    }
+  } else {
+    Serial.printf(
+        "Error updating acidity sensor. temperature_sample_index_ (%d) greater "
+        "than temperature_samples_ size (%d)\n",
+        temperature_sample_index_, temperature_samples_.size());
+  }
+}
+
+Result Io::requestDallasTemperatureUpdate(const DallasSensor& sensor,
+                                          int& millisToWait) {
+  Result result = Result::kSuccess;
+
+  if (dallas_.requestTemperaturesByAddress(sensor.address) == false) {
+    result = Result::kDeviceDisconnected;
+  }
+
+  millisToWait = dallas_.millisToWaitForConversion(uint8_t(sensor.resolution));
+
+  return result;
+}
+
+Result Io::readDallasTemperature(const DallasSensor& sensor, bool asyncMode,
+                                 float& temperature_c) {
+  Result result = Result::kSuccess;
+
+  if (asyncMode) {
+    dallas_.setWaitForConversion(false);
+    if (dallas_.isConversionComplete() == false) {
+      result = Result::kNotReady;
+    }
+  } else {
+    dallas_.setWaitForConversion(true);
+  }
+
+  if (result == Result::kSuccess) {
+    float temp_c = dallas_.getTempC(sensor.address);
+    if (temp_c != DEVICE_DISCONNECTED_C) {
+      temperature_c = temp_c;
+    } else {
+      temperature_c = NAN;
+      result = Result::kDeviceDisconnected;
+    }
+  }
+
+  return result;
+}
+// {
+//   dallas_.requestTemperaturesByAddress(dallas->second.address);
+//   Serial.println(dallas_.getTempC(dallas->second.address));
+// }
+
+// dallas_.setResolution(insideThermometer, 12, false);
+
+// long startTime = millis();
+// dallas_.requestTemperaturesByAddress(insideThermometer);
+
+// float tempC = dallas_.getTempC(insideThermometer);
+// Serial.print("Temp C: ");
+// Serial.println(tempC);
+// Serial.print("Resolution bits: ");
+// Serial.println(dallas_.getResolution(insideThermometer));
+// // dallas_.setResolution(insideThermometer, 12, true);
+// Serial.println(millis() - startTime);
+
+long Io::dallasAddressToInt(const uint8_t* address) {
+  const int bytes = 8;
+  const int bits_per_byte = 8;
+  long result = 0;
+
+  for (int i = 0; i < bytes; i++) {
+    result += long(address[(bytes - 1) - i]) << bits_per_byte * i;
+  }
+
+  return result;
 }
 
 float Io::readBh1750Light(Sensor sensor_id) {
@@ -281,39 +379,5 @@ float Io::getMedianAcidityMeasurement() {
 }
 
 bool Io::isAcidityMeasurementFull() { return acidity_samples_.back() == NAN; }
-
-bool Io::isSensorIdNamingValid() {
-  bool valid = true;
-
-  // Compare adcs with dallases and bh1750s
-  for (auto& i : adcs_) {
-    for (auto& j : dallases_) {
-      if (i.first == j.first) {
-        valid = false;
-        Serial.printf("Same ID (%d) used by adcs and dallases\n",
-                      static_cast<uint>(i.first));
-      }
-    }
-    for (auto& j : bh1750s_) {
-      if (i.first == j.first) {
-        valid = false;
-        Serial.printf("Same ID (%d) used by adcs and bh1750s\n",
-                      static_cast<uint>(i.first));
-      }
-    }
-  }
-
-  // Compare dallases_ with bh1750s
-  for (auto& i : dallases_) {
-    for (auto& j : bh1750s_) {
-      if (i.first == j.first) {
-        valid = false;
-        Serial.printf("Same ID (%d) used by dallases and bh1750s\n",
-                      static_cast<uint>(i.first));
-      }
-    }
-  }
-  return valid;
-}
 
 }  // namespace bernd_box

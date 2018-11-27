@@ -43,10 +43,19 @@ struct AdcSensor {
 };
 
 /// Sensor type of Dallas temperature sensors
+enum class DallasResolution { b9 = 9, b10 = 10, b11 = 11, b12 = 12 };
+
 struct DallasSensor {
   DeviceAddress address;
+  DallasResolution resolution;
   std::string name;
   std::string unit;
+};
+
+struct Measurement {
+  float measurement;
+  unsigned long timestamp;
+  Sensor sensorId;
 };
 
 /// Sensor type of BH1750 light sensors

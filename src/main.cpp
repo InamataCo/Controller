@@ -32,8 +32,15 @@ void checkConnectivity();
 int8_t readAnalogSensorsId;
 void readAnalogSensors();
 
+int8_t readSelectAnalogSensorsId;
+void readSelectAnalogSensors();
+
 int8_t updateAciditySensorId;
 void updateAciditySensor();
+
+// Thread* that requests and updates the dallas temperature samples in IO
+int8_t updateDallasTemperatureSampleId;
+void updateDallasTemperatureSample();
 
 int8_t readAirSensorsId;
 void readAirSensors();
@@ -82,13 +89,31 @@ void readAnalogSensors() {
   Serial.printf("%-10s|%-4i|%-15f|%s\n", sensor->second.name.c_str(),
                 sensor->second.pin_id, value, sensor->second.unit.c_str());
   mqtt.send(sensor->second.name.c_str(), value);
-  // for (auto& it : io.adcs_) {
-  //   float value = io.readAnalog(it.first);
 
-  //   Serial.printf("%-10s|%-4i|%-15f|%s\n", it.second.name.c_str(),
-  //                 it.second.pin_id, value, it.second.unit.c_str());
-  //   mqtt.send(it.second.name.c_str(), value);
-  // }
+  // Measure all
+  for (auto& it : io.adcs_) {
+    float value = io.readAnalog(it.first);
+
+    Serial.printf("%-10s|%-4i|%-15f|%s\n", it.second.name.c_str(),
+                  it.second.pin_id, value, it.second.unit.c_str());
+    mqtt.send(it.second.name.c_str(), value);
+  }
+
+  io.setStatusLed(false);
+}
+
+// Read and then print selected analog sensors
+void readSelectAnalogSensors() {
+  io.setStatusLed(true);
+
+  // Read all sensors. Then print and send them over MQTT
+  Serial.printf("\n%-10s|%-4s|%-15s|%s\n", "Sensor", "Pin", "Value", "Unit");
+  Serial.printf("----------|----|---------------|----\n");
+  const auto& sensor = io.adcs_.find(bernd_box::Sensor::kTotalDissolvedSolids);
+  float value = io.readAnalog(sensor->first);
+  Serial.printf("%-10s|%-4i|%-15f|%s\n", sensor->second.name.c_str(),
+                sensor->second.pin_id, value, sensor->second.unit.c_str());
+  mqtt.send(sensor->second.name.c_str(), value);
 
   io.setStatusLed(false);
 }
@@ -113,6 +138,46 @@ void updateAciditySensor() {
     mqtt.send(sensor.name, measurement);
   }
 
+  io.setStatusLed(false);
+}
+
+void updateDallasTemperatureSample() {
+  static bool is_temperature_request_sent = false;
+
+  io.setStatusLed(true);
+
+  int next_activation_ms = 0;
+  bernd_box::Result result = bernd_box::Result::kSuccess;
+
+  for (const auto& dallas : io.dallases_) {
+    if (is_temperature_request_sent == false) {
+      int wait_ms = 0;
+      result = io.requestDallasTemperatureUpdate(dallas.second, wait_ms);
+      if (result == bernd_box::Result::kSuccess) {
+        if (wait_ms > next_activation_ms) {
+          next_activation_ms = wait_ms;
+        }
+      }
+    } else {
+      float temperature_c = NAN;
+
+      result = io.readDallasTemperature(dallas.second, true, temperature_c);
+      if (result == bernd_box::Result::kSuccess) {
+        io.setDallasTemperatureSample(temperature_c, dallas.first);
+        next_activation_ms = 1000;
+      }
+    }
+
+    if (result != bernd_box::Result::kSuccess) {
+      // TODO
+      mqtt.sendError("updateDallasTemperatureSample Task", "hi");
+    }
+
+    updateDallasTemperatureSampleId =
+        timer.after(next_activation_ms, updateDallasTemperatureSample);
+  }
+
+  // Set next activation time
   io.setStatusLed(false);
 }
 
@@ -160,21 +225,7 @@ void togglePumpState() {
 void setup() {
   Serial.begin(115200);
 
-  // Try to connect to Wifi within wifi_connect_timeout, else restart
-  io.setStatusLed(true);
-  if (wifi.connect(bernd_box::wifi_connect_timeout) == false) {
-    Serial.printf("WiFi: Could not connect to %s. Restarting\n",
-                  bernd_box::ssid);
-    ESP.restart();
-  }
-  wifi.printState();
-
-  // Try to connect to the MQTT broker 3 times, else restart
-  io.setStatusLed(false);
-  if (mqtt.connect(bernd_box::connection_attempts) == false) {
-    Serial.println("MQTT: Could not connect to broker. Restarting\n");
-    ESP.restart();
-  }
+  checkConnectivity();
 
   // Try to configure the IO devices, else restart
   if (io.init() != bernd_box::Result::kSuccess) {
@@ -185,11 +236,12 @@ void setup() {
   io.disableAllAnalog();
 
   pinMode(pump_pin, OUTPUT);
-  digitalWrite(pump_pin, HIGH);
+  digitalWrite(pump_pin, LOW);
 
   checkConnectivityId = timer.every(100, checkConnectivity);
-  readAnalogSensorsId = timer.every(1000, readAnalogSensors);
-  togglePumpStateId = timer.every(1000 * 30, togglePumpState);
+  // readAnalogSensorsId = timer.every(1000, readAnalogSensors);
+  // readSelectAnalogSensorsId = timer.every(1000, readSelectAnalogSensors);
+  // togglePumpStateId = timer.every(1000 * 30, togglePumpState);
   // readAirSensorsId = timer.every(10000, readAirSensors);
   // readLightSensorsId = timer.every(10000, readLightSensors);
   // updateAciditySensorId = timer.every(30, updateAciditySensor);
