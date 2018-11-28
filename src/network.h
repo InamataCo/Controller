@@ -8,21 +8,20 @@
  * \copyright Apache License 2.0
  */
 
-#ifndef BERND_BOX_WIFI_H
-#define BERND_BOX_WIFI_H
+#ifndef BERND_BOX_NETWORK_H
+#define BERND_BOX_NETWORK_H
 
 #include <WiFi.h>
 #include <chrono>
 
 namespace bernd_box {
-
-class Wifi {
+class Network {
  public:
   /**
    * WiFi helper class that deals with connection time-outs and checking its
    * state
    */
-  Wifi(const char* ssid, const char* password)
+  Network(const char* ssid, const char* password)
       : ssid_(ssid),
         password_(password),
         connect_wait_duration_(std::chrono::milliseconds(500)) {}

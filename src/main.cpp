@@ -10,8 +10,8 @@
 #include "io.h"
 
 #include "configuration.h"
-#include "connectivity.h"
 #include "mqtt.h"
+#include "network.h"
 
 const uint pump_pin = 13;
 
@@ -22,7 +22,7 @@ Timer timer;
 
 bernd_box::Io io;
 bernd_box::Mqtt mqtt(wifiClient, bernd_box::client_id, bernd_box::mqtt_server);
-bernd_box::Wifi wifi(bernd_box::ssid, bernd_box::password);
+bernd_box::Network network(bernd_box::ssid, bernd_box::password);
 
 //----------------------------------------------------------------------------
 // List of available tasks
@@ -56,9 +56,9 @@ void togglePumpState();
 
 // If not connected to WiFi and MQTT, attempt to reconnect. Restart on fail
 void checkConnectivity() {
-  if (!wifi.isConnected()) {
+  if (!network.isConnected()) {
     Serial.println("WiFi: Disconnected. Attempting to reconnect");
-    if (wifi.connect(bernd_box::wifi_connect_timeout) == false) {
+    if (network.connect(bernd_box::wifi_connect_timeout) == false) {
       Serial.printf("WiFi: Could not connect to %s. Restarting\n",
                     bernd_box::ssid);
       ESP.restart();
@@ -245,6 +245,8 @@ void setup() {
   // readAirSensorsId = timer.every(10000, readAirSensors);
   // readLightSensorsId = timer.every(10000, readLightSensors);
   // updateAciditySensorId = timer.every(30, updateAciditySensor);
+  updateDallasTemperatureSampleId =
+      timer.every(1000, updateDallasTemperatureSample);
 }
 
 void loop() { timer.update(); }

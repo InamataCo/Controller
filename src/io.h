@@ -1,5 +1,5 @@
 /**
- * Read the analog inputs from the various sensors
+ * Read the inputs from the various sensors
  *
  * \author Moritz Ulmer <moritz.ulmer@posteo.de>
  * \date 2018
