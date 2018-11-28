@@ -13,8 +13,6 @@
 #include "mqtt.h"
 #include "network.h"
 
-const uint pump_pin = 13;
-
 //----------------------------------------------------------------------------
 // Global instances
 WiFiClient wifiClient;
@@ -26,6 +24,7 @@ bernd_box::Network network(bernd_box::ssid, bernd_box::password);
 
 //----------------------------------------------------------------------------
 // List of available tasks
+
 int8_t checkConnectivityId;
 void checkConnectivity();
 
@@ -50,6 +49,38 @@ void readLightSensors();
 
 int8_t togglePumpStateId;
 void togglePumpState();
+
+int8_t measurementReportId;
+void measurementReport();
+
+//----------------------------------------------------------------------------
+// Setup and loop functions
+
+void setup() {
+  Serial.begin(115200);
+
+  checkConnectivity();
+
+  // Try to configure the IO devices, else restart
+  if (io.init() != bernd_box::Result::kSuccess) {
+    Serial.println("IO: Initialization failed. Restarting\n");
+    ESP.restart();
+  }
+
+  io.disableAllAnalog();
+
+  checkConnectivityId = timer.every(100, checkConnectivity);
+  // readAnalogSensorsId = timer.every(1000, readAnalogSensors);
+  // readSelectAnalogSensorsId = timer.every(1000, readSelectAnalogSensors);
+  // togglePumpStateId = timer.every(1000 * 30, togglePumpState);
+  // readAirSensorsId = timer.every(10000, readAirSensors);
+  // readLightSensorsId = timer.every(10000, readLightSensors);
+  // updateAciditySensorId = timer.every(30, updateAciditySensor);
+  updateDallasTemperatureSampleId =
+      timer.every(1000, updateDallasTemperatureSample);
+}
+
+void loop() { timer.update(); }
 
 //----------------------------------------------------------------------------
 // Implementations of available tasks
@@ -211,6 +242,7 @@ void readLightSensors() {
 }
 
 bool isPumpOn = false;
+const uint pump_pin = 13;
 
 void togglePumpState() {
   if (isPumpOn) {
@@ -222,31 +254,4 @@ void togglePumpState() {
   }
 }
 
-void setup() {
-  Serial.begin(115200);
-
-  checkConnectivity();
-
-  // Try to configure the IO devices, else restart
-  if (io.init() != bernd_box::Result::kSuccess) {
-    Serial.println("IO: Initialization failed. Restarting\n");
-    ESP.restart();
-  }
-
-  io.disableAllAnalog();
-
-  pinMode(pump_pin, OUTPUT);
-  digitalWrite(pump_pin, LOW);
-
-  checkConnectivityId = timer.every(100, checkConnectivity);
-  // readAnalogSensorsId = timer.every(1000, readAnalogSensors);
-  // readSelectAnalogSensorsId = timer.every(1000, readSelectAnalogSensors);
-  // togglePumpStateId = timer.every(1000 * 30, togglePumpState);
-  // readAirSensorsId = timer.every(10000, readAirSensors);
-  // readLightSensorsId = timer.every(10000, readLightSensors);
-  // updateAciditySensorId = timer.every(30, updateAciditySensor);
-  updateDallasTemperatureSampleId =
-      timer.every(1000, updateDallasTemperatureSample);
-}
-
-void loop() { timer.update(); }
+void measurementReport() {}
