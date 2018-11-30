@@ -53,6 +53,12 @@ void togglePumpState();
 int8_t measurementReportId;
 void measurementReport();
 
+namespace measurement_report {
+bool is_state_finished = true;
+bernd_box::Sensor sensor_task = bernd_box::Sensor::kUnknown;
+std::chrono::milliseconds start_time(millis());
+}  // namespace measurement_report
+
 //----------------------------------------------------------------------------
 // Setup and loop functions
 
@@ -241,17 +247,34 @@ void readLightSensors() {
   io.setStatusLed(false);
 }
 
-bool isPumpOn = false;
+bool is_pump_on = false;
 const uint pump_pin = 13;
 
 void togglePumpState() {
-  if (isPumpOn) {
+  if (is_pump_on) {
     digitalWrite(pump_pin, LOW);
-    isPumpOn = false;
+    is_pump_on = false;
   } else {
     digitalWrite(pump_pin, HIGH);
-    isPumpOn = true;
+    is_pump_on = true;
   }
 }
 
-void measurementReport() {}
+namespace measurement_report {
+void measurementReport() {
+  switch (sensor_task) {
+    case bernd_box::Sensor::kUnknown:
+      // Initial state. Select first state to go to
+      start_time = std::chrono::milliseconds(millis());
+      sensor_task = bernd_box::Sensor::kAciditiy;
+      is_state_finished = true;
+      break;
+    default:
+      // End of state machine. Reset sensor_task and thread
+      Serial.printf("Finished measurement report after %llu ms\n",
+                    (std::chrono::milliseconds(millis()) - start_time).count());
+      sensor_task = bernd_box::Sensor::kUnknown;
+      timer.stop(measurementReportId);
+  }
+}
+}  // namespace measurement_report
