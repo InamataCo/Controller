@@ -34,12 +34,20 @@ void readAnalogSensors();
 int8_t readSelectAnalogSensorsId;
 void readSelectAnalogSensors();
 
-int8_t updateAciditySensorId;
-void updateAciditySensor();
+namespace update_acidity_sensor {
+int8_t id;
+void callback();
+bool is_first_run = true;
+}  // namespace update_acidity_sensor
 
 // Thread* that requests and updates the dallas temperature samples in IO
-int8_t updateDallasTemperatureSampleId;
-void updateDallasTemperatureSample();
+namespace update_dallas_temperature_sample {
+int8_t id;
+void callback();
+
+bool is_temperature_request_sent = false;
+bool is_first_execute_after_timer_update = true;
+}  // namespace update_dallas_temperature_sample
 
 int8_t readAirSensorsId;
 void readAirSensors();
@@ -50,13 +58,25 @@ void readLightSensors();
 int8_t togglePumpStateId;
 void togglePumpState();
 
-int8_t measurementReportId;
-void measurementReport();
-
 namespace measurement_report {
+int8_t id;
+void callback();
+
 bool is_state_finished = true;
+bool is_report_finished = true;
 bernd_box::Sensor sensor_task = bernd_box::Sensor::kUnknown;
-std::chrono::milliseconds start_time(millis());
+std::chrono::milliseconds start_time;
+
+std::chrono::milliseconds pump_start_time;
+std::chrono::seconds pump_duration(5);
+
+std::chrono::milliseconds tds_start_time;
+std::chrono::seconds tds_duration(20);
+
+const float acidity_factor_v_to_ph = 3.5;
+float acidity_offset = 0.4231628418;
+
+std::chrono::milliseconds temperature_request_time;
 }  // namespace measurement_report
 
 //----------------------------------------------------------------------------
@@ -82,8 +102,9 @@ void setup() {
   // readAirSensorsId = timer.every(10000, readAirSensors);
   // readLightSensorsId = timer.every(10000, readLightSensors);
   // updateAciditySensorId = timer.every(30, updateAciditySensor);
-  updateDallasTemperatureSampleId =
-      timer.every(1000, updateDallasTemperatureSample);
+  // update_dallas_temperature_sample::id =
+  //     timer.every(1000, update_dallas_temperature_sample::callback);
+  measurement_report::id = timer.every(1000, measurement_report::callback);
 }
 
 void loop() { timer.update(); }
@@ -157,29 +178,36 @@ void readSelectAnalogSensors() {
 
 // Take multiple acidity readings and average them. Task stops after enough
 // measurements have been collected.
-void updateAciditySensor() {
+namespace update_acidity_sensor {
+void callback() {
   io.setStatusLed(true);
+
+  if (is_first_run) {
+    io.enableAnalog(bernd_box::Sensor::kAciditiy);
+    io.clearAcidityMeasurements();
+    is_first_run = false;
+  }
 
   io.takeAcidityMeasurement();
 
   // Once enough measurements have been taken, stop the task and send
   if (io.isAcidityMeasurementFull()) {
-    timer.stop(updateAciditySensorId);
+    io.disableAnalog(bernd_box::Sensor::kAciditiy);
+    is_first_run = true;
 
-    float measurement = io.getMedianAcidityMeasurement();
-    const bernd_box::AdcSensor& sensor =
-        io.adcs_.find(bernd_box::Sensor::kAciditiy)->second;
-
-    Serial.printf("Median acidity value is %f %s\n", measurement,
-                  sensor.unit.c_str());
-    mqtt.send(sensor.name, measurement);
+    timer.stop(id);
   }
 
   io.setStatusLed(false);
 }
+}  // namespace update_acidity_sensor
 
-void updateDallasTemperatureSample() {
-  static bool is_temperature_request_sent = false;
+namespace update_dallas_temperature_sample {
+void callback() {
+  if (is_first_execute_after_timer_update) {
+    is_first_execute_after_timer_update = false;
+    return;
+  }
 
   io.setStatusLed(true);
 
@@ -193,6 +221,7 @@ void updateDallasTemperatureSample() {
       if (result == bernd_box::Result::kSuccess) {
         if (wait_ms > next_activation_ms) {
           next_activation_ms = wait_ms;
+          is_temperature_request_sent = true;
         }
       }
     } else {
@@ -201,22 +230,29 @@ void updateDallasTemperatureSample() {
       result = io.readDallasTemperature(dallas.second, true, temperature_c);
       if (result == bernd_box::Result::kSuccess) {
         io.setDallasTemperatureSample(temperature_c, dallas.first);
+        Serial.printf("Temperature of %s = %.2f %s\n",
+                      dallas.second.name.c_str(), temperature_c,
+                      dallas.second.unit.c_str());
         next_activation_ms = 1000;
+        is_temperature_request_sent = false;
       }
     }
 
     if (result != bernd_box::Result::kSuccess) {
-      // TODO
-      mqtt.sendError("updateDallasTemperatureSample Task", "hi");
+      String error = String("Result: ") + String(int(result)) +
+                     String(", is_temperature_request_sent: ") +
+                     String(is_temperature_request_sent);
+      mqtt.sendError("updateDallasTemperatureSample", error, true);
     }
 
-    updateDallasTemperatureSampleId =
-        timer.after(next_activation_ms, updateDallasTemperatureSample);
+    id = timer.after(next_activation_ms, callback);
+    is_first_execute_after_timer_update = true;
   }
 
   // Set next activation time
   io.setStatusLed(false);
 }
+}  // namespace update_dallas_temperature_sample
 
 // Reads, prints and then sends all air sensor parameters
 void readAirSensors() {
@@ -248,33 +284,161 @@ void readLightSensors() {
 }
 
 bool is_pump_on = false;
-const uint pump_pin = 13;
 
 void togglePumpState() {
   if (is_pump_on) {
-    digitalWrite(pump_pin, LOW);
+    digitalWrite(io.pump_pin_, LOW);
     is_pump_on = false;
   } else {
-    digitalWrite(pump_pin, HIGH);
+    digitalWrite(io.pump_pin_, HIGH);
     is_pump_on = true;
   }
 }
 
 namespace measurement_report {
-void measurementReport() {
+void callback() {
+  Serial.printf("Measurement report. sensor_task: %i\n", int(sensor_task));
+
   switch (sensor_task) {
-    case bernd_box::Sensor::kUnknown:
+    case bernd_box::Sensor::kUnknown: {
       // Initial state. Select first state to go to
-      start_time = std::chrono::milliseconds(millis());
-      sensor_task = bernd_box::Sensor::kAciditiy;
-      is_state_finished = true;
-      break;
-    default:
-      // End of state machine. Reset sensor_task and thread
-      Serial.printf("Finished measurement report after %llu ms\n",
-                    (std::chrono::milliseconds(millis()) - start_time).count());
+      if (is_report_finished) {
+        Serial.println("Starting measurement report");
+        start_time = std::chrono::milliseconds(millis());
+        sensor_task = bernd_box::Sensor::kPump;
+        is_state_finished = true;
+        is_report_finished = false;
+      } else {
+        // TODO: End report
+        timer.stop(id);
+        Serial.printf("Measurement report finished after %llus\n",
+                      std::chrono::duration_cast<std::chrono::milliseconds>(
+                          std::chrono::milliseconds(millis()) - start_time)
+                          .count());
+        // mqtt.send("water_temperature_c", measurement.value);
+      }
+    } break;
+    case bernd_box::Sensor::kPump: {
+      if (is_state_finished) {
+        Serial.println("Starting pumping");
+        is_state_finished = false;
+
+        io.setPumpState(true);
+
+        pump_start_time = std::chrono::milliseconds(millis());
+      }
+
+      if (pump_duration <
+          std::chrono::milliseconds(millis()) - pump_start_time) {
+        Serial.println("Finished pumping");
+
+        io.setPumpState(false);
+
+        is_state_finished = true;
+        sensor_task = bernd_box::Sensor::kTotalDissolvedSolids;
+      }
+    } break;
+    case bernd_box::Sensor::kTotalDissolvedSolids: {
+      const bernd_box::Sensor sensor_id =
+          bernd_box::Sensor::kTotalDissolvedSolids;
+      if (is_state_finished) {
+        Serial.println("Starting total dissolved solids measurement");
+        is_state_finished = false;
+
+        io.enableAnalog(sensor_id);
+        update_dallas_temperature_sample::id =
+            timer.every(1000, update_dallas_temperature_sample::callback);
+      }
+
+      float raw_analog = io.readAnalog(sensor_id);
+      float analog_v =
+          raw_analog * io.analog_reference_v_ / io.analog_raw_range_;
+      float temperature_c = io.getDallasTemperatureSample().value;
+      float temperature_coefficient = 1 + 0.02 * (temperature_c - 25);
+      float compensation_v = analog_v / temperature_coefficient;
+      float tds =
+          (133.42 * std::pow(compensation_v, 3) -
+           255.86 * std::pow(compensation_v, 2) + 857.39 * compensation_v) *
+          0.5;
+      Serial.printf("TDS = %f, Compensation = %f, TempCoef = %f, °C = %f\n",
+                    tds, compensation_v, temperature_coefficient,
+                    temperature_c);
+
+      // Exit condition
+      if (tds_duration < std::chrono::milliseconds(millis()) - tds_start_time) {
+        Serial.println("Finished pumping");
+
+        timer.stop(update_dallas_temperature_sample::id);
+        io.disableAnalog(sensor_id);
+
+        is_state_finished = true;
+        sensor_task = bernd_box::Sensor::kAciditiy;
+      }
+    } break;
+    case bernd_box::Sensor::kAciditiy: {
+      // Execute once at start of task
+      if (is_state_finished) {
+        Serial.println("Starting acidity measurement");
+
+        is_state_finished = false;
+        io.enableAnalog(bernd_box::Sensor::kAciditiy);
+
+        io.clearAcidityMeasurements();
+        update_acidity_sensor::id =
+            timer.every(100, update_acidity_sensor::callback);
+      }
+
+      // Exit condition, once enough samples have been collected
+
+      if (io.isAcidityMeasurementFull()) {
+        Serial.println("Finishing acidity measurement");
+
+        float raw_analog = io.getMedianAcidityMeasurement();
+        float analog_v =
+            raw_analog * io.analog_reference_v_ / io.analog_raw_range_;
+        float acidity_ph = analog_v * acidity_factor_v_to_ph - acidity_offset;
+
+        Serial.printf("Acidity is %f pH\n", acidity_ph);
+        mqtt.send("acidity_ph", acidity_ph);
+
+        is_state_finished = true;
+        sensor_task = bernd_box::Sensor::kUnknown;
+      }
+
+    } break;
+    case bernd_box::Sensor::kWaterTemperature: {
+      // Start the update dallas temperature thread
+      if (is_state_finished) {
+        temperature_request_time = std::chrono::milliseconds(millis());
+
+        update_dallas_temperature_sample::id =
+            timer.every(1000, update_dallas_temperature_sample::callback);
+        is_state_finished = false;
+      }
+
+      // End once an update has been saved
+      const bernd_box::Measurement& measurement =
+          io.getDallasTemperatureSample();
+      if (measurement.timestamp > temperature_request_time) {
+        timer.stop(update_dallas_temperature_sample::id);
+
+        Serial.printf("Temperature is %f °C\n", measurement.value);
+        mqtt.send("water_temperature_c", measurement.value);
+
+        is_state_finished = true;
+        sensor_task = bernd_box::Sensor::kUnknown;
+        // TODO: check the sensor ID
+      }
+
+    } break;
+    default: {
+      mqtt.sendError("Measurement Report",
+                     "Transition to unhandled state" + String(int(sensor_task)),
+                     true);
+
       sensor_task = bernd_box::Sensor::kUnknown;
-      timer.stop(measurementReportId);
+      is_report_finished = true;
+    }
   }
 }
 }  // namespace measurement_report

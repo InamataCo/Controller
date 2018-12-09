@@ -21,15 +21,24 @@
 
 namespace bernd_box {
 
-enum class Result { kSuccess, kFailure, kNotReady, kDeviceDisconnected };
+enum class Result {
+  kSuccess = 0,
+  kFailure = 1,
+  kNotReady = 2,
+  kDeviceDisconnected = 3
+};
 
 class Io {
  public:
-  // Pin to the status on-board LED
+  /// Pin to the status on-board LED
   const uint status_led_pin_ = 2;
 
+  /// Pin to the pump
+  const uint pump_pin_ = 18;
+
   // List of connected Dallas temperature sensors (DS18B20)
-  const uint one_wire_pin_ = 15;
+  const uint one_wire_pin_ = 27;
+  const uint one_wire_enable_pin_ = 14;
   std::map<Sensor, DallasSensor> dallases_ = {
       {{Sensor::kWaterTemperature},
        {{0}, DallasResolution::b12, "water_temperature", "°C"}},
@@ -65,14 +74,15 @@ class Io {
 
   /// List of connected analog peripherials
   const std::map<Sensor, AdcSensor> adcs_ = {
-      {{Sensor::kTurbidity}, {32, "turbidity", 1.0, "NTU", 12}},
-      {{Sensor::kUnknown}, {33, "vn", 1.0, "", -1}},
-      {{Sensor::kAciditiy}, {34, "acidity", 1.0, "pH", 27}},
+      {{Sensor::kTurbidity}, {12, "turbidity", 1.0, "NTU", 13}},
+      {{Sensor::kAciditiy}, {32, "acidity", 1.0, "pH", 33}},
       {{Sensor::kTotalDissolvedSolids},
-       {35, "total_dissolved_solids", 1.0, "mg/l", 14}},
-      {{Sensor::kDissolvedOxygen}, {36, "dissolved_oxygen", 1.0, "SO2", 25}},
-      {{Sensor::kConductivity}, {37, "conductivity", 1.0, "mS/cm", 26}},
+       {25, "total_dissolved_solids", 1.0, "mg/l", 26}},
+      {{Sensor::kDissolvedOxygen}, {36, "dissolved_oxygen", 1.0, "SO2", 39}},
+      {{Sensor::kConductivity}, {34, "conductivity", 1.0, "mS/cm", 35}},
   };
+  const uint analog_raw_range_ = 4096;
+  const float analog_reference_v_ = 3.3;
 
   // Configure acidity related measurement
   static const uint aciditiy_sample_count_ = 30;
@@ -113,10 +123,14 @@ class Io {
   float readAnalog(Sensor sensor_id);
 
   void enableAnalog(Sensor sensor_id);
+  void enableAnalog(const AdcSensor& adc);
+  void enableAllAnalog();
 
   void disableAnalog(Sensor sensor_id);
-
+  void disableAnalog(const AdcSensor& adc);
   void disableAllAnalog();
+
+  void setPumpState(bool state);
 
   /**
    * Gets the temperature in sync mode (~800ms blocking)
@@ -139,6 +153,8 @@ class Io {
    * \param temperature The temperature in °C
    */
   void setDallasTemperatureSample(const float temperature_c, Sensor sensorId);
+
+  void clearDallasTemperatureSamples();
 
   /**
    * Requests the selected Dallas sensor to acquire the current temperature
@@ -244,7 +260,7 @@ class Io {
   uint temperature_sample_index_ = 0;
 
   // Buffer for the acidity samples
-  std::array<float, aciditiy_sample_count_> acidity_samples_{};
+  std::array<float, aciditiy_sample_count_> acidity_samples_;
   uint acidity_sample_index_ = 0;
 };
 

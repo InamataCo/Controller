@@ -150,6 +150,18 @@ class Mqtt {
     }
   }
 
+  void sendError(const String& who, const String& message,
+                 bool additional_serial_log) {
+    String error = who;
+    error += ": ";
+    error += message;
+    client_.publish(error_topic.c_str(), error.c_str());
+
+    if (additional_serial_log == true) {
+      Serial.println(error.c_str());
+    }
+  }
+
  private:
   PubSubClient client_;
   std::string client_id_;

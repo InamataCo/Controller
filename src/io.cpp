@@ -10,8 +10,18 @@ Io::~Io() {}
 
 Result Io::init() {
   Result result = Result::kSuccess;
-  // Set the status LED GPIO to output
+  // Set the status LED and pump GPIO to output
   pinMode(status_led_pin_, OUTPUT);
+  pinMode(pump_pin_, OUTPUT);
+
+  // Enable one wire circuit
+  pinMode(one_wire_enable_pin_, OUTPUT);
+  digitalWrite(one_wire_enable_pin_, HIGH);
+
+  // Init all enable/disable pins for analog sensors to avoid floating
+  for (const auto& it : adcs_) {
+    pinMode(it.second.enable_pin_id, OUTPUT);
+  }
 
   // Start I2C for the relevant sensors
   Wire.begin(i2c_sda_pin_, i2c_scl_pin_);
@@ -114,25 +124,47 @@ void Io::enableAnalog(Sensor sensor_id) {
   auto it = adcs_.find(sensor_id);
   if (it != adcs_.end()) {
     if (it->second.enable_pin_id >= 0) {
-      digitalWrite(it->second.enable_pin_id, HIGH);
+      enableAnalog(it->second);
     }
+  }
+}
+
+void Io::enableAnalog(const AdcSensor& adc) {
+  if (adc.enable_pin_id >= 0) {
+    digitalWrite(adc.enable_pin_id, HIGH);
+  }
+}
+
+void Io::enableAllAnalog() {
+  for (const auto& it : adcs_) {
+    enableAnalog(it.second);
   }
 }
 
 void Io::disableAnalog(Sensor sensor_id) {
   auto it = adcs_.find(sensor_id);
   if (it != adcs_.end()) {
-    if (it->second.enable_pin_id >= 0) {
-      digitalWrite(it->second.enable_pin_id, LOW);
-    }
+    disableAnalog(it->second);
+  }
+}
+
+void Io::disableAnalog(const AdcSensor& adc) {
+  if (adc.enable_pin_id >= 0) {
+    digitalWrite(adc.enable_pin_id, LOW);
   }
 }
 
 void Io::disableAllAnalog() {
   for (const auto& it : adcs_) {
-    if (it.second.enable_pin_id >= 0) {
-      digitalWrite(it.second.enable_pin_id, LOW);
-    }
+    disableAnalog(it.second);
+  }
+}
+
+void Io::setPumpState(bool state) {
+  if (state) {
+    digitalWrite(pump_pin_, HIGH);
+  } else {
+    digitalWrite(pump_pin_, LOW);
   }
 }
 
@@ -171,20 +203,21 @@ Measurement Io::getDallasTemperatureSample() {
 
 void Io::setDallasTemperatureSample(const float temperature_c,
                                     Sensor sensorId) {
-  if (temperature_sample_index_ < temperature_samples_.size()) {
-    temperature_samples_[temperature_sample_index_] = {temperature_c, millis(),
-                                                       sensorId};
-    temperature_sample_index_++;
+  temperature_sample_index_++;
 
-    if (temperature_sample_index_ >= temperature_samples_.size()) {
-      temperature_sample_index_ = 0;
-    }
-  } else {
-    Serial.printf(
-        "Error updating acidity sensor. temperature_sample_index_ (%d) greater "
-        "than temperature_samples_ size (%d)\n",
-        temperature_sample_index_, temperature_samples_.size());
+  if (temperature_sample_index_ >= temperature_samples_.size()) {
+    temperature_sample_index_ = 0;
   }
+
+  temperature_samples_[temperature_sample_index_] = {
+      temperature_c, std::chrono::milliseconds(millis()), sensorId};
+}
+
+void Io::clearDallasTemperatureSamples() {
+  for (auto& sample : temperature_samples_) {
+    sample = {NAN, std::chrono::milliseconds(0), Sensor::kUnknown};
+  }
+  temperature_sample_index_ = 0;
 }
 
 Result Io::requestDallasTemperatureUpdate(const DallasSensor& sensor,
@@ -328,6 +361,7 @@ float Io::readBme280Air(Sensor sensor_id) {
 void Io::takeAcidityMeasurement() {
   if (acidity_sample_index_ < acidity_samples_.size()) {
     acidity_samples_[acidity_sample_index_] = readAnalog(Sensor::kAciditiy);
+
     acidity_sample_index_++;
 
     if (acidity_sample_index_ >= acidity_samples_.size()) {
@@ -342,6 +376,7 @@ void Io::takeAcidityMeasurement() {
 }
 
 void Io::clearAcidityMeasurements() {
+  Serial.println("Clearing acidity measurements");
   for (auto& it : acidity_samples_) {
     it = NAN;
   }
@@ -359,7 +394,7 @@ float Io::getMedianAcidityMeasurement() {
     samples_count = 0;
 
     // Find the first element before a NaN element
-    while (acidity_samples_[samples_count] != NAN &&
+    while (!std::isnan(acidity_samples_[samples_count]) &&
            samples_count < acidity_samples_.size()) {
       samples_count++;
     }
@@ -367,17 +402,24 @@ float Io::getMedianAcidityMeasurement() {
 
   // Copy all valid measurements to a temporary buffer
   std::vector<float> samples(samples_count);
-  std::copy(acidity_samples_.begin(), &(acidity_samples_.at(samples_count)),
-            samples.begin());
+  std::copy_n(acidity_samples_.begin(), samples_count, samples.begin());
 
   // Sorts the lower half of the buffer
   std::nth_element(samples.begin(), samples.begin() + samples.size() / 2,
                    samples.end());
 
+  for (const auto& it : samples) {
+    Serial.printf("%f, ", it);
+  }
+  Serial.printf("\n");
+  Serial.printf("Median: %f\n", samples.at(samples.size() / 2));
+
   // Returns the middle element
   return samples.at(samples.size() / 2);
 }
 
-bool Io::isAcidityMeasurementFull() { return acidity_samples_.back() == NAN; }
+bool Io::isAcidityMeasurementFull() {
+  return !std::isnan(acidity_samples_.back());
+}
 
 }  // namespace bernd_box

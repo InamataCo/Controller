@@ -51,14 +51,7 @@ class Network {
     }
     Serial.println();
 
-    // Check whether connection to WiFi was successful
-    bool connected;
-    if (WiFi.status() == WL_CONNECTED) {
-      connected = true;
-    } else {
-      connected = false;
-    }
-    return connected;
+    return isConnected();
   }
 
   /**

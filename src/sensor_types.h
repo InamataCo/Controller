@@ -6,6 +6,7 @@
 #include <Max44009.h>
 #include <SparkFunBME280.h>
 
+#include <chrono>
 #include <string>
 
 namespace bernd_box {
@@ -24,6 +25,7 @@ enum class Sensor {
   kAirTemperature,
   kAirPressure,
   kAirHumidity,
+  kPump,
   kUnknown
 };
 
@@ -53,8 +55,8 @@ struct DallasSensor {
 };
 
 struct Measurement {
-  float measurement;
-  unsigned long timestamp;
+  float value;
+  std::chrono::milliseconds timestamp;
   Sensor sensorId;
 };
 
