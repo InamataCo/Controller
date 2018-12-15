@@ -61,22 +61,6 @@ void togglePumpState();
 namespace measurement_report {
 int8_t id;
 void callback();
-
-bool is_state_finished = true;
-bool is_report_finished = true;
-bernd_box::Sensor sensor_task = bernd_box::Sensor::kUnknown;
-std::chrono::milliseconds start_time;
-
-std::chrono::milliseconds pump_start_time;
-std::chrono::seconds pump_duration(5);
-
-std::chrono::milliseconds tds_start_time;
-std::chrono::seconds tds_duration(20);
-
-const float acidity_factor_v_to_ph = 3.5;
-float acidity_offset = 0.4231628418;
-
-std::chrono::milliseconds temperature_request_time;
 }  // namespace measurement_report
 
 //----------------------------------------------------------------------------
@@ -296,18 +280,42 @@ void togglePumpState() {
 }
 
 namespace measurement_report {
-void callback() {
-  Serial.printf("Measurement report. sensor_task: %i\n", int(sensor_task));
 
-  switch (sensor_task) {
+bool is_state_finished = true;
+bool is_report_finished = true;
+std::chrono::milliseconds start_time;
+
+std::chrono::milliseconds pump_start_time;
+std::chrono::seconds pump_duration(15);
+
+std::chrono::milliseconds tds_start_time;
+std::chrono::seconds tds_duration(20);
+
+const float acidity_factor_v_to_ph = 3.5;
+float acidity_offset = 0.4231628418;
+
+std::chrono::milliseconds temperature_request_time;
+
+bernd_box::Sensor report_list[] = {
+    bernd_box::Sensor::kUnknown, bernd_box::Sensor::kPump,
+    bernd_box::Sensor::kWaterTemperature,
+    bernd_box::Sensor::kTotalDissolvedSolids, bernd_box::Sensor::kUnknown};
+
+int report_index = 0;
+
+void callback() {
+  Serial.printf("Measurement report. sensor_task: %i\n",
+                int(report_list[report_index]));
+
+  switch (report_list[report_index]) {
     case bernd_box::Sensor::kUnknown: {
       // Initial state. Select first state to go to
       if (is_report_finished) {
         Serial.println("Starting measurement report");
         start_time = std::chrono::milliseconds(millis());
-        sensor_task = bernd_box::Sensor::kPump;
         is_state_finished = true;
         is_report_finished = false;
+        report_index++;
       } else {
         // TODO: End report
         timer.stop(id);
@@ -315,6 +323,7 @@ void callback() {
                       std::chrono::duration_cast<std::chrono::milliseconds>(
                           std::chrono::milliseconds(millis()) - start_time)
                           .count());
+        report_index = 0;
         // mqtt.send("water_temperature_c", measurement.value);
       }
     } break;
@@ -335,7 +344,7 @@ void callback() {
         io.setPumpState(false);
 
         is_state_finished = true;
-        sensor_task = bernd_box::Sensor::kTotalDissolvedSolids;
+        report_index++;
       }
     } break;
     case bernd_box::Sensor::kTotalDissolvedSolids: {
@@ -348,6 +357,8 @@ void callback() {
         io.enableAnalog(sensor_id);
         update_dallas_temperature_sample::id =
             timer.every(1000, update_dallas_temperature_sample::callback);
+
+        tds_start_time = std::chrono::milliseconds(millis());
       }
 
       float raw_analog = io.readAnalog(sensor_id);
@@ -360,9 +371,11 @@ void callback() {
           (133.42 * std::pow(compensation_v, 3) -
            255.86 * std::pow(compensation_v, 2) + 857.39 * compensation_v) *
           0.5;
-      Serial.printf("TDS = %f, Compensation = %f, TempCoef = %f, °C = %f\n",
-                    tds, compensation_v, temperature_coefficient,
-                    temperature_c);
+      Serial.printf(
+          "TDS = %f, Compensation = %f, TempCoef = %f, °C = %f, Analog V = "
+          "%f\n",
+          tds, compensation_v, temperature_coefficient, temperature_c,
+          analog_v);
 
       // Exit condition
       if (tds_duration < std::chrono::milliseconds(millis()) - tds_start_time) {
@@ -372,7 +385,7 @@ void callback() {
         io.disableAnalog(sensor_id);
 
         is_state_finished = true;
-        sensor_task = bernd_box::Sensor::kAciditiy;
+        report_index++;
       }
     } break;
     case bernd_box::Sensor::kAciditiy: {
@@ -385,7 +398,7 @@ void callback() {
 
         io.clearAcidityMeasurements();
         update_acidity_sensor::id =
-            timer.every(100, update_acidity_sensor::callback);
+            timer.every(1000, update_acidity_sensor::callback);
       }
 
       // Exit condition, once enough samples have been collected
@@ -402,7 +415,7 @@ void callback() {
         mqtt.send("acidity_ph", acidity_ph);
 
         is_state_finished = true;
-        sensor_task = bernd_box::Sensor::kUnknown;
+        report_index++;
       }
 
     } break;
@@ -426,17 +439,18 @@ void callback() {
         mqtt.send("water_temperature_c", measurement.value);
 
         is_state_finished = true;
-        sensor_task = bernd_box::Sensor::kUnknown;
+        report_index++;
         // TODO: check the sensor ID
       }
 
     } break;
     default: {
       mqtt.sendError("Measurement Report",
-                     "Transition to unhandled state" + String(int(sensor_task)),
+                     "Transition to unhandled state" +
+                         String(int(report_list[report_index])),
                      true);
 
-      sensor_task = bernd_box::Sensor::kUnknown;
+      report_index++;
       is_report_finished = true;
     }
   }
