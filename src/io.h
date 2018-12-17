@@ -73,7 +73,7 @@ class Io {
 
   /// List of connected analog peripherials
   const std::map<Sensor, AdcSensor> adcs_ = {
-      {{Sensor::kTurbidity}, {35, "turbidity", 1.0, "NTU", 13}},
+      {{Sensor::kTurbidity}, {35, "turbidity", 1.0, "NTU", -1}},
       {{Sensor::kAciditiy}, {32, "acidity", 1.0, "pH", 33}},
       {{Sensor::kTotalDissolvedSolids},
        {39, "total_dissolved_solids", 1.0, "mg/l", 26}},

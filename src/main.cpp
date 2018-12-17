@@ -284,7 +284,7 @@ bool is_report_finished = true;
 std::chrono::milliseconds start_time;
 
 std::chrono::milliseconds pump_start_time;
-std::chrono::seconds pump_duration(15);
+std::chrono::seconds pump_duration(20);
 
 std::chrono::milliseconds tds_start_time;
 std::chrono::seconds tds_duration(20);
@@ -293,6 +293,9 @@ const float acidity_factor_v_to_ph = 3.5;
 float acidity_offset = 0.4231628418;
 
 std::chrono::milliseconds temperature_request_time;
+
+std::chrono::milliseconds turbidity_start_time;
+std::chrono::seconds turbidity_duration(10);
 
 bernd_box::Sensor report_list[] = {
     bernd_box::Sensor::kUnknown, bernd_box::Sensor::kPump,
@@ -431,6 +434,29 @@ void callback() {
 
         Serial.printf("Temperature is %f °C\n", measurement.value);
         mqtt.send("water_temperature_c", measurement.value);
+
+        is_state_finished = true;
+        report_index++;
+        // TODO: check the sensor ID
+      }
+
+    } break;
+    case bernd_box::Sensor::kTurbidity: {
+      if (is_state_finished) {
+        turbidity_start_time = std::chrono::milliseconds(millis());
+
+        is_state_finished = false;
+      }
+
+      float turbidity_v = io.readAnalog(bernd_box::Sensor::kTurbidity) *
+                          io.analog_reference_v_ / io.analog_raw_range_;
+      Serial.printf("Turbidity is %fV\n", turbidity_v);
+
+      // End once an update has been saved
+      if (turbidity_duration <
+          std::chrono::milliseconds(millis()) - turbidity_start_time) {
+        Serial.printf("Turbidity is %fV\n", turbidity_v);
+        mqtt.send(io.adcs_.at(bernd_box::Sensor::kTurbidity).name, turbidity_v);
 
         is_state_finished = true;
         report_index++;
