@@ -77,8 +77,6 @@ void setup() {
     ESP.restart();
   }
 
-  io.disableAllAnalog();
-
   checkConnectivityId = timer.every(100, checkConnectivity);
   // readAnalogSensorsId = timer.every(1000, readAnalogSensors);
   // readSelectAnalogSensorsId = timer.every(1000, readSelectAnalogSensors);
@@ -298,8 +296,7 @@ std::chrono::milliseconds temperature_request_time;
 
 bernd_box::Sensor report_list[] = {
     bernd_box::Sensor::kUnknown, bernd_box::Sensor::kPump,
-    bernd_box::Sensor::kWaterTemperature,
-    bernd_box::Sensor::kTotalDissolvedSolids, bernd_box::Sensor::kUnknown};
+    bernd_box::Sensor::kAciditiy, bernd_box::Sensor::kUnknown};
 
 int report_index = 0;
 
@@ -324,7 +321,6 @@ void callback() {
                           std::chrono::milliseconds(millis()) - start_time)
                           .count());
         report_index = 0;
-        // mqtt.send("water_temperature_c", measurement.value);
       }
     } break;
     case bernd_box::Sensor::kPump: {
@@ -348,20 +344,19 @@ void callback() {
       }
     } break;
     case bernd_box::Sensor::kTotalDissolvedSolids: {
-      const bernd_box::Sensor sensor_id =
-          bernd_box::Sensor::kTotalDissolvedSolids;
+      const bernd_box::Sensor tds_id = bernd_box::Sensor::kTotalDissolvedSolids;
       if (is_state_finished) {
         Serial.println("Starting total dissolved solids measurement");
         is_state_finished = false;
 
-        io.enableAnalog(sensor_id);
+        io.enableAnalog(tds_id);
         update_dallas_temperature_sample::id =
             timer.every(1000, update_dallas_temperature_sample::callback);
 
         tds_start_time = std::chrono::milliseconds(millis());
       }
 
-      float raw_analog = io.readAnalog(sensor_id);
+      float raw_analog = io.readAnalog(tds_id);
       float analog_v =
           raw_analog * io.analog_reference_v_ / io.analog_raw_range_;
       float temperature_c = io.getDallasTemperatureSample().value;
@@ -372,7 +367,7 @@ void callback() {
            255.86 * std::pow(compensation_v, 2) + 857.39 * compensation_v) *
           0.5;
       Serial.printf(
-          "TDS = %f, Compensation = %f, TempCoef = %f, °C = %f, Analog V = "
+          "TDS = %fmg/L, Compensation = %f, TempCoef = %f, °C = %f, Analog V = "
           "%f\n",
           tds, compensation_v, temperature_coefficient, temperature_c,
           analog_v);
@@ -382,7 +377,7 @@ void callback() {
         Serial.println("Finished pumping");
 
         timer.stop(update_dallas_temperature_sample::id);
-        io.disableAnalog(sensor_id);
+        io.disableAnalog(tds_id);
 
         is_state_finished = true;
         report_index++;
@@ -402,7 +397,6 @@ void callback() {
       }
 
       // Exit condition, once enough samples have been collected
-
       if (io.isAcidityMeasurementFull()) {
         Serial.println("Finishing acidity measurement");
 

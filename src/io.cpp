@@ -14,14 +14,12 @@ Result Io::init() {
   pinMode(status_led_pin_, OUTPUT);
   pinMode(pump_pin_, OUTPUT);
 
-  // Enable one wire circuit
-  pinMode(one_wire_enable_pin_, OUTPUT);
-  digitalWrite(one_wire_enable_pin_, HIGH);
-
   // Init all enable/disable pins for analog sensors to avoid floating
   for (const auto& it : adcs_) {
     pinMode(it.second.enable_pin_id, OUTPUT);
   }
+
+  disableAllAnalog();
 
   // Start I2C for the relevant sensors
   Wire.begin(i2c_sda_pin_, i2c_scl_pin_);
@@ -359,8 +357,13 @@ float Io::readBme280Air(Sensor sensor_id) {
 }
 
 void Io::takeAcidityMeasurement() {
+  float raw_analog = readAnalog(Sensor::kAciditiy);
+  if (raw_analog < 0.001 || std::isnan(raw_analog)) {
+    return;
+  }
+
   if (acidity_sample_index_ < acidity_samples_.size()) {
-    acidity_samples_[acidity_sample_index_] = readAnalog(Sensor::kAciditiy);
+    acidity_samples_[acidity_sample_index_] = raw_analog;
 
     acidity_sample_index_++;
 

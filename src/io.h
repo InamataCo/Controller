@@ -38,7 +38,6 @@ class Io {
 
   // List of connected Dallas temperature sensors (DS18B20)
   const uint one_wire_pin_ = 27;
-  const uint one_wire_enable_pin_ = 14;
   std::map<Sensor, DallasSensor> dallases_ = {
       {{Sensor::kWaterTemperature},
        {{0}, DallasResolution::b12, "water_temperature", "°C"}},
@@ -74,10 +73,10 @@ class Io {
 
   /// List of connected analog peripherials
   const std::map<Sensor, AdcSensor> adcs_ = {
-      {{Sensor::kTurbidity}, {12, "turbidity", 1.0, "NTU", 13}},
+      {{Sensor::kTurbidity}, {35, "turbidity", 1.0, "NTU", 13}},
       {{Sensor::kAciditiy}, {32, "acidity", 1.0, "pH", 33}},
       {{Sensor::kTotalDissolvedSolids},
-       {25, "total_dissolved_solids", 1.0, "mg/l", 26}},
+       {39, "total_dissolved_solids", 1.0, "mg/l", 26}},
       {{Sensor::kDissolvedOxygen}, {36, "dissolved_oxygen", 1.0, "SO2", 39}},
       {{Sensor::kConductivity}, {34, "conductivity", 1.0, "mS/cm", 35}},
   };
