@@ -22,10 +22,11 @@
 namespace bernd_box {
 
 enum class Result {
-  kSuccess = 0,
-  kFailure = 1,
-  kNotReady = 2,
-  kDeviceDisconnected = 3
+  kSuccess = 0,             // Operation completed successfully
+  kFailure = 1,             // Catch-all error state
+  kNotReady = 2,            // Device not ready to be used
+  kDeviceDisconnected = 3,  // Device could not be found
+  kInvalidPin = 4           // Invalid pin configuration
 };
 
 class Io {
@@ -129,7 +130,7 @@ class Io {
   void disableAnalog(const AdcSensor& adc);
   void disableAllAnalog();
 
-  void setPumpState(bool state);
+  Result setPumpState(bool state);
 
   /**
    * Gets the temperature in sync mode (~800ms blocking)

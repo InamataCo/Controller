@@ -4,6 +4,10 @@
  * \copyright Apache License 2.0
  */
 
+#define _TASK_STATUS_REQUEST
+#define _TASK_OO_CALLBACKS
+
+#include <TaskScheduler.h>
 #include <Timer.h>
 
 // io.h has to be included before mqtt.h
@@ -13,21 +17,30 @@
 #include "mqtt.h"
 #include "network.h"
 
+#include "tasks/connectivity.h"
+#include "tasks/dallas_temperature.h"
+#include "tasks/sensors.h"
+
 //----------------------------------------------------------------------------
 // Global instances
 WiFiClient wifiClient;
 Timer timer;
+Scheduler scheduler;
 
 bernd_box::Io io;
 bernd_box::Mqtt mqtt(wifiClient, bernd_box::client_id, bernd_box::mqtt_server);
 bernd_box::Network network(bernd_box::ssid, bernd_box::password);
 
 //----------------------------------------------------------------------------
+// TaskScheduler tasks
+
+bernd_box::tasks::Pump pump(&scheduler, io, mqtt);
+bernd_box::tasks::CheckConnectivity checkConnectivity(
+    &scheduler, network, mqtt, bernd_box::wifi_connect_timeout,
+    bernd_box::mqtt_connection_attempts);
+
+//----------------------------------------------------------------------------
 // List of available tasks
-
-int8_t checkConnectivityId;
-void checkConnectivity();
-
 int8_t readAnalogSensorsId;
 void readAnalogSensors();
 
@@ -55,9 +68,6 @@ void readAirSensors();
 int8_t readLightSensorsId;
 void readLightSensors();
 
-int8_t togglePumpStateId;
-void togglePumpState();
-
 namespace measurement_report {
 int8_t id;
 void callback();
@@ -69,7 +79,9 @@ void callback();
 void setup() {
   Serial.begin(115200);
 
-  checkConnectivity();
+  checkConnectivity.Callback();
+  checkConnectivity.setInterval(std::chrono::milliseconds(100).count());
+  checkConnectivity.enable();
 
   // Try to configure the IO devices, else restart
   if (io.init() != bernd_box::Result::kSuccess) {
@@ -77,10 +89,11 @@ void setup() {
     ESP.restart();
   }
 
-  checkConnectivityId = timer.every(100, checkConnectivity);
+  pump.setDuration(std::chrono::seconds(20));
+  pump.enable();
+
   // readAnalogSensorsId = timer.every(1000, readAnalogSensors);
   // readSelectAnalogSensorsId = timer.every(1000, readSelectAnalogSensors);
-  // togglePumpStateId = timer.every(1000 * 30, togglePumpState);
   // readAirSensorsId = timer.every(10000, readAirSensors);
   // readLightSensorsId = timer.every(10000, readLightSensors);
   // updateAciditySensorId = timer.every(30, updateAciditySensor);
@@ -89,33 +102,14 @@ void setup() {
   measurement_report::id = timer.every(1000, measurement_report::callback);
 }
 
-void loop() { timer.update(); }
+// Update both schedulers
+void loop() {
+  timer.update();
+  scheduler.execute();
+}
 
 //----------------------------------------------------------------------------
 // Implementations of available tasks
-
-// If not connected to WiFi and MQTT, attempt to reconnect. Restart on fail
-void checkConnectivity() {
-  if (!network.isConnected()) {
-    Serial.println("WiFi: Disconnected. Attempting to reconnect");
-    if (network.connect(bernd_box::wifi_connect_timeout) == false) {
-      Serial.printf("WiFi: Could not connect to %s. Restarting\n",
-                    bernd_box::ssid);
-      ESP.restart();
-    }
-  }
-
-  // If not connected to an MQTT broker, attempt to reconnect. Else reboot
-  if (!mqtt.isConnected()) {
-    Serial.println("MQTT: Disconnected. Attempting to reconnect");
-    if (mqtt.connect(bernd_box::connection_attempts) == false) {
-      Serial.println("MQTT: Could not connect to broker. Restarting\n");
-      ESP.restart();
-    }
-  }
-
-  mqtt.receive();
-}
 
 // Read and then print the analog sensors
 void readAnalogSensors() {
@@ -263,18 +257,6 @@ void readLightSensors() {
   }
 
   io.setStatusLed(false);
-}
-
-bool is_pump_on = false;
-
-void togglePumpState() {
-  if (is_pump_on) {
-    digitalWrite(io.pump_pin_, LOW);
-    is_pump_on = false;
-  } else {
-    digitalWrite(io.pump_pin_, HIGH);
-    is_pump_on = true;
-  }
 }
 
 namespace measurement_report {

@@ -25,7 +25,7 @@ const std::chrono::seconds wifi_connect_timeout(20);
 // MQTT
 const char* mqtt_server = "192.168.0.55";
 const char* client_id = "bernd_box_1";
-const uint connection_attempts = 3;  // Maximum attempts before aborting
+const uint mqtt_connection_attempts = 3;  // Maximum attempts before aborting
 
 }  // namespace bernd_box
 

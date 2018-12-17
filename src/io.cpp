@@ -158,12 +158,20 @@ void Io::disableAllAnalog() {
   }
 }
 
-void Io::setPumpState(bool state) {
-  if (state) {
-    digitalWrite(pump_pin_, HIGH);
+Result Io::setPumpState(bool state) {
+  Result result = Result::kSuccess;
+
+  if (pump_pin_ >= 0) {
+    if (state) {
+      digitalWrite(pump_pin_, HIGH);
+    } else {
+      digitalWrite(pump_pin_, LOW);
+    }
   } else {
-    digitalWrite(pump_pin_, LOW);
+    result = Result::kInvalidPin;
   }
+
+  return result;
 }
 
 float Io::readDallasTemperature(Sensor sensor_id) {
@@ -357,24 +365,32 @@ float Io::readBme280Air(Sensor sensor_id) {
 }
 
 void Io::takeAcidityMeasurement() {
-  float raw_analog = readAnalog(Sensor::kAciditiy);
-  if (raw_analog < 0.001 || std::isnan(raw_analog)) {
+  const float almost_zero = 0.001;
+  float acidity_ph = readAnalog(Sensor::kAciditiy);
+
+  // Check that the value is non-zero
+  if (abs(acidity_ph) < almost_zero) {
+    Serial.printf(
+        "Error updating acidity sensor. Measurement (%f) almost zero (%f)\n",
+        acidity_ph, almost_zero);
     return;
   }
 
-  if (acidity_sample_index_ < acidity_samples_.size()) {
-    acidity_samples_[acidity_sample_index_] = raw_analog;
-
-    acidity_sample_index_++;
-
-    if (acidity_sample_index_ >= acidity_samples_.size()) {
-      acidity_sample_index_ = 0;
-    }
-  } else {
+  // Check valid index
+  if (acidity_sample_index_ > acidity_samples_.size()) {
     Serial.printf(
         "Error updating acidity sensor. acidity_sample_index_ (%d) greater "
         "than acidity_samples_ size (%d)\n",
         acidity_sample_index_, acidity_samples_.size());
+    return;
+  }
+
+  // Save acidity value
+  acidity_samples_[acidity_sample_index_] = acidity_ph;
+  acidity_sample_index_++;
+
+  if (acidity_sample_index_ >= acidity_samples_.size()) {
+    acidity_sample_index_ = 0;
   }
 }
 

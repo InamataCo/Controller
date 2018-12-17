@@ -62,6 +62,8 @@ class Network {
     Serial.printf("IP Address: %s\n", WiFi.localIP().toString().c_str());
   }
 
+  String getSsid() { return WiFi.SSID(); }
+
   /**
    * Checks whether the ESP is connected to WiFi
    *

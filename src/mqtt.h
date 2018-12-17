@@ -55,6 +55,15 @@ class Mqtt {
   bool isConnected() { return client_.connected(); }
 
   /**
+   * Gets the IP address and port as a string in the format "192.168.0.1:1883"
+   *
+   * \return String with IP address and port
+   */
+  String getBrokerAddress() {
+    return String(server_ip_address_) + ":" + String(server_port_);
+  }
+
+  /**
    * Non-blocking receive call
    *
    * Handles the incoming messages and keeps the MQTT connection alive
