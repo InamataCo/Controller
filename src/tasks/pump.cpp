@@ -1,4 +1,4 @@
-#include "sensors.h"
+#include "pump.h"
 
 namespace bernd_box {
 
@@ -22,7 +22,7 @@ bool Pump::OnEnable() {
     String error = "Failed to setPumpState(true). Result = " + int(result);
     mqtt_.sendError("tasks::Pump::OnEnable", error, true);
   } else {
-    Serial.printf("Pumping for %is\n", getInterval() / 1000);
+    Serial.printf("Pumping for %lis\n", getInterval() / 1000);
   }
 
   return isEnableOk;

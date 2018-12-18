@@ -19,7 +19,7 @@
 
 #include "tasks/connectivity.h"
 #include "tasks/dallas_temperature.h"
-#include "tasks/sensors.h"
+#include "tasks/pump.h"
 
 //----------------------------------------------------------------------------
 // Global instances
