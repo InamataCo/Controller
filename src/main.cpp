@@ -17,6 +17,7 @@
 #include "mqtt.h"
 #include "network.h"
 
+#include "tasks/analog_sensors.h"
 #include "tasks/connectivity.h"
 #include "tasks/dallas_temperature.h"
 #include "tasks/pump.h"
@@ -39,6 +40,7 @@ bernd_box::tasks::CheckConnectivity checkConnectivity(
     &scheduler, network, mqtt, io, bernd_box::wifi_connect_timeout,
     bernd_box::mqtt_connection_attempts);
 bernd_box::tasks::DallasTemperature dallasTemperatureTask(&scheduler, io, mqtt);
+bernd_box::tasks::AnalogSensors analogSensorsTask(&scheduler, io, mqtt);
 
 //----------------------------------------------------------------------------
 // List of available tasks
@@ -84,7 +86,9 @@ void setup() {
   pumpTask.setDuration(std::chrono::seconds(20));
   pumpTask.enable();
 
-  // readAnalogSensorsId = timer.every(1000, readAnalogSensors);
+  analogSensorsTask.setInterval(std::chrono::milliseconds(1000).count());
+  analogSensorsTask.enable();
+
   // readSelectAnalogSensorsId = timer.every(1000, readSelectAnalogSensors);
   // readAirSensorsId = timer.every(10000, readAirSensors);
   // readLightSensorsId = timer.every(10000, readLightSensors);
@@ -102,31 +106,6 @@ void loop() {
 
 //----------------------------------------------------------------------------
 // Implementations of available tasks
-
-// Read and then print the analog sensors
-void readAnalogSensors() {
-  io.setStatusLed(true);
-
-  // Read all sensors. Then print and send them over MQTT
-  Serial.printf("\n%-10s|%-4s|%-15s|%s\n", "Sensor", "Pin", "Value", "Unit");
-  Serial.printf("----------|----|---------------|----\n");
-  const auto& sensor = io.adcs_.find(bernd_box::Sensor::kTotalDissolvedSolids);
-  float value = io.readAnalog(sensor->first);
-  Serial.printf("%-10s|%-4i|%-15f|%s\n", sensor->second.name.c_str(),
-                sensor->second.pin_id, value, sensor->second.unit.c_str());
-  mqtt.send(sensor->second.name.c_str(), value);
-
-  // Measure all
-  for (auto& it : io.adcs_) {
-    float value = io.readAnalog(it.first);
-
-    Serial.printf("%-10s|%-4i|%-15f|%s\n", it.second.name.c_str(),
-                  it.second.pin_id, value, it.second.unit.c_str());
-    mqtt.send(it.second.name.c_str(), value);
-  }
-
-  io.setStatusLed(false);
-}
 
 // Read and then print selected analog sensors
 void readSelectAnalogSensors() {

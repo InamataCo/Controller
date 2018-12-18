@@ -1,0 +1,30 @@
+#ifndef BERND_BOX_ANALOG_SENSORS_H
+#define BERND_BOX_ANALOG_SENSORS_H
+
+#include "task.h"
+
+#include "io.h"
+#include "mqtt.h"
+
+namespace bernd_box {
+namespace tasks {
+
+/**
+ * Read and then print the analog sensors
+ */
+class AnalogSensors : public Task {
+ public:
+  AnalogSensors(Scheduler* scheduler, Io& io, Mqtt& mqtt);
+  virtual ~AnalogSensors();
+
+ private:
+  bool Callback() final;
+
+  Io& io_;
+  Mqtt& mqtt_;
+};
+
+}  // namespace tasks
+}  // namespace bernd_box
+
+#endif

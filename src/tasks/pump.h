@@ -7,7 +7,6 @@
 #include "mqtt.h"
 
 namespace bernd_box {
-
 namespace tasks {
 
 /**
@@ -32,7 +31,6 @@ class Pump : public Task {
 };
 
 }  // namespace tasks
-
 }  // namespace bernd_box
 
 #endif
