@@ -18,9 +18,11 @@
 #include "network.h"
 
 #include "tasks/acidity_sensor.h"
+#include "tasks/air_sensors.h"
 #include "tasks/analog_sensors.h"
 #include "tasks/connectivity.h"
 #include "tasks/dallas_temperature.h"
+#include "tasks/light_sensors.h"
 #include "tasks/pump.h"
 
 //----------------------------------------------------------------------------
@@ -43,15 +45,11 @@ bernd_box::tasks::CheckConnectivity checkConnectivity(
 bernd_box::tasks::DallasTemperature dallasTemperatureTask(&scheduler, io, mqtt);
 bernd_box::tasks::AnalogSensors analogSensorsTask(&scheduler, io, mqtt);
 bernd_box::tasks::AciditySensor aciditySensorTask(&scheduler, io, mqtt);
+bernd_box::tasks::LightSensors lightSensorsTask(&scheduler, io, mqtt);
+bernd_box::tasks::AirSensors airSensorsTask(&scheduler, io, mqtt);
 
 //----------------------------------------------------------------------------
 // List of available tasks
-int8_t readAirSensorsId;
-void readAirSensors();
-
-int8_t readLightSensorsId;
-void readLightSensors();
-
 namespace measurement_report {
 int8_t id;
 void callback();
@@ -79,10 +77,6 @@ void setup() {
   analogSensorsTask.setInterval(std::chrono::milliseconds(1000).count());
   analogSensorsTask.enable();
 
-  // readAirSensorsId = timer.every(10000, readAirSensors);
-  // readLightSensorsId = timer.every(10000, readLightSensors);
-  // update_dallas_temperature_sample::id =
-  //     timer.every(1000, update_dallas_temperature_sample::callback);
   // measurement_report::id = timer.every(1000, measurement_report::callback);
 }
 
@@ -94,35 +88,6 @@ void loop() {
 
 //----------------------------------------------------------------------------
 // Implementations of available tasks
-// Reads, prints and then sends all air sensor parameters
-void readAirSensors() {
-  io.setStatusLed(true);
-
-  for (const auto& bme : io.bme280s_) {
-    float value = io.readBme280Air(bme.first);
-    Serial.printf("The %s is %f %s\n", bme.second.name.c_str(), value,
-                  bme.second.unit.c_str());
-    mqtt.send(bme.second.name.c_str(), value);
-  }
-
-  io.setStatusLed(false);
-}
-
-// Reads, prints and then sends all light sensors
-void readLightSensors() {
-  io.setStatusLed(true);
-
-  for (const auto& max44009 : io.max44009s_) {
-    float value = io.readMax44009Light(max44009.first);
-    Serial.printf("Ambient brightness (ID: %u) is %f %s\n",
-                  static_cast<int>(max44009.first), value,
-                  max44009.second.unit.c_str());
-    mqtt.send(max44009.second.name.c_str(), value);
-  }
-
-  io.setStatusLed(false);
-}
-
 namespace measurement_report {
 
 bool is_state_finished = true;

@@ -1,0 +1,30 @@
+#ifndef BERND_BOX_TASKS_AIR_SENSORS_H
+#define BERND_BOX_TASKS_AIR_SENSORS_H
+
+#include "task.h"
+
+#include "io.h"
+#include "mqtt.h"
+
+namespace bernd_box {
+namespace tasks {
+
+/**
+ * Reads, prints and then sends all air sensor parameters
+ */
+class AirSensors : public Task {
+ public:
+  AirSensors(Scheduler* scheduler, Io& io, Mqtt& mqtt);
+  virtual ~AirSensors();
+
+ private:
+  bool Callback();
+
+  Io& io_;
+  Mqtt& mqtt_;
+};
+
+}  // namespace tasks
+}  // namespace bernd_box
+
+#endif

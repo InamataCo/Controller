@@ -1,5 +1,5 @@
-#ifndef BERND_BOX_TASKS_SENSORS_H
-#define BERND_BOX_TASKS_SENSORS_H
+#ifndef BERND_BOX_TASKS_PUMP_H
+#define BERND_BOX_TASKS_PUMP_H
 
 #include "task.h"
 
