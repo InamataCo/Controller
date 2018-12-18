@@ -5,6 +5,7 @@ namespace tasks {
 
 DallasTemperature::DallasTemperature(Scheduler* scheduler, Io& io, Mqtt& mqtt)
     : Task(scheduler), io_(io), mqtt_(mqtt) {
+  setIterations(TASK_FOREVER);
   samples_.fill({NAN, std::chrono::seconds::zero(), Sensor::kUnknown});
 }
 
@@ -57,7 +58,8 @@ bool DallasTemperature::Callback() {
         Serial.printf("Temperature of %s = %.2f %s\n",
                       dallas.second.name.c_str(), temperature_c,
                       dallas.second.unit.c_str());
-        next_activation_ms = 1000;
+        next_activation_ms =
+            std::chrono::milliseconds(sleep_between_measurements_).count();
         is_request_sent = false;
       }
     }

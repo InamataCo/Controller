@@ -11,6 +11,9 @@ namespace bernd_box {
 namespace tasks {
 
 class CheckConnectivity : public Task {
+ private:
+  const std::chrono::milliseconds default_period_{100};
+
  public:
   CheckConnectivity(Scheduler* scheduler, Network& network, Mqtt& mqtt, Io& io,
                     const std::chrono::seconds wifi_connect_timeout,

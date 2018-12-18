@@ -13,12 +13,17 @@ namespace tasks {
  * Read and then print the analog sensors
  */
 class AnalogSensors : public Task {
+ private:
+  const std::chrono::seconds default_period_{1};
+
  public:
   AnalogSensors(Scheduler* scheduler, Io& io, Mqtt& mqtt);
   virtual ~AnalogSensors();
 
  private:
+  bool OnEnable() final;
   bool Callback() final;
+  void OnDisable() final;
 
   Io& io_;
   Mqtt& mqtt_;

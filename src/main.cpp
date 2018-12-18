@@ -4,18 +4,18 @@
  * \copyright Apache License 2.0
  */
 
-#define _TASK_STATUS_REQUEST
-#define _TASK_OO_CALLBACKS
+#include "Arduino.h"
+
+#include "configuration.h"
+#include "io.h"
+#include "mqtt.h"
+#include "network.h"
+
+// tasks/task.h before TaskScheduler as it sets the TaskScheduler defines
+#include "tasks/task.h"
 
 #include <TaskScheduler.h>
 #include <Timer.h>
-
-// io.h has to be included before mqtt.h
-#include "io.h"
-
-#include "configuration.h"
-#include "mqtt.h"
-#include "network.h"
 
 #include "tasks/acidity_sensor.h"
 #include "tasks/air_sensors.h"
@@ -62,7 +62,6 @@ void setup() {
   Serial.begin(115200);
 
   checkConnectivity.now();
-  checkConnectivity.setInterval(std::chrono::milliseconds(100).count());
   checkConnectivity.enable();
 
   // Try to configure the IO devices, else restart
@@ -74,7 +73,6 @@ void setup() {
   pumpTask.setDuration(std::chrono::seconds(20));
   pumpTask.enable();
 
-  analogSensorsTask.setInterval(std::chrono::milliseconds(1000).count());
   analogSensorsTask.enable();
 
   // measurement_report::id = timer.every(1000, measurement_report::callback);

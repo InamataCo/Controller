@@ -14,6 +14,10 @@ namespace tasks {
  * measurements have been collected
  */
 class AciditySensor : public Task {
+ private:
+  const std::chrono::milliseconds default_period_{500};
+
+ public:
   /// Number of samples to take (size of buffer)
   static const uint sample_count_ = 30;
 
@@ -23,7 +27,6 @@ class AciditySensor : public Task {
   /// pH too high above reference. Will be substracted from each measurement
   float acidity_offset = 0.4231628418;
 
- public:
   AciditySensor(Scheduler* scheduler, Io& io, Mqtt& mqtt,
                 Sensor used_sensor = Sensor::kAciditiy);
   virtual ~AciditySensor();

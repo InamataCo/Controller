@@ -6,6 +6,8 @@ namespace tasks {
 AciditySensor::AciditySensor(Scheduler* scheduler, Io& io, Mqtt& mqtt,
                              Sensor used_sensor)
     : Task(scheduler), io_(io), mqtt_(mqtt), used_sensor_(used_sensor) {
+  setIterations(TASK_FOREVER);
+  Task::setInterval(std::chrono::milliseconds(default_period_).count());
   samples_.fill(NAN);
 }
 

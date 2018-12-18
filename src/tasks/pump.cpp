@@ -5,12 +5,14 @@ namespace bernd_box {
 namespace tasks {
 
 Pump::Pump(Scheduler* scheduler, Io& io, Mqtt& mqtt)
-    : Task(scheduler), io_(io), mqtt_(mqtt) {}
+    : Task(scheduler), io_(io), mqtt_(mqtt) {
+  setIterations(TASK_FOREVER);
+  setInterval(TASK_HOUR);  // All logic is in OnEnable and OnDisable
+}
 Pump::~Pump() {}
 
 void Pump::setDuration(std::chrono::milliseconds duration) {
-  setInterval(duration.count());
-  setIterations(1);
+  setTimeout(std::chrono::milliseconds(duration).count());
 }
 
 bool Pump::OnEnable() {

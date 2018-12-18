@@ -13,6 +13,9 @@ namespace tasks {
  * Reads, prints and then sends all light sensors
  */
 class LightSensors : public Task {
+ private:
+  const std::chrono::seconds default_period_{1};
+
  public:
   LightSensors(Scheduler* scheduler, Io& io, Mqtt& mqtt);
   virtual ~LightSensors();

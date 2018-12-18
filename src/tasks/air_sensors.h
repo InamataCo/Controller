@@ -13,6 +13,9 @@ namespace tasks {
  * Reads, prints and then sends all air sensor parameters
  */
 class AirSensors : public Task {
+ private:
+  const std::chrono::seconds default_period_{1};
+
  public:
   AirSensors(Scheduler* scheduler, Io& io, Mqtt& mqtt);
   virtual ~AirSensors();

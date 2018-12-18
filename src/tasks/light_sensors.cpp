@@ -4,7 +4,10 @@ namespace bernd_box {
 namespace tasks {
 
 LightSensors::LightSensors(Scheduler* scheduler, Io& io, Mqtt& mqtt)
-    : Task(scheduler), io_(io), mqtt_(mqtt) {}
+    : Task(scheduler), io_(io), mqtt_(mqtt) {
+  setIterations(TASK_FOREVER);
+  Task::setInterval(std::chrono::milliseconds(default_period_).count());
+}
 
 LightSensors::~LightSensors() {}
 

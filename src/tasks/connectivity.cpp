@@ -12,7 +12,10 @@ CheckConnectivity::CheckConnectivity(
       mqtt_(mqtt),
       io_(io),
       wifi_connect_timeout_(wifi_connect_timeout),
-      mqtt_connection_attempts_(mqtt_connection_attempts) {}
+      mqtt_connection_attempts_(mqtt_connection_attempts) {
+  Task::setIterations(TASK_FOREVER);
+  Task::setInterval(std::chrono::milliseconds(default_period_).count());
+}
 
 CheckConnectivity::~CheckConnectivity() {}
 

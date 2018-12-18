@@ -4,9 +4,18 @@ namespace bernd_box {
 namespace tasks {
 
 AnalogSensors::AnalogSensors(Scheduler* scheduler, Io& io, Mqtt& mqtt)
-    : Task(scheduler), io_(io), mqtt_(mqtt) {}
+    : Task(scheduler), io_(io), mqtt_(mqtt) {
+  Task::setIterations(TASK_FOREVER);
+  Task::setInterval(std::chrono::milliseconds(default_period_).count());
+}
 
 AnalogSensors::~AnalogSensors() {}
+
+bool AnalogSensors::OnEnable() {
+  Serial.println("Starting analog sensor task");
+
+  return true;
+}
 
 bool AnalogSensors::Callback() {
   io_.setStatusLed(true);
@@ -25,6 +34,14 @@ bool AnalogSensors::Callback() {
   }
 
   io_.setStatusLed(false);
+
+  return true;
+}
+
+void AnalogSensors::OnDisable() {
+  Task::getStatusRequest();
+
+  Serial.println("Ending analog sensor task");
 }
 
 }  // namespace tasks
