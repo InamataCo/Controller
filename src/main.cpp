@@ -17,6 +17,7 @@
 #include "mqtt.h"
 #include "network.h"
 
+#include "tasks/acidity_sensor.h"
 #include "tasks/analog_sensors.h"
 #include "tasks/connectivity.h"
 #include "tasks/dallas_temperature.h"
@@ -41,21 +42,10 @@ bernd_box::tasks::CheckConnectivity checkConnectivity(
     bernd_box::mqtt_connection_attempts);
 bernd_box::tasks::DallasTemperature dallasTemperatureTask(&scheduler, io, mqtt);
 bernd_box::tasks::AnalogSensors analogSensorsTask(&scheduler, io, mqtt);
+bernd_box::tasks::AciditySensor aciditySensorTask(&scheduler, io, mqtt);
 
 //----------------------------------------------------------------------------
 // List of available tasks
-int8_t readAnalogSensorsId;
-void readAnalogSensors();
-
-int8_t readSelectAnalogSensorsId;
-void readSelectAnalogSensors();
-
-namespace update_acidity_sensor {
-int8_t id;
-void callback();
-bool is_first_run = true;
-}  // namespace update_acidity_sensor
-
 int8_t readAirSensorsId;
 void readAirSensors();
 
@@ -89,13 +79,11 @@ void setup() {
   analogSensorsTask.setInterval(std::chrono::milliseconds(1000).count());
   analogSensorsTask.enable();
 
-  // readSelectAnalogSensorsId = timer.every(1000, readSelectAnalogSensors);
   // readAirSensorsId = timer.every(10000, readAirSensors);
   // readLightSensorsId = timer.every(10000, readLightSensors);
-  // updateAciditySensorId = timer.every(30, updateAciditySensor);
   // update_dallas_temperature_sample::id =
   //     timer.every(1000, update_dallas_temperature_sample::callback);
-  measurement_report::id = timer.every(1000, measurement_report::callback);
+  // measurement_report::id = timer.every(1000, measurement_report::callback);
 }
 
 // Update both schedulers
@@ -106,49 +94,6 @@ void loop() {
 
 //----------------------------------------------------------------------------
 // Implementations of available tasks
-
-// Read and then print selected analog sensors
-void readSelectAnalogSensors() {
-  io.setStatusLed(true);
-
-  // Read all sensors. Then print and send them over MQTT
-  Serial.printf("\n%-10s|%-4s|%-15s|%s\n", "Sensor", "Pin", "Value", "Unit");
-  Serial.printf("----------|----|---------------|----\n");
-  const auto& sensor = io.adcs_.find(bernd_box::Sensor::kTotalDissolvedSolids);
-  float value = io.readAnalog(sensor->first);
-  Serial.printf("%-10s|%-4i|%-15f|%s\n", sensor->second.name.c_str(),
-                sensor->second.pin_id, value, sensor->second.unit.c_str());
-  mqtt.send(sensor->second.name.c_str(), value);
-
-  io.setStatusLed(false);
-}
-
-// Take multiple acidity readings and average them. Task stops after enough
-// measurements have been collected.
-namespace update_acidity_sensor {
-void callback() {
-  io.setStatusLed(true);
-
-  if (is_first_run) {
-    io.enableAnalog(bernd_box::Sensor::kAciditiy);
-    io.clearAcidityMeasurements();
-    is_first_run = false;
-  }
-
-  io.takeAcidityMeasurement();
-
-  // Once enough measurements have been taken, stop the task and send
-  if (io.isAcidityMeasurementFull()) {
-    io.disableAnalog(bernd_box::Sensor::kAciditiy);
-    is_first_run = true;
-
-    timer.stop(id);
-  }
-
-  io.setStatusLed(false);
-}
-}  // namespace update_acidity_sensor
-
 // Reads, prints and then sends all air sensor parameters
 void readAirSensors() {
   io.setStatusLed(true);
@@ -184,14 +129,10 @@ bool is_state_finished = true;
 bool is_report_finished = true;
 std::chrono::milliseconds start_time;
 
-std::chrono::milliseconds pump_start_time;
 std::chrono::seconds pump_duration(20);
 
 std::chrono::milliseconds tds_start_time;
 std::chrono::seconds tds_duration(20);
-
-const float acidity_factor_v_to_ph = 3.5;
-float acidity_offset = 0.4231628418;
 
 std::chrono::milliseconds temperature_request_time;
 
@@ -232,16 +173,12 @@ void callback() {
         Serial.println("Starting pumping");
         is_state_finished = false;
 
-        io.setPumpState(true);
-
-        pump_start_time = std::chrono::milliseconds(millis());
+        pumpTask.setDuration(pump_duration);
+        pumpTask.enable();
       }
 
-      if (pump_duration <
-          std::chrono::milliseconds(millis()) - pump_start_time) {
+      if (!pumpTask.isEnabled()) {
         Serial.println("Finished pumping");
-
-        io.setPumpState(false);
 
         is_state_finished = true;
         report_index++;
@@ -292,21 +229,16 @@ void callback() {
         Serial.println("Starting acidity measurement");
 
         is_state_finished = false;
-        io.enableAnalog(bernd_box::Sensor::kAciditiy);
 
-        io.clearAcidityMeasurements();
-        update_acidity_sensor::id =
-            timer.every(1000, update_acidity_sensor::callback);
+        aciditySensorTask.setInterval(1000);
+        aciditySensorTask.enable();
       }
 
       // Exit condition, once enough samples have been collected
-      if (io.isAcidityMeasurementFull()) {
+      if (aciditySensorTask.isMeasurementFull()) {
         Serial.println("Finishing acidity measurement");
 
-        float raw_analog = io.getMedianAcidityMeasurement();
-        float analog_v =
-            raw_analog * io.analog_reference_v_ / io.analog_raw_range_;
-        float acidity_ph = analog_v * acidity_factor_v_to_ph - acidity_offset;
+        float acidity_ph = aciditySensorTask.getMedianMeasurement();
 
         Serial.printf("Acidity is %f pH\n", acidity_ph);
         mqtt.send("acidity_ph", acidity_ph);

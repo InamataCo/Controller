@@ -4,7 +4,9 @@ namespace bernd_box {
 namespace tasks {
 
 DallasTemperature::DallasTemperature(Scheduler* scheduler, Io& io, Mqtt& mqtt)
-    : Task(scheduler), io_(io), mqtt_(mqtt) {}
+    : Task(scheduler), io_(io), mqtt_(mqtt) {
+  samples_.fill({NAN, std::chrono::seconds::zero(), Sensor::kUnknown});
+}
 
 DallasTemperature::~DallasTemperature() {}
 

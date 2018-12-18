@@ -26,7 +26,8 @@ enum class Result {
   kFailure = 1,             // Catch-all error state
   kNotReady = 2,            // Device not ready to be used
   kDeviceDisconnected = 3,  // Device could not be found
-  kInvalidPin = 4           // Invalid pin configuration
+  kInvalidPin = 4,          // Invalid pin configuration
+  kIdNotFound = 5           // Sensor ID not found in respective category
 };
 
 class Io {
@@ -84,9 +85,6 @@ class Io {
   const uint analog_raw_range_ = 4096;
   const float analog_reference_v_ = 3.3;
 
-  // Configure acidity related measurement
-  static const uint aciditiy_sample_count_ = 30;
-
   Io();
 
   virtual ~Io();
@@ -114,15 +112,23 @@ class Io {
   float read(Sensor sensor_id);
 
   /**
-   * Reads the analog value of the sensor with the given ID
+   * Reads the raw value of the sensor with the given ID
    *
    * \param sensor_id The id of the sensor
    * \return Value in specified unit. NAN on error or not found
    */
   float readAnalog(Sensor sensor_id);
 
-  void enableAnalog(Sensor sensor_id);
-  void enableAnalog(const AdcSensor& adc);
+  /**
+   * Reads the voltage of the sensor with the given ID
+   *
+   * \param sensor_id The id of the sensor
+   * \return Value in specified unit. NAN on error or not found
+   */
+  float readAnalogV(Sensor sensor_id);
+
+  Result enableAnalog(Sensor sensor_id);
+  Result enableAnalog(const AdcSensor& adc);
   void enableAllAnalog();
 
   void disableAnalog(Sensor sensor_id);
@@ -203,26 +209,6 @@ class Io {
 
   float readBme280Air(Sensor sensor_id);
 
-  /**
-   * Takes an acidity measurement and saves it in the ring buffer
-   */
-  void takeAcidityMeasurement();
-
-  /**
-   * Clears all acidity measurements
-   */
-  void clearAcidityMeasurements();
-
-  /**
-   * Gets the median value of the acidity measurements
-   */
-  float getMedianAcidityMeasurement();
-
-  /**
-   * Returns true if the acidity measurement buffer is full
-   */
-  bool isAcidityMeasurementFull();
-
  private:
   /**
    * Checks if the sensor naming in the maps do not overlap
@@ -237,10 +223,6 @@ class Io {
   // Interface to Dallas temperature sensors
   OneWire one_wire_;
   DallasTemperature dallas_;
-
-  // Buffer for the acidity samples
-  std::array<float, aciditiy_sample_count_> acidity_samples_;
-  uint acidity_sample_index_ = 0;
 };
 
 }  // namespace bernd_box

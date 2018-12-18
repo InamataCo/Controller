@@ -2,9 +2,7 @@
 
 namespace bernd_box {
 
-Io::Io() : one_wire_(one_wire_pin_), dallas_(&one_wire_) {
-  acidity_samples_.fill(NAN);
-}
+Io::Io() : one_wire_(one_wire_pin_), dallas_(&one_wire_) {}
 
 Io::~Io() {}
 
@@ -118,19 +116,38 @@ float Io::readAnalog(Sensor sensor_id) {
   return value;
 }
 
-void Io::enableAnalog(Sensor sensor_id) {
-  auto it = adcs_.find(sensor_id);
-  if (it != adcs_.end()) {
-    if (it->second.enable_pin_id >= 0) {
-      enableAnalog(it->second);
-    }
+float Io::readAnalogV(Sensor sensor_id) {
+  float value = readAnalog(sensor_id);
+  if (!std::isnan(value)) {
+    value *= analog_reference_v_ / analog_raw_range_;
   }
+
+  return value;
 }
 
-void Io::enableAnalog(const AdcSensor& adc) {
+Result Io::enableAnalog(Sensor sensor_id) {
+  Result result;
+
+  auto it = adcs_.find(sensor_id);
+  if (it != adcs_.end()) {
+    result = enableAnalog(it->second);
+  } else {
+    result = Result::kIdNotFound;
+  }
+
+  return result;
+}
+
+Result Io::enableAnalog(const AdcSensor& adc) {
+  Result result = Result::kSuccess;
+
   if (adc.enable_pin_id >= 0) {
     digitalWrite(adc.enable_pin_id, HIGH);
+  } else {
+    result = Result::kInvalidPin;
   }
+
+  return result;
 }
 
 void Io::enableAllAnalog() {
@@ -339,83 +356,6 @@ float Io::readBme280Air(Sensor sensor_id) {
   }
 
   return value;
-}
-
-void Io::takeAcidityMeasurement() {
-  const float almost_zero = 0.001;
-  float acidity_ph = readAnalog(Sensor::kAciditiy);
-
-  // Check that the value is non-zero
-  if (abs(acidity_ph) < almost_zero) {
-    Serial.printf(
-        "Error updating acidity sensor. Measurement (%f) almost zero (%f)\n",
-        acidity_ph, almost_zero);
-    return;
-  }
-
-  // Check valid index
-  if (acidity_sample_index_ > acidity_samples_.size()) {
-    Serial.printf(
-        "Error updating acidity sensor. acidity_sample_index_ (%d) greater "
-        "than acidity_samples_ size (%d)\n",
-        acidity_sample_index_, acidity_samples_.size());
-    return;
-  }
-
-  // Save acidity value
-  acidity_samples_[acidity_sample_index_] = acidity_ph;
-  acidity_sample_index_++;
-
-  if (acidity_sample_index_ >= acidity_samples_.size()) {
-    acidity_sample_index_ = 0;
-  }
-}
-
-void Io::clearAcidityMeasurements() {
-  Serial.println("Clearing acidity measurements");
-  for (auto& it : acidity_samples_) {
-    it = NAN;
-  }
-
-  acidity_sample_index_ = 0;
-}
-
-float Io::getMedianAcidityMeasurement() {
-  size_t samples_count;
-
-  // Find how many measurements have been stored
-  if (isAcidityMeasurementFull()) {
-    samples_count = acidity_samples_.size();
-  } else {
-    samples_count = 0;
-
-    // Find the first element before a NaN element
-    while (!std::isnan(acidity_samples_[samples_count]) &&
-           samples_count < acidity_samples_.size()) {
-      samples_count++;
-    }
-  }
-
-  // Copy all valid measurements to a temporary buffer
-  std::vector<float> samples(samples_count);
-  std::copy_n(acidity_samples_.begin(), samples_count, samples.begin());
-
-  // Sorts the lower half of the buffer
-  std::nth_element(samples.begin(), samples.begin() + samples.size() / 2,
-                   samples.end());
-
-  for (const auto& it : samples) {
-    Serial.printf("%f, ", it);
-  }
-  Serial.printf("\n");
-  Serial.printf("Median: %f\n", samples.at(samples.size() / 2));
-
-  // Returns the middle element
-  return samples.at(samples.size() / 2);
-}
-
-bool Io::isAcidityMeasurementFull() {
-  return !std::isnan(acidity_samples_.back());
 }
 
 }  // namespace bernd_box
