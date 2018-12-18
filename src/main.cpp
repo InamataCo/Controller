@@ -34,10 +34,11 @@ bernd_box::Network network(bernd_box::ssid, bernd_box::password);
 //----------------------------------------------------------------------------
 // TaskScheduler tasks
 
-bernd_box::tasks::Pump pump(&scheduler, io, mqtt);
+bernd_box::tasks::Pump pumpTask(&scheduler, io, mqtt);
 bernd_box::tasks::CheckConnectivity checkConnectivity(
-    &scheduler, network, mqtt, bernd_box::wifi_connect_timeout,
+    &scheduler, network, mqtt, io, bernd_box::wifi_connect_timeout,
     bernd_box::mqtt_connection_attempts);
+bernd_box::tasks::DallasTemperature dallasTemperatureTask(&scheduler, io, mqtt);
 
 //----------------------------------------------------------------------------
 // List of available tasks
@@ -52,15 +53,6 @@ int8_t id;
 void callback();
 bool is_first_run = true;
 }  // namespace update_acidity_sensor
-
-// Thread* that requests and updates the dallas temperature samples in IO
-namespace update_dallas_temperature_sample {
-int8_t id;
-void callback();
-
-bool is_temperature_request_sent = false;
-bool is_first_execute_after_timer_update = true;
-}  // namespace update_dallas_temperature_sample
 
 int8_t readAirSensorsId;
 void readAirSensors();
@@ -79,7 +71,7 @@ void callback();
 void setup() {
   Serial.begin(115200);
 
-  checkConnectivity.Callback();
+  checkConnectivity.now();
   checkConnectivity.setInterval(std::chrono::milliseconds(100).count());
   checkConnectivity.enable();
 
@@ -89,8 +81,8 @@ void setup() {
     ESP.restart();
   }
 
-  pump.setDuration(std::chrono::seconds(20));
-  pump.enable();
+  pumpTask.setDuration(std::chrono::seconds(20));
+  pumpTask.enable();
 
   // readAnalogSensorsId = timer.every(1000, readAnalogSensors);
   // readSelectAnalogSensorsId = timer.every(1000, readSelectAnalogSensors);
@@ -177,58 +169,6 @@ void callback() {
   io.setStatusLed(false);
 }
 }  // namespace update_acidity_sensor
-
-namespace update_dallas_temperature_sample {
-void callback() {
-  if (is_first_execute_after_timer_update) {
-    is_first_execute_after_timer_update = false;
-    return;
-  }
-
-  io.setStatusLed(true);
-
-  int next_activation_ms = 0;
-  bernd_box::Result result = bernd_box::Result::kSuccess;
-
-  for (const auto& dallas : io.dallases_) {
-    if (is_temperature_request_sent == false) {
-      int wait_ms = 0;
-      result = io.requestDallasTemperatureUpdate(dallas.second, wait_ms);
-      if (result == bernd_box::Result::kSuccess) {
-        if (wait_ms > next_activation_ms) {
-          next_activation_ms = wait_ms;
-          is_temperature_request_sent = true;
-        }
-      }
-    } else {
-      float temperature_c = NAN;
-
-      result = io.readDallasTemperature(dallas.second, true, temperature_c);
-      if (result == bernd_box::Result::kSuccess) {
-        io.setDallasTemperatureSample(temperature_c, dallas.first);
-        Serial.printf("Temperature of %s = %.2f %s\n",
-                      dallas.second.name.c_str(), temperature_c,
-                      dallas.second.unit.c_str());
-        next_activation_ms = 1000;
-        is_temperature_request_sent = false;
-      }
-    }
-
-    if (result != bernd_box::Result::kSuccess) {
-      String error = String("Result: ") + String(int(result)) +
-                     String(", is_temperature_request_sent: ") +
-                     String(is_temperature_request_sent);
-      mqtt.sendError("updateDallasTemperatureSample", error, true);
-    }
-
-    id = timer.after(next_activation_ms, callback);
-    is_first_execute_after_timer_update = true;
-  }
-
-  // Set next activation time
-  io.setStatusLed(false);
-}
-}  // namespace update_dallas_temperature_sample
 
 // Reads, prints and then sends all air sensor parameters
 void readAirSensors() {
@@ -335,8 +275,7 @@ void callback() {
         is_state_finished = false;
 
         io.enableAnalog(tds_id);
-        update_dallas_temperature_sample::id =
-            timer.every(1000, update_dallas_temperature_sample::callback);
+        dallasTemperatureTask.enable();
 
         tds_start_time = std::chrono::milliseconds(millis());
       }
@@ -344,7 +283,7 @@ void callback() {
       float raw_analog = io.readAnalog(tds_id);
       float analog_v =
           raw_analog * io.analog_reference_v_ / io.analog_raw_range_;
-      float temperature_c = io.getDallasTemperatureSample().value;
+      float temperature_c = dallasTemperatureTask.getLastSample().value;
       float temperature_coefficient = 1 + 0.02 * (temperature_c - 25);
       float compensation_v = analog_v / temperature_coefficient;
       float tds =
@@ -361,7 +300,7 @@ void callback() {
       if (tds_duration < std::chrono::milliseconds(millis()) - tds_start_time) {
         Serial.println("Finished pumping");
 
-        timer.stop(update_dallas_temperature_sample::id);
+        dallasTemperatureTask.disable();
         io.disableAnalog(tds_id);
 
         is_state_finished = true;
@@ -403,16 +342,15 @@ void callback() {
       if (is_state_finished) {
         temperature_request_time = std::chrono::milliseconds(millis());
 
-        update_dallas_temperature_sample::id =
-            timer.every(1000, update_dallas_temperature_sample::callback);
+        dallasTemperatureTask.enable();
         is_state_finished = false;
       }
 
       // End once an update has been saved
       const bernd_box::Measurement& measurement =
-          io.getDallasTemperatureSample();
+          dallasTemperatureTask.getLastSample();
       if (measurement.timestamp > temperature_request_time) {
-        timer.stop(update_dallas_temperature_sample::id);
+        dallasTemperatureTask.disable();
 
         Serial.printf("Temperature is %f °C\n", measurement.value);
         mqtt.send("water_temperature_c", measurement.value);

@@ -4,18 +4,23 @@ namespace bernd_box {
 namespace tasks {
 
 CheckConnectivity::CheckConnectivity(
-    Scheduler* scheduler, Network& network, Mqtt& mqtt,
+    Scheduler* scheduler, Network& network, Mqtt& mqtt, Io& io,
     const std::chrono::seconds wifi_connect_timeout,
     const uint mqtt_connection_attempts)
     : Task(scheduler),
       network_(network),
       mqtt_(mqtt),
+      io_(io),
       wifi_connect_timeout_(wifi_connect_timeout),
       mqtt_connection_attempts_(mqtt_connection_attempts) {}
 
 CheckConnectivity::~CheckConnectivity() {}
 
+void CheckConnectivity::now() { Callback(); }
+
 bool CheckConnectivity::Callback() {
+  io_.setStatusLed(true);
+
   // If not connected to the WiFi, try to reconnect. Else reboot
   if (!network_.isConnected()) {
     Serial.println("WiFi: Disconnected. Attempting to reconnect");
@@ -37,6 +42,8 @@ bool CheckConnectivity::Callback() {
   }
 
   mqtt_.receive();
+
+  io_.setStatusLed(false);
 
   return true;
 }

@@ -86,7 +86,6 @@ class Io {
 
   // Configure acidity related measurement
   static const uint aciditiy_sample_count_ = 30;
-  static const uint temperature_sample_count_ = 5;
 
   Io();
 
@@ -139,22 +138,6 @@ class Io {
    * \return Temperature in Celsius, NAN if sensor is not found
    */
   float readDallasTemperature(Sensor sensor_id);
-
-  /**
-   * Gets last stored temperature from temperature buffer
-   *
-   * \return Temperature in °C
-   */
-  Measurement getDallasTemperatureSample();
-
-  /**
-   * Sets the temperature in the temperature ring buffer
-   *
-   * \param temperature The temperature in °C
-   */
-  void setDallasTemperatureSample(const float temperature_c, Sensor sensorId);
-
-  void clearDallasTemperatureSamples();
 
   /**
    * Requests the selected Dallas sensor to acquire the current temperature
@@ -254,10 +237,6 @@ class Io {
   // Interface to Dallas temperature sensors
   OneWire one_wire_;
   DallasTemperature dallas_;
-
-  // Buffer for the last temperature measurement <°C, millis timestamp>
-  std::array<Measurement, temperature_sample_count_> temperature_samples_{};
-  uint temperature_sample_index_ = 0;
 
   // Buffer for the acidity samples
   std::array<float, aciditiy_sample_count_> acidity_samples_;

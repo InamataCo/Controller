@@ -203,29 +203,6 @@ float Io::readDallasTemperature(Sensor sensor_id) {
   return temperature_c;
 }
 
-Measurement Io::getDallasTemperatureSample() {
-  return temperature_samples_[temperature_sample_index_];
-}
-
-void Io::setDallasTemperatureSample(const float temperature_c,
-                                    Sensor sensorId) {
-  temperature_sample_index_++;
-
-  if (temperature_sample_index_ >= temperature_samples_.size()) {
-    temperature_sample_index_ = 0;
-  }
-
-  temperature_samples_[temperature_sample_index_] = {
-      temperature_c, std::chrono::milliseconds(millis()), sensorId};
-}
-
-void Io::clearDallasTemperatureSamples() {
-  for (auto& sample : temperature_samples_) {
-    sample = {NAN, std::chrono::milliseconds(0), Sensor::kUnknown};
-  }
-  temperature_sample_index_ = 0;
-}
-
 Result Io::requestDallasTemperatureUpdate(const DallasSensor& sensor,
                                           int& millisToWait) {
   Result result = Result::kSuccess;
