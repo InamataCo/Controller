@@ -17,10 +17,10 @@ class AciditySensor : public Task {
  private:
   const std::chrono::milliseconds default_period_{500};
 
- public:
   /// Number of samples to take (size of buffer)
   static const uint sample_count_ = 30;
 
+ public:
   /// Conversion from voltage to pH -> pH = V * factor - offset
   const float acidity_factor_v_to_ph = 3.5;
 
@@ -46,7 +46,7 @@ class AciditySensor : public Task {
 
  private:
   /**
-   * Takes an acidity measurement and saves it in the ring buffer
+   * Takes a dissolved oxygen measurement and saves it in the ring buffer
    */
   void takeMeasurement();
 

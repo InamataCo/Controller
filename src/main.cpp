@@ -22,6 +22,7 @@
 #include "tasks/analog_sensors.h"
 #include "tasks/connectivity.h"
 #include "tasks/dallas_temperature.h"
+#include "tasks/dissolved_oxygen_sensor.h"
 #include "tasks/light_sensors.h"
 #include "tasks/pump.h"
 
@@ -47,6 +48,8 @@ bernd_box::tasks::AnalogSensors analogSensorsTask(&scheduler, io, mqtt);
 bernd_box::tasks::AciditySensor aciditySensorTask(&scheduler, io, mqtt);
 bernd_box::tasks::LightSensors lightSensorsTask(&scheduler, io, mqtt);
 bernd_box::tasks::AirSensors airSensorsTask(&scheduler, io, mqtt);
+bernd_box::tasks::DissolvedOxygenSensor dissolvedOxygenSensorTask(&scheduler,
+                                                                  io, mqtt);
 
 //----------------------------------------------------------------------------
 // List of available tasks
@@ -70,12 +73,9 @@ void setup() {
     ESP.restart();
   }
 
-  pumpTask.setDuration(std::chrono::seconds(20));
-  pumpTask.enable();
+  // analogSensorsTask.enable();
 
-  analogSensorsTask.enable();
-
-  // measurement_report::id = timer.every(1000, measurement_report::callback);
+  measurement_report::id = timer.every(1000, measurement_report::callback);
 }
 
 // Update both schedulers
@@ -102,9 +102,18 @@ std::chrono::milliseconds temperature_request_time;
 std::chrono::milliseconds turbidity_start_time;
 std::chrono::seconds turbidity_duration(10);
 
-bernd_box::Sensor report_list[] = {
-    bernd_box::Sensor::kUnknown, bernd_box::Sensor::kPump,
-    bernd_box::Sensor::kAciditiy, bernd_box::Sensor::kUnknown};
+bernd_box::Sensor report_list[] = {bernd_box::Sensor::kUnknown,
+                                   bernd_box::Sensor::kPump,
+                                   bernd_box::Sensor::kWaterTemperature,
+                                   bernd_box::Sensor::kPump,
+                                   bernd_box::Sensor::kDissolvedOxygen,
+                                   bernd_box::Sensor::kPump,
+                                   bernd_box::Sensor::kTotalDissolvedSolids,
+                                   bernd_box::Sensor::kPump,
+                                   bernd_box::Sensor::kAciditiy,
+                                   bernd_box::Sensor::kPump,
+                                   bernd_box::Sensor::kTurbidity,
+                                   bernd_box::Sensor::kUnknown};
 
 int report_index = 0;
 
@@ -123,7 +132,7 @@ void callback() {
         report_index++;
       } else {
         // TODO: End report
-        timer.stop(id);
+        is_report_finished = true;
         Serial.printf("Measurement report finished after %llus\n",
                       std::chrono::duration_cast<std::chrono::milliseconds>(
                           std::chrono::milliseconds(millis()) - start_time)
@@ -209,7 +218,6 @@ void callback() {
         is_state_finished = true;
         report_index++;
       }
-
     } break;
     case bernd_box::Sensor::kWaterTemperature: {
       // Start the update dallas temperature thread
@@ -257,6 +265,35 @@ void callback() {
         // TODO: check the sensor ID
       }
 
+    } break;
+    case bernd_box::Sensor::kDissolvedOxygen: {
+      if (is_state_finished) {
+        Serial.println("Starting dissolved oxygen measurement");
+
+        is_state_finished = false;
+
+        pumpTask.enable();
+        dissolvedOxygenSensorTask.setInterval(1000);
+        dissolvedOxygenSensorTask.enable();
+      }
+
+      pumpTask.enable();
+
+      // Exit condition, once enough samples have been collected
+      if (dissolvedOxygenSensorTask.isMeasurementFull()) {
+        Serial.println("Finishing dissolved oxygen measurement");
+
+        float dissolved_oxygen_percent =
+            dissolvedOxygenSensorTask.getLastMeasurement();
+
+        Serial.printf("Dissolved oxygen is %fmg/L\n", dissolved_oxygen_percent);
+        mqtt.send("dissolved_oxygen_mg_L", dissolved_oxygen_percent);
+
+        pumpTask.disable();
+
+        is_state_finished = true;
+        report_index++;
+      }
     } break;
     default: {
       mqtt.sendError("Measurement Report",

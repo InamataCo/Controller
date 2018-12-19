@@ -1,24 +1,22 @@
-#include "acidity_sensor.h"
+#include "dissolved_oxygen_sensor.h"
 
 namespace bernd_box {
 namespace tasks {
-
-AciditySensor::AciditySensor(Scheduler* scheduler, Io& io, Mqtt& mqtt,
-                             Sensor used_sensor)
-    : Task(scheduler), io_(io), mqtt_(mqtt), used_sensor_(used_sensor) {
+DissolvedOxygenSensor::DissolvedOxygenSensor(Scheduler* scheduler, Io& io,
+                                             Mqtt& mqtt, Sensor used_sensor)
+    : Task(scheduler),
+      io_(io),
+      mqtt_(mqtt),
+      is_calibration_mode_(false),
+      used_sensor_(used_sensor) {
   setIterations(TASK_FOREVER);
   Task::setInterval(std::chrono::milliseconds(default_period_).count());
   clearMeasurements();
 }
 
-AciditySensor::~AciditySensor() {}
+DissolvedOxygenSensor::~DissolvedOxygenSensor() {}
 
-float AciditySensor::getMedianMeasurement() {
-  for (const auto& it : samples_) {
-    Serial.printf("%f, ", it);
-  }
-  Serial.printf("\n");
-
+float DissolvedOxygenSensor::getMedianMeasurement() {
   // Find how many measurements have been stored. Either the first element
   // before a NaN element, or the complete vector
   size_t sample_count = 0;
@@ -46,9 +44,19 @@ float AciditySensor::getMedianMeasurement() {
   return median;
 }
 
-bool AciditySensor::isMeasurementFull() { return !std::isnan(samples_.back()); }
+float DissolvedOxygenSensor::getLastMeasurement() {
+  return samples_[sample_index_];
+}
 
-void AciditySensor::takeMeasurement() {
+bool DissolvedOxygenSensor::isMeasurementFull() {
+  return !std::isnan(samples_.back());
+}
+
+void DissolvedOxygenSensor::setTemperature(float temperature_c) {
+  temperature_c_ = temperature_c;
+}
+
+void DissolvedOxygenSensor::takeMeasurement() {
   const float almost_zero = 0.001;
   float analog_v = io_.readAnalogV(used_sensor_);
 
@@ -58,13 +66,24 @@ void AciditySensor::takeMeasurement() {
   }
 
   // Check that the value is non-zero
-  if (abs(analog_v) < almost_zero) {
+  if (fabs(analog_v) < almost_zero) {
     Serial.printf("Discarding acidity measurement (%fV) as almost zero (%f)\n",
                   analog_v, almost_zero);
     return;
   }
 
-  float acidity_ph = analog_v * acidity_factor_v_to_ph - acidity_offset;
+  float sample_value;
+  if (is_calibration_mode_) {
+    float v_at_saturated_do_ = analog_v;
+    temperature_c_at_saturated_do = temperature_c_;
+    sample_value = v_at_saturated_do_;
+  } else {
+    float do_percent =
+        analog_v * temperatureCoefficient[temperature_c_at_saturated_do + 0.5] /
+        voltage_v_at_saturated_do_;
+    sample_value = do_percent;
+    Serial.printf("DO = %fmg/L, Spannung = %fV\n", do_percent, analog_v);
+  }
 
   // Reuse current slot if it is unused
   if (!std::isnan(samples_[sample_index_])) {
@@ -75,20 +94,20 @@ void AciditySensor::takeMeasurement() {
     }
   }
 
-  samples_[sample_index_] = acidity_ph;
+  samples_[sample_index_] = sample_value;
 }
 
-void AciditySensor::clearMeasurements() {
+void DissolvedOxygenSensor::clearMeasurements() {
   samples_.fill(NAN);
   sample_index_ = 0;
 }
 
-bool AciditySensor::OnEnable() {
+bool DissolvedOxygenSensor::OnEnable() {
   Result result = io_.enableAnalog(used_sensor_);
   if (result != Result::kSuccess) {
     String error =
         "Error on enabling analog sensor. Result = " + String(int(result));
-    mqtt_.sendError("AciditySensor::OnEnable", error, true);
+    mqtt_.sendError("DissolvedOxygenSensor::OnEnable", error, true);
   }
 
   clearMeasurements();
@@ -96,7 +115,7 @@ bool AciditySensor::OnEnable() {
   return result == Result::kSuccess;
 }
 
-bool AciditySensor::Callback() {
+bool DissolvedOxygenSensor::Callback() {
   io_.setStatusLed(true);
 
   takeMeasurement();
@@ -110,7 +129,7 @@ bool AciditySensor::Callback() {
   return true;
 }
 
-void AciditySensor::OnDisable() { io_.disableAnalog(used_sensor_); }
+void DissolvedOxygenSensor::OnDisable() { io_.disableAnalog(used_sensor_); }
 
 }  // namespace tasks
 }  // namespace bernd_box

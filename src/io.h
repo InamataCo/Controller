@@ -79,8 +79,8 @@ class Io {
       {{Sensor::kAciditiy}, {32, "acidity", 1.0, "pH", 33}},
       {{Sensor::kTotalDissolvedSolids},
        {39, "total_dissolved_solids", 1.0, "mg/l", 26}},
-      {{Sensor::kDissolvedOxygen}, {36, "dissolved_oxygen", 1.0, "SO2", 39}},
-      {{Sensor::kConductivity}, {34, "conductivity", 1.0, "mS/cm", 35}},
+      {{Sensor::kDissolvedOxygen}, {36, "dissolved_oxygen", 1.0, "SO2", 5}},
+      {{Sensor::kConductivity}, {34, "conductivity", 1.0, "mS/cm", 17}},
   };
   const uint analog_raw_range_ = 4096;
   const float analog_reference_v_ = 3.3;
