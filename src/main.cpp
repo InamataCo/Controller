@@ -95,12 +95,15 @@ std::chrono::milliseconds start_time;
 std::chrono::seconds pump_duration(20);
 
 std::chrono::milliseconds tds_start_time;
-std::chrono::seconds tds_duration(20);
+std::chrono::seconds tds_duration(10);
 
 std::chrono::milliseconds temperature_request_time;
 
 std::chrono::milliseconds turbidity_start_time;
 std::chrono::seconds turbidity_duration(10);
+
+std::chrono::milliseconds sleep_start_time;
+std::chrono::minutes sleep_duration(10);
 
 bernd_box::Sensor report_list[] = {bernd_box::Sensor::kUnknown,
                                    bernd_box::Sensor::kPump,
@@ -113,6 +116,7 @@ bernd_box::Sensor report_list[] = {bernd_box::Sensor::kUnknown,
                                    bernd_box::Sensor::kAciditiy,
                                    bernd_box::Sensor::kPump,
                                    bernd_box::Sensor::kTurbidity,
+                                   bernd_box::Sensor::kSleep,
                                    bernd_box::Sensor::kUnknown};
 
 int report_index = 0;
@@ -133,7 +137,7 @@ void callback() {
       } else {
         // TODO: End report
         is_report_finished = true;
-        Serial.printf("Measurement report finished after %llus\n",
+        Serial.printf("Measurement report finished after %llums\n",
                       std::chrono::duration_cast<std::chrono::milliseconds>(
                           std::chrono::milliseconds(millis()) - start_time)
                           .count());
@@ -164,6 +168,8 @@ void callback() {
 
         io.enableAnalog(tds_id);
         dallasTemperatureTask.enable();
+        pumpTask.setDuration(tds_duration);
+        pumpTask.enable();
 
         tds_start_time = std::chrono::milliseconds(millis());
       }
@@ -188,7 +194,10 @@ void callback() {
       if (tds_duration < std::chrono::milliseconds(millis()) - tds_start_time) {
         Serial.println("Finished pumping");
 
+        mqtt.send("total_dissolved_solids_mg_per_L", tds);
+
         dallasTemperatureTask.disable();
+        pumpTask.disable();
         io.disableAnalog(tds_id);
 
         is_state_finished = true;
@@ -247,6 +256,8 @@ void callback() {
       if (is_state_finished) {
         turbidity_start_time = std::chrono::milliseconds(millis());
 
+        pumpTask.setDuration(turbidity_duration);
+        pumpTask.enable();
         is_state_finished = false;
       }
 
@@ -260,11 +271,12 @@ void callback() {
         Serial.printf("Turbidity is %fV\n", turbidity_v);
         mqtt.send(io.adcs_.at(bernd_box::Sensor::kTurbidity).name, turbidity_v);
 
+        pumpTask.disable();
+
         is_state_finished = true;
         report_index++;
         // TODO: check the sensor ID
       }
-
     } break;
     case bernd_box::Sensor::kDissolvedOxygen: {
       if (is_state_finished) {
@@ -277,7 +289,9 @@ void callback() {
         dissolvedOxygenSensorTask.enable();
       }
 
-      pumpTask.enable();
+      if (!pumpTask.isEnabled()) {
+        pumpTask.enable();
+      }
 
       // Exit condition, once enough samples have been collected
       if (dissolvedOxygenSensorTask.isMeasurementFull()) {
@@ -290,6 +304,22 @@ void callback() {
         mqtt.send("dissolved_oxygen_mg_L", dissolved_oxygen_percent);
 
         pumpTask.disable();
+
+        is_state_finished = true;
+        report_index++;
+      }
+    } break;
+    case bernd_box::Sensor::kSleep: {
+      if (is_state_finished) {
+        Serial.printf("Starting sleep for %lus",
+                      std::chrono::seconds(sleep_duration).count());
+
+        sleep_start_time = std::chrono::milliseconds(millis());
+        is_state_finished = false;
+      }
+      if (sleep_duration <
+          std::chrono::milliseconds(millis()) - sleep_start_time) {
+        Serial.println("Finished sleeping");
 
         is_state_finished = true;
         report_index++;
