@@ -29,9 +29,9 @@ class DallasTemperature : public Task {
   Measurement getLastSample();
 
  private:
-  // bool OnEnable() final;
+  bool OnEnable() final;
   bool Callback() final;
-  // void OnDisable() final;
+  void OnDisable() final;
 
   /**
    * Pushes the temperature measurement into the ring buffer

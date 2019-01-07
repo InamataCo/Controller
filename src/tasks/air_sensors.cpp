@@ -11,6 +11,12 @@ AirSensors::AirSensors(Scheduler* scheduler, Io& io, Mqtt& mqtt)
 
 AirSensors::~AirSensors() {}
 
+bool AirSensors::OnEnable() {
+  mqtt_.send("air_sensors_active", "true");
+
+  return true;
+}
+
 bool AirSensors::Callback() {
   io_.setStatusLed(true);
 
@@ -25,6 +31,8 @@ bool AirSensors::Callback() {
 
   return true;
 }
+
+void AirSensors::OnDisable() { mqtt_.send("air_sensors_active", "false"); }
 
 }  // namespace tasks
 }  // namespace bernd_box

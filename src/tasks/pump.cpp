@@ -24,7 +24,11 @@ bool Pump::OnEnable() {
     String error = "Failed to setPumpState(true). Result = " + int(result);
     mqtt_.sendError("tasks::Pump::OnEnable", error, true);
   } else {
-    Serial.printf("Pumping for %lis\n", getInterval() / 1000);
+    Serial.printf("Pumping for %lus\n", getTimeout() / 1000);
+  }
+
+  if (isEnableOk) {
+    mqtt_.send("pump_active", "true");
   }
 
   return isEnableOk;
@@ -38,7 +42,9 @@ void Pump::OnDisable() {
   Result result = io_.setPumpState(false);
   if (result != Result::kSuccess) {
     String error = "Failed to setPumpState(false). Result = " + int(result);
-    mqtt_.sendError("tasks::Pump::OnEnable", error, true);
+    mqtt_.sendError("tasks::Pump::OnDisable", error, true);
+  } else {
+    mqtt_.send("pump_active", "false");
   }
 }
 

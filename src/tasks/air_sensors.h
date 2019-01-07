@@ -21,7 +21,9 @@ class AirSensors : public Task {
   virtual ~AirSensors();
 
  private:
-  bool Callback();
+  bool OnEnable() final;
+  bool Callback() final;
+  void OnDisable() final;
 
   Io& io_;
   Mqtt& mqtt_;

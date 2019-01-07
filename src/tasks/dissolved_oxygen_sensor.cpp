@@ -112,6 +112,10 @@ bool DissolvedOxygenSensor::OnEnable() {
 
   clearMeasurements();
 
+  if (result == Result::kSuccess) {
+    mqtt_.send("dissolved_oxygen_sensor_active", "true");
+  }
+
   return result == Result::kSuccess;
 }
 
@@ -129,7 +133,10 @@ bool DissolvedOxygenSensor::Callback() {
   return true;
 }
 
-void DissolvedOxygenSensor::OnDisable() { io_.disableAnalog(used_sensor_); }
+void DissolvedOxygenSensor::OnDisable() {
+  io_.disableAnalog(used_sensor_);
+  mqtt_.send("dissolved_oxygen_sensor_active", "false");
+}
 
 }  // namespace tasks
 }  // namespace bernd_box

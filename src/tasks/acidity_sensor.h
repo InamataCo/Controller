@@ -15,6 +15,7 @@ namespace tasks {
  */
 class AciditySensor : public Task {
  private:
+  /// The period with which the task should be activated by default
   const std::chrono::milliseconds default_period_{500};
 
   /// Number of samples to take (size of buffer)
@@ -25,7 +26,7 @@ class AciditySensor : public Task {
   const float acidity_factor_v_to_ph = 3.5;
 
   /// pH too high above reference. Will be substracted from each measurement
-  float acidity_offset = 0.4231628418;
+  float acidity_offset_ph = -0.42;
 
   AciditySensor(Scheduler* scheduler, Io& io, Mqtt& mqtt,
                 Sensor used_sensor = Sensor::kAciditiy);
@@ -55,6 +56,9 @@ class AciditySensor : public Task {
    */
   void clearMeasurements();
 
+  /**
+   * Checks whether the analog 
+   */
   bool OnEnable() final;
   bool Callback() final;
   void OnDisable() final;

@@ -13,6 +13,7 @@ AnalogSensors::~AnalogSensors() {}
 
 bool AnalogSensors::OnEnable() {
   Serial.println("Starting analog sensor task");
+  mqtt_.send("analog_sensor_active", "true");
 
   return true;
 }
@@ -39,7 +40,7 @@ bool AnalogSensors::Callback() {
 }
 
 void AnalogSensors::OnDisable() {
-  Task::getStatusRequest();
+  mqtt_.send("analog_sensor_active", "false");
 
   Serial.println("Ending analog sensor task");
 }

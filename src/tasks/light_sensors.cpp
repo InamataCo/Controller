@@ -11,6 +11,12 @@ LightSensors::LightSensors(Scheduler* scheduler, Io& io, Mqtt& mqtt)
 
 LightSensors::~LightSensors() {}
 
+bool LightSensors::OnEnable() {
+  mqtt_.send("light_sensors_active", "true");
+  
+  return true;
+}
+
 bool LightSensors::Callback() {
   io_.setStatusLed(true);
 
@@ -25,6 +31,10 @@ bool LightSensors::Callback() {
   io_.setStatusLed(false);
 
   return true;
+}
+
+void LightSensors::OnDisable() {
+  mqtt_.send("light_sensors_active", "false");
 }
 
 }  // namespace tasks

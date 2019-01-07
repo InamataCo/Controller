@@ -64,7 +64,8 @@ void AciditySensor::takeMeasurement() {
     return;
   }
 
-  float acidity_ph = analog_v * acidity_factor_v_to_ph - acidity_offset;
+  float acidity_ph = analog_v * acidity_factor_v_to_ph - acidity_offset_ph;
+  Serial.printf("Acidity: %fV -> %fpH\n", analog_v, acidity_ph);
 
   // Reuse current slot if it is unused
   if (!std::isnan(samples_[sample_index_])) {
@@ -84,6 +85,7 @@ void AciditySensor::clearMeasurements() {
 }
 
 bool AciditySensor::OnEnable() {
+  // Enable analog sensor and perform a test reading
   Result result = io_.enableAnalog(used_sensor_);
   if (result != Result::kSuccess) {
     String error =
@@ -91,12 +93,31 @@ bool AciditySensor::OnEnable() {
     mqtt_.sendError("AciditySensor::OnEnable", error, true);
   }
 
+  if (result == Result::kSuccess) {
+    float value = io_.readAnalogV(used_sensor_);
+    if (std::isnan(value)) {
+      String error = "Error performing readAnalogV(" +
+                     String(int(used_sensor_)) + "). Returned NAN.";
+      mqtt_.sendError("AciditySensor::OnEnable", error, true);
+      result = Result::kFailure;
+    }
+  }
+
   clearMeasurements();
+
+  if (result == Result::kSuccess) {
+    mqtt_.send("acidity_sensor_active", "true");
+  }
 
   return result == Result::kSuccess;
 }
 
 bool AciditySensor::Callback() {
+  // Skip first measurement since it requires a grace period
+  if(isFirstIteration()) {
+    return true;
+  }
+  
   io_.setStatusLed(true);
 
   takeMeasurement();
@@ -110,7 +131,10 @@ bool AciditySensor::Callback() {
   return true;
 }
 
-void AciditySensor::OnDisable() { io_.disableAnalog(used_sensor_); }
+void AciditySensor::OnDisable() {
+  io_.disableAnalog(used_sensor_);
+  mqtt_.send("acidity_sensor_active", "false");
+}
 
 }  // namespace tasks
 }  // namespace bernd_box

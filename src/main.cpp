@@ -130,6 +130,8 @@ void callback() {
       // Initial state. Select first state to go to
       if (is_report_finished) {
         Serial.println("Starting measurement report");
+        mqtt.send("measurement_report_active", "true");
+
         start_time = std::chrono::milliseconds(millis());
         is_state_finished = true;
         is_report_finished = false;
@@ -141,6 +143,8 @@ void callback() {
                       std::chrono::duration_cast<std::chrono::milliseconds>(
                           std::chrono::milliseconds(millis()) - start_time)
                           .count());
+        mqtt.send("measurement_report_active", "false");
+
         report_index = 0;
       }
     } break;
@@ -311,8 +315,9 @@ void callback() {
     } break;
     case bernd_box::Sensor::kSleep: {
       if (is_state_finished) {
-        Serial.printf("Starting sleep for %lus",
+        Serial.printf("Starting sleep for %llus",
                       std::chrono::seconds(sleep_duration).count());
+        mqtt.send("measurement_report_active", "false");
 
         sleep_start_time = std::chrono::milliseconds(millis());
         is_state_finished = false;

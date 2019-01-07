@@ -33,6 +33,12 @@ void DallasTemperature::clearSamples() {
   sample_index_ = 0;
 }
 
+bool DallasTemperature::OnEnable() {
+  mqtt_.send("dallas_temperature_sensor_active", "true");
+
+  return true;
+}
+
 bool DallasTemperature::Callback() {
   io_.setStatusLed(true);
 
@@ -76,6 +82,10 @@ bool DallasTemperature::Callback() {
   io_.setStatusLed(false);
 
   return true;
+}
+
+void DallasTemperature::OnDisable() {
+    mqtt_.send("dallas_temperature_sensor_active", "false");
 }
 
 }  // namespace tasks

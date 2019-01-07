@@ -118,8 +118,10 @@ float Io::readAnalog(Sensor sensor_id) {
 
 float Io::readAnalogV(Sensor sensor_id) {
   float value = readAnalog(sensor_id);
-  if (!std::isnan(value)) {
+  if (!std::isnan(value) && analog_reference_v_ != 0 && analog_raw_range_ != 0) {
     value *= analog_reference_v_ / analog_raw_range_;
+  } else {
+    value = NAN;
   }
 
   return value;
