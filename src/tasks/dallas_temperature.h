@@ -15,6 +15,8 @@ namespace tasks {
 class DallasTemperature : public Task {
  public:
   const std::chrono::seconds sleep_between_measurements_{1};
+  
+  bool has_new_samples_ = false; 
 
   static const uint sample_count_ = 5;
 

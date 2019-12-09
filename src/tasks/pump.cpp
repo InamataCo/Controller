@@ -39,6 +39,7 @@ bool Pump::Callback() { return true; }
 void Pump::OnDisable() {
   Serial.println("Finished pumping");
 
+  setTimeout(TASK_NOTIMEOUT);
   Result result = io_.setPumpState(false);
   if (result != Result::kSuccess) {
     String error = "Failed to setPumpState(false). Result = " + int(result);

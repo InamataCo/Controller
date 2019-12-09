@@ -23,7 +23,7 @@ const char* password = "PH-Wlan-2016#";
 const std::chrono::seconds wifi_connect_timeout(20);
 
 // MQTT
-const char* mqtt_server = "192.168.0.33";
+const char* mqtt_server = "192.168.0.15";
 const char* client_id = "bernd_box_1";
 const uint mqtt_connection_attempts = 3;  // Maximum attempts before aborting
 

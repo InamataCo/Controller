@@ -12,6 +12,7 @@
 #define BERND_BOX_NETWORK_H
 
 #include <WiFi.h>
+
 #include <chrono>
 
 namespace bernd_box {

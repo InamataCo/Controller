@@ -45,7 +45,11 @@ bool CheckConnectivity::Callback() {
   }
 
   mqtt_.receive();
-
+  // String uuid_string;
+  // if(!getUuidString(uuid_string)){
+  //   mqtt_.sendError("CheckConnectivity::Callback", "Unable to get UUID");
+  // }
+  // mqtt_.send(String("UUID: ") + );
   io_.setStatusLed(false);
 
   return true;

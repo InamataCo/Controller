@@ -24,6 +24,7 @@ void DallasTemperature::pushSample(const float temperature_c, Sensor sensorId) {
 
   samples_[sample_index_] = {temperature_c, std::chrono::milliseconds(millis()),
                              sensorId};
+  has_new_samples_ = true;
 }
 
 void DallasTemperature::clearSamples() {
@@ -31,10 +32,12 @@ void DallasTemperature::clearSamples() {
     sample = {NAN, std::chrono::milliseconds(0), Sensor::kUnknown};
   }
   sample_index_ = 0;
+  has_new_samples_ = false;
 }
 
 bool DallasTemperature::OnEnable() {
   mqtt_.send("dallas_temperature_sensor_active", "true");
+  clearSamples();
 
   return true;
 }

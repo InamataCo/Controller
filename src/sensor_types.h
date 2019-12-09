@@ -39,9 +39,9 @@ struct I2cConnection {
 /// Sensor type of analog peripherials
 struct AdcSensor {
   int pin_id;
-  std::string name;
+  String name;
   float scaling_factor;
-  std::string unit;
+  String unit;
   int enable_pin_id;
 };
 
@@ -51,8 +51,8 @@ enum class DallasResolution { b9 = 9, b10 = 10, b11 = 11, b12 = 12 };
 struct DallasSensor {
   DeviceAddress address;
   DallasResolution resolution;
-  std::string name;
-  std::string unit;
+  String name;
+  String unit;
 };
 
 struct Measurement {
@@ -65,15 +65,15 @@ struct Measurement {
 struct Bh1750Sensor {
   BH1750::Mode mode;
   BH1750 interface;
-  std::string name;
-  std::string unit;
+  String name;
+  String unit;
 };
 
 /// Sensor type of MAX44009
 struct Max44009Sensor {
   Max44009 interface;
-  std::string name;
-  std::string unit;
+  String name;
+  String unit;
 };
 
 /// Sensor type of BME280 air sensors
@@ -89,10 +89,18 @@ enum class Bme280Parameter {
 struct Bme280Sensor {
   int address;
   Bme280Parameter parameter;
-  std::string name;
-  std::string unit;
+  String name;
+  String unit;
 };
 
+struct L293dMotor {
+  uint8_t pin_forward; // When this pin is high, turns clockwise and vice versa.
+  uint8_t pin_reverse; // When this pin is low, turns clockwise and vice versa.
+  uint8_t min_percent; // Minimum PWM percent to drive the motor
+  uint8_t max_percent; // Maximum PWM percent to drive the motor
+  String name;
+  String unit;
+};
 }  // namespace bernd_box
 
 #endif

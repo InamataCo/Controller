@@ -218,7 +218,7 @@ class Io {
   bool isSensorIdNamingValid();
 
   /// Returned when name of invalid sensor is requested
-  const std::string empty_ = "";
+  const String empty_ = "";
 
   // Interface to Dallas temperature sensors
   OneWire one_wire_;
