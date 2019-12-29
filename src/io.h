@@ -36,13 +36,16 @@ class Io {
   const uint status_led_pin_ = 2;
 
   /// Pin to the pump
-  const uint pump_pin_ = 18;
+  const uint pump_pin_ = 27;
+
+  /// Pin to power on the ATX power supply
+  const uint atx_power_pin_ = 14;
 
   // List of connected Dallas temperature sensors (DS18B20)
   const uint one_wire_pin_ = 27;
   std::map<Sensor, DallasSensor> dallases_ = {
-      {{Sensor::kWaterTemperature},
-       {{0}, DallasResolution::b12, "water_temperature", "°C"}},
+      // {{Sensor::kWaterTemperature},
+      //  {{0}, DallasResolution::b12, "water_temperature", "°C"}},
   };
 
   /// List of connected BH1750 and MAX44009 light sensors
@@ -75,12 +78,12 @@ class Io {
 
   /// List of connected analog peripherials
   const std::map<Sensor, AdcSensor> adcs_ = {
-      {{Sensor::kTurbidity}, {35, "turbidity", 1.0, "NTU", -1}},
-      {{Sensor::kAciditiy}, {32, "acidity", 1.0, "pH", 33}},
-      {{Sensor::kTotalDissolvedSolids},
-       {39, "total_dissolved_solids", 1.0, "mg/l", 26}},
-      {{Sensor::kDissolvedOxygen}, {36, "dissolved_oxygen", 1.0, "SO2", 5}},
-      {{Sensor::kConductivity}, {34, "conductivity", 1.0, "mS/cm", 17}},
+      // {{Sensor::kTurbidity}, {35, "turbidity", 1.0, "NTU", -1}},
+      // {{Sensor::kAciditiy}, {32, "acidity", 1.0, "pH", 33}},
+      // {{Sensor::kTotalDissolvedSolids},
+      //  {39, "total_dissolved_solids", 1.0, "mg/l", 26}},
+      // {{Sensor::kDissolvedOxygen}, {36, "dissolved_oxygen", 1.0, "SO2", 5}},
+      // {{Sensor::kConductivity}, {34, "conductivity", 1.0, "mS/cm", 17}},
   };
   const uint analog_raw_range_ = 4096;
   const float analog_reference_v_ = 3.3;
@@ -136,6 +139,7 @@ class Io {
   void disableAllAnalog();
 
   Result setPumpState(bool state);
+  void setPinState(uint8_t pin, bool state);
 
   /**
    * Gets the temperature in sync mode (~800ms blocking)

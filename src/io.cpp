@@ -11,6 +11,7 @@ Result Io::init() {
   // Set the status LED and pump GPIO to output
   pinMode(status_led_pin_, OUTPUT);
   pinMode(pump_pin_, OUTPUT);
+  pinMode(atx_power_pin_, OUTPUT);
 
   // Init all enable/disable pins for analog sensors to avoid floating
   for (const auto& it : adcs_) {
@@ -43,7 +44,6 @@ Result Io::init() {
   }
 
   // Start up the Dallas Temperature library in asynchronous mode
-  Serial.println("Starting Dallas Temperature library in async mode");
   dallas_.begin();
   dallas_.setWaitForConversion(false);
 
@@ -191,6 +191,14 @@ Result Io::setPumpState(bool state) {
   }
 
   return result;
+}
+
+void Io::setPinState(uint8_t pin, bool state) {
+  if (state) {
+    digitalWrite(pin, HIGH);
+  } else {
+    digitalWrite(pin, LOW);
+  }
 }
 
 float Io::readDallasTemperature(Sensor sensor_id) {

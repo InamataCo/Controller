@@ -5,17 +5,17 @@
  */
 
 #include "Arduino.h"
-
-// #include "utils/setupNode.h"
 #include "configuration.h"
 #include "io.h"
 #include "mqtt.h"
 #include "network.h"
+#include "utils/setupNode.h"
 
 // tasks/task.h before TaskScheduler as it sets the TaskScheduler defines
+// clang-format off
 #include "tasks/task.h"
-
 #include <TaskScheduler.h>
+// clang-format on
 
 #include "tasks/acidity_sensor.h"
 #include "tasks/air_sensors.h"
@@ -26,6 +26,7 @@
 #include "tasks/light_sensors.h"
 #include "tasks/measurement_protocol.h"
 #include "tasks/pump.h"
+#include "tasks/system_monitor.h"
 
 //----------------------------------------------------------------------------
 // Global instances
@@ -33,7 +34,7 @@ WiFiClient wifiClient;
 Scheduler scheduler;
 
 bernd_box::Io io;
-bernd_box::Mqtt mqtt(wifiClient, bernd_box::client_id, bernd_box::mqtt_server);
+bernd_box::Mqtt mqtt(wifiClient);
 bernd_box::Network network(bernd_box::ssid, bernd_box::password);
 
 //----------------------------------------------------------------------------
@@ -44,8 +45,7 @@ std::vector<bernd_box::tasks::ReportItem> report_list{
     {bernd_box::tasks::Action::kPump, std::chrono::seconds(20)},
     {bernd_box::tasks::Action::kDissolvedOxygen},
     {bernd_box::tasks::Action::kPump, std::chrono::seconds(20)},
-    {bernd_box::tasks::Action::kTotalDissolvedSolids,
-     std::chrono::seconds(10)},
+    {bernd_box::tasks::Action::kTotalDissolvedSolids, std::chrono::seconds(10)},
     {bernd_box::tasks::Action::kPump, std::chrono::seconds(20)},
     {bernd_box::tasks::Action::kAcidity},
     {bernd_box::tasks::Action::kPump, std::chrono::seconds(20)},
@@ -67,25 +67,52 @@ bernd_box::tasks::DissolvedOxygenSensor dissolvedOxygenSensorTask(&scheduler,
 bernd_box::tasks::MeasurementProtocol measurementProtocol(
     &scheduler, mqtt, io, report_list, pumpTask, dallasTemperatureTask,
     dissolvedOxygenSensorTask, aciditySensorTask);
+bernd_box::tasks::SystemMonitor systemMonitorTask(&scheduler, mqtt);
 
 //----------------------------------------------------------------------------
 // Setup and loop functions
+
+// void mqttCallback(char*, uint8_t*, unsigned int) {
+//   Serial.println(F("Enabling pump"));
+//   pumpTask.enable();
+// }
+
 void setup() {
-  Serial.begin(115200);
-  // setupNode();
-
-  checkConnectivity.now();
-  checkConnectivity.enable();
-
-  // Try to configure the IO devices, else restart
-  if (io.init() != bernd_box::Result::kSuccess) {
-    Serial.println("IO: Initialization failed. Restarting\n");
+  io.setStatusLed(true);
+  if (!bernd_box::setupNode()) {
+    Serial.println(F("Node setup failed. Restarting"));
+    delay(1000);
     ESP.restart();
   }
 
+  checkConnectivity.enable();
+  systemMonitorTask.enable();
+  // systemMonitorTask.forceNextIteration();
+  
+  // mqtt.client_.setCallback(mqttCallback);
+  // mqtt.client_.subscribe("pump");
+
+  // Try to configure the IO devices, else restart
+  if (io.init() != bernd_box::Result::kSuccess) {
+    Serial.println(F("IO: Initialization failed. Restarting"));
+    delay(1000);
+    ESP.restart();
+  }
+
+  // pumpTask.enable();
+  // pinMode(32, INPUT_PULLUP);
+
   // measurementProtocol.enable();
+
+  checkConnectivity.isSetup_ = true;
+  io.setStatusLed(false);
 }
 
 void loop() {
   scheduler.execute();
+  // if (!digitalRead(32)) {
+  //   Serial.println("button!");
+  //   mqtt.send("button", true);
+  //   pumpTask.enable();
+  // }
 }

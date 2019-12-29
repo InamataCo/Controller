@@ -1,11 +1,11 @@
 #ifndef BERND_BOX_TASKS_CONNECTIVITY_H
 #define BERND_BOX_TASKS_CONNECTIVITY_H
 
-#include "task.h"
-
 #include "io.h"
 #include "mqtt.h"
 #include "network.h"
+#include "task.h"
+#include "utils/setupNode.h"
 
 namespace bernd_box {
 namespace tasks {
@@ -20,9 +20,11 @@ class CheckConnectivity : public Task {
                     const uint mqtt_connection_attempts);
   virtual ~CheckConnectivity();
 
-  void now();
+  /// The MQTT receive callback is only enabled after the setup is complete
+  bool isSetup_;
 
  private:
+  bool OnEnable() final;
   bool Callback() final;
 
   Network& network_;

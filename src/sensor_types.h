@@ -26,6 +26,7 @@ enum class Sensor {
   kAirPressure,
   kAirHumidity,
   kPump,
+  kL293dMotor,
   kSleep,
   kUnknown
 };

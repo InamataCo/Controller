@@ -1,10 +1,10 @@
 #ifndef BERND_BOX_TASKS_PUMP_H
 #define BERND_BOX_TASKS_PUMP_H
 
-#include "task.h"
-
+#include "config.h"
 #include "io.h"
 #include "mqtt.h"
+#include "task.h"
 
 namespace bernd_box {
 namespace tasks {
@@ -20,14 +20,17 @@ class Pump : public Task {
   virtual ~Pump();
 
   void setDuration(std::chrono::milliseconds duration);
-
+  const std::chrono::milliseconds getDuration();
+  
  private:
   bool OnEnable() final;
   bool Callback() final;
   void OnDisable() final;
+  void MqttCallback(char* topic, uint8_t* payload, unsigned int length);
 
   Io& io_;
   Mqtt& mqtt_;
+  std::chrono::milliseconds start_time_;
 };
 
 }  // namespace tasks
