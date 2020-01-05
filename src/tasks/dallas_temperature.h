@@ -1,13 +1,12 @@
 #ifndef BERND_BOX_TASKS_DALLAS_TEMPERATURE_H
 #define BERND_BOX_TASKS_DALLAS_TEMPERATURE_H
 
-#include "sensor_types.h"
-#include "tasks/task.h"
-
-#include "io.h"
-#include "mqtt.h"
-
 #include <array>
+
+#include "managers/io.h"
+#include "managers/io_types.h"
+#include "managers/mqtt.h"
+#include "tasks/task.h"
 
 namespace bernd_box {
 namespace tasks {
@@ -15,8 +14,8 @@ namespace tasks {
 class DallasTemperature : public Task {
  public:
   const std::chrono::seconds sleep_between_measurements_{1};
-  
-  bool has_new_samples_ = false; 
+
+  bool has_new_samples_ = false;
 
   static const uint sample_count_ = 5;
 
@@ -41,7 +40,7 @@ class DallasTemperature : public Task {
    * \param temperature The temperature in °C
    * \param sensorId ID of the sensor which was measured
    */
-  void pushSample(const float temperature_c, Sensor sensorId);
+  void pushSample(const float temperature_c, const int sensor_id);
 
   /**
    * Clear the ring buffer and reset the index

@@ -4,11 +4,12 @@
  * \copyright Apache License 2.0
  */
 
-#include "Arduino.h"
+#include <Arduino.h>
+
 #include "configuration.h"
-#include "io.h"
-#include "mqtt.h"
-#include "network.h"
+#include "managers/io.h"
+#include "managers/mqtt.h"
+#include "managers/network.h"
 #include "utils/setupNode.h"
 
 // tasks/task.h before TaskScheduler as it sets the TaskScheduler defines
@@ -27,6 +28,7 @@
 #include "tasks/measurement_protocol.h"
 #include "tasks/pump.h"
 #include "tasks/system_monitor.h"
+#include "tasks/l293d_motors.h"
 
 //----------------------------------------------------------------------------
 // Global instances
@@ -68,6 +70,7 @@ bernd_box::tasks::MeasurementProtocol measurementProtocol(
     &scheduler, mqtt, io, report_list, pumpTask, dallasTemperatureTask,
     dissolvedOxygenSensorTask, aciditySensorTask);
 bernd_box::tasks::SystemMonitor systemMonitorTask(&scheduler, mqtt);
+bernd_box::tasks::L293dMotors l293d_motors(&scheduler, io, mqtt);
 
 //----------------------------------------------------------------------------
 // Setup and loop functions
@@ -88,7 +91,7 @@ void setup() {
   checkConnectivity.enable();
   systemMonitorTask.enable();
   // systemMonitorTask.forceNextIteration();
-  
+
   // mqtt.client_.setCallback(mqttCallback);
   // mqtt.client_.subscribe("pump");
 
@@ -105,6 +108,7 @@ void setup() {
   // measurementProtocol.enable();
 
   checkConnectivity.isSetup_ = true;
+
   io.setStatusLed(false);
 }
 

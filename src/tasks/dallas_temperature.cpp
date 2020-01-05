@@ -6,7 +6,7 @@ namespace tasks {
 DallasTemperature::DallasTemperature(Scheduler* scheduler, Io& io, Mqtt& mqtt)
     : Task(scheduler), io_(io), mqtt_(mqtt) {
   setIterations(TASK_FOREVER);
-  samples_.fill({NAN, std::chrono::seconds::zero(), Sensor::kUnknown});
+  samples_.fill({NAN, std::chrono::seconds::zero(), -1});
 }
 
 DallasTemperature::~DallasTemperature() {}
@@ -15,7 +15,8 @@ Measurement DallasTemperature::getLastSample() {
   return samples_[sample_index_];
 }
 
-void DallasTemperature::pushSample(const float temperature_c, Sensor sensorId) {
+void DallasTemperature::pushSample(const float temperature_c,
+                                   const int sensor_id) {
   sample_index_++;
 
   if (sample_index_ >= samples_.size()) {
@@ -23,13 +24,13 @@ void DallasTemperature::pushSample(const float temperature_c, Sensor sensorId) {
   }
 
   samples_[sample_index_] = {temperature_c, std::chrono::milliseconds(millis()),
-                             sensorId};
+                             sensor_id};
   has_new_samples_ = true;
 }
 
 void DallasTemperature::clearSamples() {
   for (auto& sample : samples_) {
-    sample = {NAN, std::chrono::milliseconds(0), Sensor::kUnknown};
+    sample = {NAN, std::chrono::milliseconds(0), -1};
   }
   sample_index_ = 0;
   has_new_samples_ = false;
@@ -88,7 +89,7 @@ bool DallasTemperature::Callback() {
 }
 
 void DallasTemperature::OnDisable() {
-    mqtt_.send("dallas_temperature_sensor_active", "false");
+  mqtt_.send("dallas_temperature_sensor_active", "false");
 }
 
 }  // namespace tasks

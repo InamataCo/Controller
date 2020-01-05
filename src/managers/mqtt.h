@@ -128,13 +128,14 @@ class Mqtt {
    *
    * \param name The name of the action to subscribe to
    * \param callback The function to call when a message for the action arrives
-   * \return 0 on success
    */
-  int addAction(const String& name,
-                std::function<void(char*, uint8_t*, unsigned int)> callback);
+  void addAction(const String& name,
+                 std::function<void(char*, uint8_t*, unsigned int)> callback);
 
   /**
    * Removes an action
+   *
+   * If it can not be found, the callbacks_ map is in the desired state
    *
    * \param name Name of the subscribed action
    */

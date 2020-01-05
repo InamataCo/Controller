@@ -3,8 +3,8 @@
 
 #include "task.h"
 
-#include "io.h"
-#include "mqtt.h"
+#include "managers/io.h"
+#include "managers/mqtt.h"
 
 namespace bernd_box {
 namespace tasks {
@@ -21,9 +21,20 @@ class DissolvedOxygenSensor : public Task {
   float temperature_c_at_saturated_do = 22.8125;
 
  public:
-  DissolvedOxygenSensor(Scheduler* scheduler, Io& io, Mqtt& mqtt,
-                        Sensor used_sensor = Sensor::kDissolvedOxygen);
+  DissolvedOxygenSensor(Scheduler* scheduler, Io& io, Mqtt& mqtt);
   virtual ~DissolvedOxygenSensor();
+
+  /**
+   * Sets the used sensor ID and clears measurements
+   * 
+   * \param sensor_id The value of the new sensor ID
+   */
+  void setSensorId(const int sensor_id);
+
+  /**
+   * Checks if the task is ready to be enabled.
+   */
+  bool isReady();
 
   /**
    * Gets the median value of the measurements
@@ -72,7 +83,7 @@ class DissolvedOxygenSensor : public Task {
   bool is_calibration_mode_;
 
   /// Sensor ID to be measured (used in readAnalogV())
-  const Sensor used_sensor_;
+  int used_sensor_;
 
   const std::array<float, 41> temperatureCoefficient = {
       {14.46, 14.22, 13.82, 13.44, 13.09, 12.74, 12.42, 12.11, 11.81,

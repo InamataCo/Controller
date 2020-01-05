@@ -3,8 +3,8 @@
 
 #include "task.h"
 
-#include "io.h"
-#include "mqtt.h"
+#include "managers/io.h"
+#include "managers/mqtt.h"
 
 namespace bernd_box {
 namespace tasks {
@@ -28,9 +28,20 @@ class AciditySensor : public Task {
   /// pH too high above reference. Will be substracted from each measurement
   float acidity_offset_ph = -0.42;
 
-  AciditySensor(Scheduler* scheduler, Io& io, Mqtt& mqtt,
-                Sensor used_sensor = Sensor::kAciditiy);
+  AciditySensor(Scheduler* scheduler, Io& io, Mqtt& mqtt);
   virtual ~AciditySensor();
+
+  /**
+   * Sets the used sensor ID and clears measurements
+   * 
+   * \param sensor_id The value of the new sensor ID
+   */
+  void setSensorId(const int sensor_id);
+
+  /**
+   * Checks if the task is ready to be enabled.
+   */
+  bool isReady();
 
   /**
    * Gets the median value of the measurements
@@ -71,7 +82,7 @@ class AciditySensor : public Task {
   uint sample_index_ = 0;
 
   /// Sensor ID to be measured (used in readAnalogV())
-  const Sensor used_sensor_;
+  int used_sensor_;
 };
 
 }  // namespace tasks

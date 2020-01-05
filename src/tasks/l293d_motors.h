@@ -1,0 +1,100 @@
+#include <ArduinoJson.hpp>
+#include <array>
+
+#include "managers/io.h"
+#include "managers/mqtt.h"
+#include "task.h"
+
+namespace bernd_box {
+namespace tasks {
+class L293dMotors : public Task {
+ public:
+  /// Run time parameters
+  struct Run {
+    int l293d_motor_id;                    // ID of the motor driver to use
+    bool enabled;                          // Whether the run has been enabled
+    std::chrono::milliseconds start_time;  // Time when the motor was enabled
+    std::chrono::milliseconds duration;  // How long the motor should be active
+    uint8_t power_percent;  // With which power the motor should be driven
+    bool forward;           // True if in forward direction, false for reverse
+  };
+
+  L293dMotors(Scheduler* scheduler, Io& io, Mqtt& mqtt);
+  virtual ~L293dMotors();
+
+ private:
+  /**
+   * To start a L293D motor, add a run and then call enable
+   */
+  bool OnEnable() final;
+  bool Callback() final;
+  void OnDisable() final;
+
+  /**
+   * Add run to be started immediately. enable() is called by default.
+   *
+   * \param id ID of the L293D motor device
+   * \param duration Length of time to enable the motor
+   * \param power_percent The power with a value from 0 - 100
+   * \param forward True if in forward direction, false in reverse
+   * \param call_enable True if Task::enable() should directly be called
+   */
+  Result addRun(int id, std::chrono::milliseconds duration,
+                uint8_t power_percent, bool forward, bool call_enable = true);
+
+  /**
+   * Enable added runs that have been added with addRun()
+   *
+   * \param run Reference of the run to be enabled
+   */
+  void enableRun(Run& run);
+
+  /**
+   * Disable a run
+   *
+   * \param run A refernece to the run to be disabled
+   * \param abort False if a normal exit, true if the run was terminated early
+   */
+  Result disableRun(Run& run, bool abort);
+
+  void mqttCallback(char* topic, uint8_t* payload, unsigned int length);
+
+  /**
+   * Creates a new interface to an L239d device
+   *
+   * \param doc A JSON doc containing all keys as in add_keys_
+   * \return kSuccess on success
+   */
+  Result addDevice(const JsonObjectConst& doc);
+
+  /**
+   * Removes an existing L239d device, no failure on not found
+   *
+   * \param doc A JSON doc containing all keys as in remove_keys_
+   * \return kSuccess on success
+   */
+  Result removeDevice(const JsonObjectConst& doc);
+
+  /**
+   * Enables the motor driver with the specified speed and direction
+   *
+   * \param doc A JSON doc containing all keys as in enable_keys_
+   * \return kSuccess on success
+   */
+  Result enableDevice(const JsonObjectConst& doc);
+
+  /**
+   * Disables the motor driver
+   *
+   * \param doc A JSON doc containing all keys as in disable_keys_
+   * \return kSuccess on success
+   */
+  Result disableDevice(const JsonObjectConst& doc);
+
+  Io& io_;
+  Mqtt& mqtt_;
+  const __FlashStringHelper* name_;
+  std::vector<Run> runs_;
+};
+}  // namespace tasks
+}  // namespace bernd_box

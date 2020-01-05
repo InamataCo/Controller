@@ -3,15 +3,23 @@
 namespace bernd_box {
 namespace tasks {
 
-AciditySensor::AciditySensor(Scheduler* scheduler, Io& io, Mqtt& mqtt,
-                             Sensor used_sensor)
-    : Task(scheduler), io_(io), mqtt_(mqtt), used_sensor_(used_sensor) {
+AciditySensor::AciditySensor(Scheduler* scheduler, Io& io, Mqtt& mqtt)
+    : Task(scheduler), io_(io), mqtt_(mqtt), used_sensor_(-1) {
   setIterations(TASK_FOREVER);
   Task::setInterval(std::chrono::milliseconds(default_period_).count());
   clearMeasurements();
 }
 
 AciditySensor::~AciditySensor() {}
+
+void AciditySensor::setSensorId(const int sensor_id) {
+  clearMeasurements();
+  used_sensor_ = sensor_id;
+}
+
+bool AciditySensor::isReady() {
+  return used_sensor_ > -1;
+}
 
 float AciditySensor::getMedianMeasurement() {
   for (const auto& it : samples_) {
@@ -85,12 +93,18 @@ void AciditySensor::clearMeasurements() {
 }
 
 bool AciditySensor::OnEnable() {
+  const char* who = __PRETTY_FUNCTION__;
+  if(used_sensor_ < 0) {
+    mqtt_.sendError(who, "Unknown sensor defined as ID < 0");
+    return false;
+  }
+
   // Enable analog sensor and perform a test reading
   Result result = io_.enableAnalog(used_sensor_);
   if (result != Result::kSuccess) {
     String error =
         "Error on enabling analog sensor. Result = " + String(int(result));
-    mqtt_.sendError("AciditySensor::OnEnable", error, true);
+    mqtt_.sendError(who, error);
   }
 
   if (result == Result::kSuccess) {
@@ -98,7 +112,7 @@ bool AciditySensor::OnEnable() {
     if (std::isnan(value)) {
       String error = "Error performing readAnalogV(" +
                      String(int(used_sensor_)) + "). Returned NAN.";
-      mqtt_.sendError("AciditySensor::OnEnable", error, true);
+      mqtt_.sendError(who, error);
       result = Result::kFailure;
     }
   }

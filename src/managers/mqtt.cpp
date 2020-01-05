@@ -192,29 +192,13 @@ void Mqtt::sendError(const String& who, const String& message,
   }
 }
 
-int Mqtt::addAction(
+void Mqtt::addAction(
     const String& name,
     std::function<void(char*, uint8_t*, unsigned int)> callback) {
-  // Add callback to map, to be called when a message for the action arrives
-  auto result = callbacks_.emplace(std::make_pair(name, callback));
-  if (!result.second) {
-    callbacks_.erase(result.first);
-    result = callbacks_.emplace(std::make_pair(name, callback));
-    if (!result.second) {
-      sendError(F("mqtt::addAction"),
-                String(F("Unable to register callback: ")) + name);
-      return 1;
-    }
-  }
-
-  return 0;
+  callbacks_[name] = callback;
 }
 
-void Mqtt::removeAction(const String& name) {
-  // Remove the callback. If it can not be found, the callbacks_ map is in the
-  // desired state
-  callbacks_.erase(name.c_str());
-}
+void Mqtt::removeAction(const String& name) { callbacks_.erase(name.c_str()); }
 
 void Mqtt::handleCallback(char* topic, uint8_t* message, unsigned int length) {
   // Check if the prefix is "action"
@@ -231,14 +215,14 @@ void Mqtt::handleCallback(char* topic, uint8_t* message, unsigned int length) {
     if (it != callbacks_.end()) {
       it->second(topic, message, length);
     } else {
-      sendError("mqtt::handleCallback", "No registered callback for action: %s",
-                action);
+      sendError("mqtt::handleCallback",
+                String(F("No registered callback for action: ")) + action);
     }
     return;
   }
 
-  sendError("mqtt::handleCallback", "No registered callback for topic: %s",
-            topic);
+  sendError("mqtt::handleCallback",
+            String(F("No registered callback for topic: ")) + topic);
 }
 
 const callback_map& Mqtt::getCallbackMap() { return callbacks_; }

@@ -1,9 +1,9 @@
 #ifndef BERND_BOX_TASKS_CONNECTIVITY_H
 #define BERND_BOX_TASKS_CONNECTIVITY_H
 
-#include "io.h"
-#include "mqtt.h"
-#include "network.h"
+#include "managers/io.h"
+#include "managers/mqtt.h"
+#include "managers/network.h"
 #include "task.h"
 #include "utils/setupNode.h"
 
@@ -12,7 +12,7 @@ namespace tasks {
 
 class CheckConnectivity : public Task {
  private:
-  const std::chrono::milliseconds default_period_{500};
+  const std::chrono::milliseconds default_period_{100};
 
  public:
   CheckConnectivity(Scheduler* scheduler, Network& network, Mqtt& mqtt, Io& io,

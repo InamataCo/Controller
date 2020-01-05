@@ -11,26 +11,6 @@
 
 namespace bernd_box {
 
-/// Unique IDs of all connected sensors
-enum class Sensor {
-  kWaterTemperature,
-  kDissolvedOxygen,
-  kConductivity,
-  kAciditiy,
-  kTurbidity,
-  kTotalDissolvedSolids,
-  kLightLevel,
-  kLightLevel2,
-  kLightLevel3,
-  kAirTemperature,
-  kAirPressure,
-  kAirHumidity,
-  kPump,
-  kL293dMotor,
-  kSleep,
-  kUnknown
-};
-
 /// I2C Connection
 struct I2cConnection {
   int scl_pin;
@@ -59,7 +39,7 @@ struct DallasSensor {
 struct Measurement {
   float value;
   std::chrono::milliseconds timestamp;
-  Sensor sensorId;
+  int sensor_id;
 };
 
 /// Sensor type of BH1750 light sensors
@@ -95,12 +75,10 @@ struct Bme280Sensor {
 };
 
 struct L293dMotor {
-  uint8_t pin_forward; // When this pin is high, turns clockwise and vice versa.
-  uint8_t pin_reverse; // When this pin is low, turns clockwise and vice versa.
-  uint8_t min_percent; // Minimum PWM percent to drive the motor
-  uint8_t max_percent; // Maximum PWM percent to drive the motor
-  String name;
-  String unit;
+  // Static parameters
+  uint8_t pin_forward;  // When the pin is high, turn clockwise and vice versa.
+  uint8_t pin_reverse;  // When the pin is low, turn clockwise and vice versa.
+  uint8_t pin_enable;   // Pin to enable and control the motor's speed
 };
 }  // namespace bernd_box
 

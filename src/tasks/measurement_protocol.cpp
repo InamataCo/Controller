@@ -24,6 +24,16 @@ MeasurementProtocol::MeasurementProtocol(
 MeasurementProtocol::~MeasurementProtocol() {}
 
 bool MeasurementProtocol::OnEnable() {
+  const char* who = __PRETTY_FUNCTION__;
+  if(!acidity_sensor_task_.isReady()) {
+    mqtt_.sendError(who, String(F("Acidity sensor task is not ready")));
+    return false;
+  }
+  if(!dissolved_oxygen_sensor_task_.isReady()) {
+    mqtt_.sendError(who, String(F("Dissolved oxygen sensor task is not ready")));
+    return false;
+  }
+
   Serial.println("Starting measurement report");
   mqtt_.send("measurement_report_active", "true");
 
@@ -95,50 +105,50 @@ bool MeasurementProtocol::Callback() {
           is_report_item_enabled = false;
         }
       } break;
-      case Action::kTotalDissolvedSolids: {
-        const bernd_box::Sensor tds_id =
-            bernd_box::Sensor::kTotalDissolvedSolids;
-        if (!is_report_item_enabled) {
-          mqtt_.send("total_dissolved_solids_sensor_active", "true");
-          is_report_item_enabled = true;
+      // case Action::kTotalDissolvedSolids: {
+      //   const bernd_box::Sensor tds_id =
+      //       bernd_box::Sensor::kTotalDissolvedSolids;
+      //   if (!is_report_item_enabled) {
+      //     mqtt_.send("total_dissolved_solids_sensor_active", "true");
+      //     is_report_item_enabled = true;
 
-          io_.enableAnalog(tds_id);
-          dallas_temperature_task_.enable();
-          pump_task_.setDuration(report_list_[report_index_].duration);
-          pump_task_.enable();
-        }
+      //     io_.enableAnalog(tds_id);
+      //     dallas_temperature_task_.enable();
+      //     pump_task_.setDuration(report_list_[report_index_].duration);
+      //     pump_task_.enable();
+      //   }
 
-        float raw_analog = io_.readAnalog(tds_id);
-        float analog_v =
-            raw_analog * io_.analog_reference_v_ / io_.analog_raw_range_;
-        float temperature_c = dallas_temperature_task_.getLastSample().value;
-        float temperature_coefficient = 1 + 0.02 * (temperature_c - 25);
-        float compensation_v = analog_v / temperature_coefficient;
-        float tds =
-            (133.42 * std::pow(compensation_v, 3) -
-             255.86 * std::pow(compensation_v, 2) + 857.39 * compensation_v) *
-            0.5;
-        Serial.printf(
-            "TDS = %fmg/L, Compensation = %f, TempCoef = %f, °C = %f, Analog V "
-            "= "
-            "%f\n",
-            tds, compensation_v, temperature_coefficient, temperature_c,
-            analog_v);
+      //   float raw_analog = io_.readAnalog(tds_id);
+      //   float analog_v =
+      //       raw_analog * io_.analog_reference_v_ / io_.analog_raw_range_;
+      //   float temperature_c = dallas_temperature_task_.getLastSample().value;
+      //   float temperature_coefficient = 1 + 0.02 * (temperature_c - 25);
+      //   float compensation_v = analog_v / temperature_coefficient;
+      //   float tds =
+      //       (133.42 * std::pow(compensation_v, 3) -
+      //        255.86 * std::pow(compensation_v, 2) + 857.39 * compensation_v) *
+      //       0.5;
+      //   Serial.printf(
+      //       "TDS = %fmg/L, Compensation = %f, TempCoef = %f, °C = %f, Analog V "
+      //       "= "
+      //       "%f\n",
+      //       tds, compensation_v, temperature_coefficient, temperature_c,
+      //       analog_v);
 
-        // Exit condition. Replace with tds task check when implemented
-        if (!pump_task_.isEnabled()) {
-          Serial.println("Finished pumping");
+      //   // Exit condition. Replace with tds task check when implemented
+      //   if (!pump_task_.isEnabled()) {
+      //     Serial.println("Finished pumping");
 
-          mqtt_.send("total_dissolved_solids_mg_per_L", tds);
-          mqtt_.send("total_dissolved_solids_sensor_active", "false");
+      //     mqtt_.send("total_dissolved_solids_mg_per_L", tds);
+      //     mqtt_.send("total_dissolved_solids_sensor_active", "false");
 
-          dallas_temperature_task_.disable();
-          io_.disableAnalog(tds_id);
+      //     dallas_temperature_task_.disable();
+      //     io_.disableAnalog(tds_id);
 
-          report_index_++;
-          is_report_item_enabled = false;
-        }
-      } break;
+      //     report_index_++;
+      //     is_report_item_enabled = false;
+      //   }
+      // } break;
       case Action::kAcidity: {
         // Execute once at start of task
         if (!is_report_item_enabled) {
@@ -163,28 +173,28 @@ bool MeasurementProtocol::Callback() {
           is_report_item_enabled = false;
         }
       } break;
-      case Action::kTurbidity: {
-        if (!is_report_item_enabled) {
-          pump_task_.setDuration(report_list_[report_index_].duration);
-          pump_task_.enable();
-          is_report_item_enabled = true;
-        }
+      // case Action::kTurbidity: {
+      //   if (!is_report_item_enabled) {
+      //     pump_task_.setDuration(report_list_[report_index_].duration);
+      //     pump_task_.enable();
+      //     is_report_item_enabled = true;
+      //   }
 
-        float turbidity_v = io_.readAnalog(bernd_box::Sensor::kTurbidity) *
-                            io_.analog_reference_v_ / io_.analog_raw_range_;
-        Serial.printf("Turbidity is %fV\n", turbidity_v);
+      //   float turbidity_v = io_.readAnalog(bernd_box::Sensor::kTurbidity) *
+      //                       io_.analog_reference_v_ / io_.analog_raw_range_;
+      //   Serial.printf("Turbidity is %fV\n", turbidity_v);
 
-        // End once an update has been saved
-        if (!pump_task_.isEnabled()) {
-          Serial.printf("Turbidity is %fV\n", turbidity_v);
-          mqtt_.send(io_.adcs_.at(bernd_box::Sensor::kTurbidity).name,
-                     turbidity_v);
+      //   // End once an update has been saved
+      //   if (!pump_task_.isEnabled()) {
+      //     Serial.printf("Turbidity is %fV\n", turbidity_v);
+      //     mqtt_.send(io_.adcs_.at(bernd_box::Sensor::kTurbidity).name,
+      //                turbidity_v);
 
-          report_index_++;
-          is_report_item_enabled = false;
-          // TODO: check the sensor ID
-        }
-      } break;
+      //     report_index_++;
+      //     is_report_item_enabled = false;
+      //     // TODO: check the sensor ID
+      //   }
+      // } break;
       case Action::kSleep: {
         if (!is_report_item_enabled) {
           Serial.printf(

@@ -3,18 +3,21 @@
 namespace bernd_box {
 namespace tasks {
 DissolvedOxygenSensor::DissolvedOxygenSensor(Scheduler* scheduler, Io& io,
-                                             Mqtt& mqtt, Sensor used_sensor)
-    : Task(scheduler),
-      io_(io),
-      mqtt_(mqtt),
-      is_calibration_mode_(false),
-      used_sensor_(used_sensor) {
+                                             Mqtt& mqtt)
+    : Task(scheduler), io_(io), mqtt_(mqtt), is_calibration_mode_(false) {
   setIterations(TASK_FOREVER);
   Task::setInterval(std::chrono::milliseconds(default_period_).count());
   clearMeasurements();
 }
 
 DissolvedOxygenSensor::~DissolvedOxygenSensor() {}
+
+void DissolvedOxygenSensor::setSensorId(const int sensor_id) {
+  clearMeasurements();
+  used_sensor_ = sensor_id;
+}
+
+bool DissolvedOxygenSensor::isReady() { return used_sensor_ > -1; }
 
 float DissolvedOxygenSensor::getMedianMeasurement() {
   // Find how many measurements have been stored. Either the first element

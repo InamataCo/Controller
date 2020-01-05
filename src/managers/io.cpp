@@ -2,7 +2,9 @@
 
 namespace bernd_box {
 
-Io::Io() : one_wire_(one_wire_pin_), dallas_(&one_wire_) {}
+Io::Io() : one_wire_(one_wire_pin_), dallas_(&one_wire_) {
+  pwm_channels_.fill(-1);
+}
 
 Io::~Io() {}
 
@@ -68,6 +70,49 @@ Result Io::init() {
   return result;
 }
 
+Result Io::addDevice(const String& name, int& id) {
+  bool found = false;
+  for (const auto& i : names_) {
+    if (i.second == name) {
+      found = true;
+      break;
+    }
+  }
+
+  if (!found) {
+    // Increment the last ID given and assign the device name to it
+    last_name_id_++;
+    names_[last_name_id_] = name;
+    id = last_name_id_;
+    return Result::kSuccess;
+  } else {
+    return Result::kNameAlreadyExists;
+  }
+}
+
+void Io::removeDevice(const int id) {
+  names_.erase(id);
+  return;
+}
+
+const String& Io::getName(const int id) {
+  const auto& name = names_.find(id);
+  if(name != names_.end()) {
+    return name->second;
+  } else {
+    return empty_;
+  }
+}
+
+const int Io::getId(const String& name) {
+  for(const auto& i : names_) {
+    if(i.second == name) {
+      return i.first; 
+    }
+  }
+  return -1;
+}
+
 void Io::setStatusLed(bool state) {
   if (state == true) {
     digitalWrite(status_led_pin_, HIGH);
@@ -76,7 +121,7 @@ void Io::setStatusLed(bool state) {
   }
 }
 
-float Io::read(Sensor sensor_id) {
+float Io::read(int sensor_id) {
   // If no matching sensors are found, return NAN
   float value = NAN;
 
@@ -103,7 +148,7 @@ float Io::read(Sensor sensor_id) {
   return value;
 }
 
-float Io::readAnalog(Sensor sensor_id) {
+float Io::readAnalog(int sensor_id) {
   float value = NAN;
 
   auto it = adcs_.find(sensor_id);
@@ -116,9 +161,10 @@ float Io::readAnalog(Sensor sensor_id) {
   return value;
 }
 
-float Io::readAnalogV(Sensor sensor_id) {
+float Io::readAnalogV(int sensor_id) {
   float value = readAnalog(sensor_id);
-  if (!std::isnan(value) && analog_reference_v_ != 0 && analog_raw_range_ != 0) {
+  if (!std::isnan(value) && analog_reference_v_ != 0 &&
+      analog_raw_range_ != 0) {
     value *= analog_reference_v_ / analog_raw_range_;
   } else {
     value = NAN;
@@ -127,7 +173,7 @@ float Io::readAnalogV(Sensor sensor_id) {
   return value;
 }
 
-Result Io::enableAnalog(Sensor sensor_id) {
+Result Io::enableAnalog(int sensor_id) {
   Result result;
 
   auto it = adcs_.find(sensor_id);
@@ -158,7 +204,7 @@ void Io::enableAllAnalog() {
   }
 }
 
-void Io::disableAnalog(Sensor sensor_id) {
+void Io::disableAnalog(int sensor_id) {
   auto it = adcs_.find(sensor_id);
   if (it != adcs_.end()) {
     disableAnalog(it->second);
@@ -193,6 +239,8 @@ Result Io::setPumpState(bool state) {
   return result;
 }
 
+void Io::enableOutput(uint8_t pin) { pinMode(pin, OUTPUT); }
+
 void Io::setPinState(uint8_t pin, bool state) {
   if (state) {
     digitalWrite(pin, HIGH);
@@ -201,7 +249,43 @@ void Io::setPinState(uint8_t pin, bool state) {
   }
 }
 
-float Io::readDallasTemperature(Sensor sensor_id) {
+Result Io::setPinPwm(uint8_t pin, float percent) {
+  // Reserve the first unused channel, setup the PWM generator and attach a pin
+  bool pin_set = false;
+  for (int i = 0; i < pwm_channels_.size(); i++) {
+    if (pwm_channels_[i] == -1 || pwm_channels_[i] == pin) {
+      pwm_channels_[i] = pin;
+      ledcSetup(i, pwm_frequency_, pwm_resolution_);
+      ledcAttachPin(pin, i);
+
+      // 0 to 1^pwm_resolution - 1 : 0 to 100 %, 0 to 8095 for 13 bits
+      uint32_t duty_cycle =
+          float((1 << pwm_resolution_) - 1) * percent / float(100);
+      ledcWrite(i, duty_cycle);
+
+      pin_set = true;
+      break;
+    }
+  }
+
+  if(pin_set) {
+    return Result::kSuccess;
+  } else {
+    return Result::kFailure;
+  }
+}
+
+void Io::removePinPwm(uint8_t pin) {
+  // Detacht the pin from the PWM generator and free the reservation
+  for (int i = 0; i < pwm_channels_.size(); i++) {
+    if (pwm_channels_[i] == pin) {
+      ledcDetachPin(pin);
+      pwm_channels_[i] = -1;
+    }
+  }
+}
+
+float Io::readDallasTemperature(int sensor_id) {
   float temperature_c = NAN;
 
   auto it = dallases_.find(sensor_id);
@@ -298,7 +382,7 @@ long Io::dallasAddressToInt(const uint8_t* address) {
   return result;
 }
 
-float Io::readBh1750Light(Sensor sensor_id) {
+float Io::readBh1750Light(int sensor_id) {
   float lux = NAN;
 
   const auto& it = bh1750s_.find(sensor_id);
@@ -311,7 +395,7 @@ float Io::readBh1750Light(Sensor sensor_id) {
   return lux;
 }
 
-float Io::readMax44009Light(Sensor sensor_id) {
+float Io::readMax44009Light(int sensor_id) {
   float lux = NAN;
 
   const auto& it = max44009s_.find(sensor_id);
@@ -328,7 +412,7 @@ float Io::readMax44009Light(Sensor sensor_id) {
   return lux;
 }
 
-float Io::readBme280Air(Sensor sensor_id) {
+float Io::readBme280Air(int sensor_id) {
   float value = NAN;
 
   const auto& it = bme280s_.find(sensor_id);

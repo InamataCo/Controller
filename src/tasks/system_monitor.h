@@ -4,7 +4,7 @@
 #include <chrono>
 
 #include "config.h"
-#include "mqtt.h"
+#include "managers/mqtt.h"
 #include "task.h"
 
 namespace bernd_box {
@@ -21,7 +21,7 @@ class SystemMonitor : public Task {
 
   /**
    * Specifies how often the system monitor should check and send its state
-   * 
+   *
    * \param interval How often the check should be performed
    */
   void setInterval(std::chrono::milliseconds interval);
@@ -29,7 +29,7 @@ class SystemMonitor : public Task {
  private:
   /**
    * Measure the state of the heap.
-   * 
+   *
    * \return true
    */
   bool Callback() final;

@@ -2,8 +2,8 @@
 #define BERND_BOX_TASKS_PUMP_H
 
 #include "config.h"
-#include "io.h"
-#include "mqtt.h"
+#include "managers/io.h"
+#include "managers/mqtt.h"
 #include "task.h"
 
 namespace bernd_box {
@@ -21,7 +21,7 @@ class Pump : public Task {
 
   void setDuration(std::chrono::milliseconds duration);
   const std::chrono::milliseconds getDuration();
-  
+
  private:
   bool OnEnable() final;
   bool Callback() final;
