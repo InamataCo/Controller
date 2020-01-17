@@ -10,6 +10,9 @@
 #define BERND_BOX_IO_H
 
 #include <Arduino.h>
+#include <ArduinoJson.h>
+
+#include "managers/mqtt.h"
 
 // STD C++ includes placed after Arduino.h
 #include <algorithm>
@@ -92,7 +95,7 @@ class Io {
   const uint analog_raw_range_ = 4096;
   const float analog_reference_v_ = 3.3;
 
-  Io();
+  Io(Mqtt& mqtt);
 
   virtual ~Io();
 
@@ -107,7 +110,7 @@ class Io {
    * Create a device name and get an ID
    *
    * \param name Name of the device, has to be unique
-   * \param id The resulting ID is saved into the reference
+   * \param id The resulting ID is saved into the reference. No change on error
    * \return kSuccess on success, kNameAlreadyExists if the name is taken
    */
   Result addDevice(const String& name, int& id);
@@ -123,12 +126,18 @@ class Io {
 
   /**
    * Get a device name for a given ID
-   * 
+   *
    * \param id The device's ID
    * \return A reference to the device's name
    */
   const String& getName(const int id);
 
+  /**
+   * Gets the ID of a device for a given name
+   *
+   * \param name The device's name
+   * \return The ID
+   */
   const int getId(const String& name);
 
   /**
@@ -260,13 +269,22 @@ class Io {
 
   float readBme280Air(int sensor_id);
 
- private:
   /**
-   * Checks if the sensor naming in the maps do not overlap
-   *
-   * \return True if they are valid
+   * Checks if a client with the address exists on an I2C bus
+   * 
+   * \param address Address of the client to check
+   * \return Device ID of the I2C bus
    */
-  bool isSensorIdNamingValid();
+  Result checkI2cAddress(uint8_t address, const int i2c_interface_id);
+
+  const std::map<int, TwoWire&>& getI2cInterfaces();
+
+ private:
+  void i2cMqttCallback(char* topic, uint8_t* payload, unsigned int length);
+  Result addI2cInterface(const JsonObjectConst& doc);
+  Result removeI2cInterface(const JsonObjectConst& doc);
+
+  Mqtt& mqtt_;
 
   /// Mapping of 16 PWM channels to pins. Index = channel, value = pin
   /// pwm_channel_[2] = 33; --> pin 33 is using pwm channel 2
@@ -291,6 +309,9 @@ class Io {
   // Interface to Dallas temperature sensors
   OneWire one_wire_;
   DallasTemperature dallas_;
+
+  // List of I2C interfaces
+  std::map<int, TwoWire&> i2c_interfaces_;
 };
 
 }  // namespace bernd_box

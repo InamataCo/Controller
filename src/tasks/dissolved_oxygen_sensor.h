@@ -1,7 +1,7 @@
 #ifndef BERND_BOX_TASKS_DISSOLVED_OXYGEN_SENSOR_H
 #define BERND_BOX_TASKS_DISSOLVED_OXYGEN_SENSOR_H
 
-#include "task.h"
+#include "TaskSchedulerDeclarations.h"
 
 #include "managers/io.h"
 #include "managers/mqtt.h"

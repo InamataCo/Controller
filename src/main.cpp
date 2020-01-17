@@ -1,42 +1,36 @@
 /**
  * \author Moritz Ulmer <moritz.ulmer@posteo.de>
  * \date 2018
- * \copyright Apache License 2.0
+ * \copyright MIT License
  */
 
 #include <Arduino.h>
+#include <TaskScheduler.h>
 
 #include "configuration.h"
 #include "managers/io.h"
 #include "managers/mqtt.h"
 #include "managers/network.h"
-#include "utils/setupNode.h"
-
-// tasks/task.h before TaskScheduler as it sets the TaskScheduler defines
-// clang-format off
-#include "tasks/task.h"
-#include <TaskScheduler.h>
-// clang-format on
-
 #include "tasks/acidity_sensor.h"
 #include "tasks/air_sensors.h"
 #include "tasks/analog_sensors.h"
 #include "tasks/connectivity.h"
 #include "tasks/dallas_temperature.h"
 #include "tasks/dissolved_oxygen_sensor.h"
+#include "tasks/l293d_motors.h"
 #include "tasks/light_sensors.h"
 #include "tasks/measurement_protocol.h"
 #include "tasks/pump.h"
 #include "tasks/system_monitor.h"
-#include "tasks/l293d_motors.h"
+#include "utils/setupNode.h"
 
 //----------------------------------------------------------------------------
 // Global instances
 WiFiClient wifiClient;
 Scheduler scheduler;
 
-bernd_box::Io io;
 bernd_box::Mqtt mqtt(wifiClient);
+bernd_box::Io io(mqtt);
 bernd_box::Network network(bernd_box::ssid, bernd_box::password);
 
 //----------------------------------------------------------------------------
@@ -74,12 +68,6 @@ bernd_box::tasks::L293dMotors l293d_motors(&scheduler, io, mqtt);
 
 //----------------------------------------------------------------------------
 // Setup and loop functions
-
-// void mqttCallback(char*, uint8_t*, unsigned int) {
-//   Serial.println(F("Enabling pump"));
-//   pumpTask.enable();
-// }
-
 void setup() {
   io.setStatusLed(true);
   if (!bernd_box::setupNode()) {
@@ -90,10 +78,6 @@ void setup() {
 
   checkConnectivity.enable();
   systemMonitorTask.enable();
-  // systemMonitorTask.forceNextIteration();
-
-  // mqtt.client_.setCallback(mqttCallback);
-  // mqtt.client_.subscribe("pump");
 
   // Try to configure the IO devices, else restart
   if (io.init() != bernd_box::Result::kSuccess) {
@@ -102,11 +86,6 @@ void setup() {
     ESP.restart();
   }
 
-  // pumpTask.enable();
-  // pinMode(32, INPUT_PULLUP);
-
-  // measurementProtocol.enable();
-
   checkConnectivity.isSetup_ = true;
 
   io.setStatusLed(false);
@@ -114,9 +93,4 @@ void setup() {
 
 void loop() {
   scheduler.execute();
-  // if (!digitalRead(32)) {
-  //   Serial.println("button!");
-  //   mqtt.send("button", true);
-  //   pumpTask.enable();
-  // }
 }

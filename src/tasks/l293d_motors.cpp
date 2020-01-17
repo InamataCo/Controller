@@ -4,11 +4,11 @@ namespace bernd_box {
 namespace tasks {
 
 L293dMotors::L293dMotors(Scheduler* scheduler, Io& io, Mqtt& mqtt)
-    : Task(scheduler), io_(io), mqtt_(mqtt), name_(F("l293d_motor")) {
+    : Task(scheduler), io_(io), mqtt_(mqtt) {
   setIterations(TASK_FOREVER);
   setInterval(TASK_SECOND);  // All logic is in OnEnable and OnDisable
 
-  mqtt_.addAction(String("l293d_motor"),
+  mqtt_.addAction(name_,
                   std::bind(&L293dMotors::mqttCallback, this, _1, _2, _3));
 }
 L293dMotors::~L293dMotors() {}
@@ -116,7 +116,7 @@ void L293dMotors::mqttCallback(char* topic, uint8_t* payload,
 
   // If no known action is included, send an error
   if (!action_found) {
-    mqtt_.sendError(who, "No known action found.");
+    mqtt_.sendError(who, F("No known action found [add, remove, enable, disable]"));
   }
 }
 
@@ -128,7 +128,7 @@ Result L293dMotors::addRun(int id, std::chrono::milliseconds duration,
   // Check if an existing run is already using the motor
   for (const auto& run : runs_) {
     if (run.l293d_motor_id == id) {
-      mqtt_.sendError(who, "Another run is already using the motor");
+      mqtt_.sendError(who, String(F("Another run is already using: ")) + io_.getName(id));
       return Result::kFailure;
     }
   }
@@ -224,7 +224,7 @@ Result L293dMotors::disableRun(Run& run, bool abort) {
     }
   }
 
-  mqtt_.send(String(name_), doc);
+  mqtt_.send(name_, doc);
   return Result::kSuccess;
 }
 
@@ -235,14 +235,6 @@ Result L293dMotors::addDevice(const JsonObjectConst& doc) {
   JsonVariantConst name = doc[F("name")];
   if (name.isNull() || !name.is<char*>()) {
     mqtt_.sendError(who, "Missing property: name (string)");
-    return Result::kFailure;
-  }
-
-  // Register the name. Will fail if it already exists
-  int id;
-  Result result = io_.addDevice(name, id);
-  if (result != Result::kSuccess) {
-    mqtt_.sendError(who, String(F("Name already exists: ")) + name.as<char*>());
     return Result::kFailure;
   }
 
@@ -273,6 +265,13 @@ Result L293dMotors::addDevice(const JsonObjectConst& doc) {
   }
   if (pin_enable < 0) {
     mqtt_.sendError(who, F("pin_enable has to be >= 0"));
+    return Result::kFailure;
+  }
+
+  int id;
+  Result result = io_.addDevice(name, id);
+  if (result != Result::kSuccess) {
+    mqtt_.sendError(who, String(F("Name already exists: ")) + name.as<char*>());
     return Result::kFailure;
   }
 
@@ -317,7 +316,7 @@ Result L293dMotors::enableDevice(const JsonObjectConst& doc) {
   }
   const int id = io_.getId(name.as<char*>());
   if (id < 0 || io_.l293d_motors_.find(id) == io_.l293d_motors_.end()) {
-    mqtt_.sendError(who, F("l293D motor name not found"));
+    mqtt_.sendError(who, F("L293D motor name not found"));
     return Result::kFailure;
   }
 

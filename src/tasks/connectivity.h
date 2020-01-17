@@ -1,10 +1,10 @@
 #ifndef BERND_BOX_TASKS_CONNECTIVITY_H
 #define BERND_BOX_TASKS_CONNECTIVITY_H
 
+#include "TaskSchedulerDeclarations.h"
 #include "managers/io.h"
 #include "managers/mqtt.h"
 #include "managers/network.h"
-#include "task.h"
 #include "utils/setupNode.h"
 
 namespace bernd_box {

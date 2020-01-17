@@ -26,14 +26,14 @@ const std::chrono::milliseconds Pump::getDuration() {
 }
 
 void Pump::MqttCallback(char* topic, uint8_t* payload, unsigned int length) {
-  String who(F("tasks::Pump::MqttCallback"));
+  const char* who = __PRETTY_FUNCTION__;
 
   // Try to deserialize the message
   StaticJsonDocument<BB_MQTT_JSON_PAYLOAD_SIZE> doc;
   DeserializationError error = deserializeJson(doc, payload, length);
   if (error) {
     mqtt_.sendError(who,
-                    String(F("deserializeJson() failed: ")) + error.c_str());
+                    String(F("deserialize JSON failed: ")) + error.c_str());
     return;
   }
 
@@ -43,7 +43,7 @@ void Pump::MqttCallback(char* topic, uint8_t* payload, unsigned int length) {
   // Set the duration to keep the pump on. 0 for forever
   if (doc.containsKey(F("duration_s"))) {
     std::chrono::seconds duration(doc[F("duration_s")]);
-    if(duration < std::chrono::seconds(0)) {
+    if (duration < std::chrono::seconds(0)) {
       mqtt_.sendError(who, F("Invalid duration less than 0."));
       return;
     }

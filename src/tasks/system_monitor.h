@@ -3,9 +3,9 @@
 
 #include <chrono>
 
+#include "TaskSchedulerDeclarations.h"
 #include "config.h"
 #include "managers/mqtt.h"
-#include "task.h"
 
 namespace bernd_box {
 namespace tasks {
@@ -28,14 +28,22 @@ class SystemMonitor : public Task {
 
  private:
   /**
+   * Resets the CPU load counters and delays the task for one iteration
+   * 
+   * \return true
+   */
+  bool OnEnable() final;
+
+  /**
    * Measure the state of the heap.
    *
    * \return true
    */
   bool Callback() final;
 
+  Scheduler* scheduler_;
   Mqtt& mqtt_;
-  /// The suffix of the telemetry topic to publish on
+  /// The suffix of the telemetry and action topic to publish on
   const __FlashStringHelper* name_;
 };
 

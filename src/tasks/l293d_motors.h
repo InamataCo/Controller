@@ -1,14 +1,20 @@
+#ifndef BERND_BOX_TASKS_L293D_MOTORS_H
+#define BERND_BOX_TASKS_L293D_MOTORS_H
+
 #include <ArduinoJson.hpp>
 #include <array>
 
 #include "managers/io.h"
 #include "managers/mqtt.h"
-#include "task.h"
+#include "TaskSchedulerDeclarations.h"
 
 namespace bernd_box {
 namespace tasks {
 class L293dMotors : public Task {
- public:
+ private:
+  /// Name used in the MQTT topics (action and tele)
+  const __FlashStringHelper* name_{F("l293d_motor")};
+
   /// Run time parameters
   struct Run {
     int l293d_motor_id;                    // ID of the motor driver to use
@@ -19,6 +25,7 @@ class L293dMotors : public Task {
     bool forward;           // True if in forward direction, false for reverse
   };
 
+ public:
   L293dMotors(Scheduler* scheduler, Io& io, Mqtt& mqtt);
   virtual ~L293dMotors();
 
@@ -29,6 +36,7 @@ class L293dMotors : public Task {
   bool OnEnable() final;
   bool Callback() final;
   void OnDisable() final;
+  void mqttCallback(char* topic, uint8_t* payload, unsigned int length);
 
   /**
    * Add run to be started immediately. enable() is called by default.
@@ -56,8 +64,6 @@ class L293dMotors : public Task {
    * \param abort False if a normal exit, true if the run was terminated early
    */
   Result disableRun(Run& run, bool abort);
-
-  void mqttCallback(char* topic, uint8_t* payload, unsigned int length);
 
   /**
    * Creates a new interface to an L239d device
@@ -93,8 +99,9 @@ class L293dMotors : public Task {
 
   Io& io_;
   Mqtt& mqtt_;
-  const __FlashStringHelper* name_;
   std::vector<Run> runs_;
 };
 }  // namespace tasks
 }  // namespace bernd_box
+
+#endif

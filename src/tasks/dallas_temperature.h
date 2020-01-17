@@ -6,7 +6,7 @@
 #include "managers/io.h"
 #include "managers/io_types.h"
 #include "managers/mqtt.h"
-#include "tasks/task.h"
+#include "TaskSchedulerDeclarations.h"
 
 namespace bernd_box {
 namespace tasks {

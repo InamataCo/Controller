@@ -4,7 +4,7 @@
 #include "config.h"
 #include "managers/io.h"
 #include "managers/mqtt.h"
-#include "task.h"
+#include "TaskSchedulerDeclarations.h"
 
 namespace bernd_box {
 namespace tasks {

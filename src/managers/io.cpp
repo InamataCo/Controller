@@ -2,8 +2,11 @@
 
 namespace bernd_box {
 
-Io::Io() : one_wire_(one_wire_pin_), dallas_(&one_wire_) {
+Io::Io(Mqtt& mqtt)
+    : mqtt_(mqtt), one_wire_(one_wire_pin_), dallas_(&one_wire_) {
   pwm_channels_.fill(-1);
+  mqtt_.addAction(F("i2c_interface"),
+                  std::bind(&Io::i2cMqttCallback, this, _1, _2, _3));
 }
 
 Io::~Io() {}
@@ -21,14 +24,6 @@ Result Io::init() {
   }
 
   disableAllAnalog();
-
-  // Start I2C for the relevant sensors
-  Wire.begin(i2c_sda_pin_, i2c_scl_pin_);
-
-  // Set the sense mode of the BH1750 sensors
-  for (auto& it : bh1750s_) {
-    it.second.interface.begin(it.second.mode);
-  }
 
   // Check that the addresses match and then init the BME280 sensors
   for (auto& it : bme280s_) {
@@ -97,7 +92,7 @@ void Io::removeDevice(const int id) {
 
 const String& Io::getName(const int id) {
   const auto& name = names_.find(id);
-  if(name != names_.end()) {
+  if (name != names_.end()) {
     return name->second;
   } else {
     return empty_;
@@ -105,9 +100,9 @@ const String& Io::getName(const int id) {
 }
 
 const int Io::getId(const String& name) {
-  for(const auto& i : names_) {
-    if(i.second == name) {
-      return i.first; 
+  for (const auto& i : names_) {
+    if (i.second == name) {
+      return i.first;
     }
   }
   return -1;
@@ -268,7 +263,7 @@ Result Io::setPinPwm(uint8_t pin, float percent) {
     }
   }
 
-  if(pin_set) {
+  if (pin_set) {
     return Result::kSuccess;
   } else {
     return Result::kFailure;
@@ -450,6 +445,141 @@ float Io::readBme280Air(int sensor_id) {
   }
 
   return value;
+}
+
+Result Io::checkI2cAddress(uint8_t address, const int interface_id) {
+  const auto interface = i2c_interfaces_.find(interface_id);
+  if (interface == i2c_interfaces_.end()) {
+    return Result::kIdNotFound;
+  }
+
+  bool found = interface->second.find(address);
+  if (found) {
+    return Result::kSuccess;
+  } else {
+    return Result::kDeviceDisconnected;
+  }
+}
+
+const std::map<int, TwoWire&>& Io::getI2cInterfaces() {
+  return i2c_interfaces_;
+}
+
+void Io::i2cMqttCallback(char* topic, uint8_t* payload, unsigned int length) {
+  const char* who = __PRETTY_FUNCTION__;
+
+  // Try to deserialize the message
+  DynamicJsonDocument doc(BB_MQTT_JSON_PAYLOAD_SIZE);
+  const DeserializationError error = deserializeJson(doc, payload, length);
+  if (error) {
+    mqtt_.sendError(who, String(F("Deserialize failed: ")) + error.c_str());
+    return;
+  }
+
+  // Handle all known actions
+  bool action_found = false;
+  JsonVariantConst add = doc[F("add")];
+  if (!add.isNull()) {
+    addI2cInterface(add);
+    action_found = true;
+  }
+  JsonVariantConst remove_doc = doc[F("remove")];
+  if (!remove_doc.isNull()) {
+    removeI2cInterface(remove_doc);
+    action_found = true;
+  }
+
+  // If no known action is included, send an error
+  if (!action_found) {
+    mqtt_.sendError(who, F("No known action found [add, remove]"));
+  }
+}
+
+Result Io::addI2cInterface(const JsonObjectConst& doc) {
+  const char* who = __PRETTY_FUNCTION__;
+
+  // Check that all properties are there and their types
+  JsonVariantConst name = doc[F("name")];
+  if (name.isNull() || !name.is<char*>()) {
+    mqtt_.sendError(who, "Missing property: name (string)");
+    return Result::kFailure;
+  }
+
+  JsonVariantConst scl_pin = doc[F("scl_pin")];
+  if (!scl_pin.is<uint8_t>()) {
+    mqtt_.sendError(who, "Missing property: scl_pin (uint)");
+    return Result::kFailure;
+  }
+
+  JsonVariantConst sda_pin = doc[F("sda_pin")];
+  if (!sda_pin.is<uint8_t>()) {
+    mqtt_.sendError(who, "Missing property: sda_pin (uint)");
+    return Result::kFailure;
+  }
+
+  int id;
+  Result result = addDevice(name, id);
+  if (result != Result::kSuccess) {
+    mqtt_.sendError(who, String(F("Name already exists: ")) + name.as<char*>());
+    return Result::kFailure;
+  }
+
+  // for(auto wire : {&Wire, &Wire1}) {
+  //   // Check if the TwoWire instance is being used
+  //   bool used = false;
+  //   for(auto i : i2c_interfaces_) {
+  //     if(wire == &i.second) {
+  //       used = true;
+  //     }
+  //   }
+
+  //   // If not, add and initialize it
+  //   if(!used) {
+  //     i2c_interfaces_.emplace(id, wire);
+  //     wire->begin(sda_pin, scl_pin);
+  //     return Result::kSuccess;
+  //   }
+  // }
+
+  // Check which TwoWire instance is not being used, then register it and start
+  bool added = false;
+  std::array<TwoWire*, 2> wires{&Wire, &Wire1};
+  for (auto wire : wires) {
+    if (std::none_of(
+            i2c_interfaces_.begin(), i2c_interfaces_.end(),
+            [wire](std::pair<int, TwoWire&> j) { return wire == &j.second; })) {
+      i2c_interfaces_.emplace(id, *wire);
+      wire->begin(sda_pin, scl_pin);
+      added = true;
+      break;
+    }
+  }
+
+  // If it was not added, return a failure
+  if (added) {
+    return Result::kSuccess;
+  } else {
+    mqtt_.sendError(who, F("Both TwoWire instances are already being used."));
+    return Result::kFailure;
+  }
+}
+
+Result Io::removeI2cInterface(const JsonObjectConst& doc) {
+  const char* who = __PRETTY_FUNCTION__;
+
+  JsonVariantConst name = doc[F("name")];
+  if (name.isNull() || !name.is<char*>()) {
+    if (who) {
+      mqtt_.sendError(who, "Missing property: name (string)");
+    }
+    return Result::kFailure;
+  }
+
+  const int id = getId(name);
+  i2c_interfaces_.erase(id);
+  removeDevice(id);
+
+  return Result::kSuccess;
 }
 
 }  // namespace bernd_box

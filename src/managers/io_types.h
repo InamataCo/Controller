@@ -44,10 +44,11 @@ struct Measurement {
 
 /// Sensor type of BH1750 light sensors
 struct Bh1750Sensor {
-  BH1750::Mode mode;
+  // Need copy-assignment due to GCC bug: stackoverflow.com/questions/53213681/
+  void operator=(const Bh1750Sensor&) const {}
   BH1750 interface;
-  String name;
-  String unit;
+  uint8_t address;
+  int i2c_interface_id;
 };
 
 /// Sensor type of MAX44009

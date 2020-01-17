@@ -12,7 +12,7 @@
 #include "dissolved_oxygen_sensor.h"
 #include "managers/mqtt.h"
 #include "pump.h"
-#include "task.h"
+#include "TaskSchedulerDeclarations.h"
 
 namespace bernd_box {
 namespace tasks {

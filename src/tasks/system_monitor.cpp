@@ -4,15 +4,28 @@ namespace bernd_box {
 namespace tasks {
 
 SystemMonitor::SystemMonitor(Scheduler* scheduler, Mqtt& mqtt)
-    : Task(scheduler), mqtt_(mqtt), name_(F("system_monitor")) {
+    : Task(scheduler),
+      scheduler_(scheduler),
+      mqtt_(mqtt),
+      name_(F("system_monitor")) {
   setIterations(TASK_FOREVER);
-  std::chrono::minutes default_interval(5);
+
+  // Max time is ~72 minutes due to an overflow in the CPU load counter
+  std::chrono::seconds default_interval(60);
   Task::setInterval(std::chrono::milliseconds(default_interval).count());
 }
 SystemMonitor::~SystemMonitor() {}
 
 void SystemMonitor::setInterval(std::chrono::milliseconds interval) {
   Task::setInterval(interval.count());
+}
+
+bool SystemMonitor::OnEnable() {
+  // Reset counters to calculate CPU load. Wait one interval for valid readings
+  scheduler_->cpuLoadReset();
+  delay();
+
+  return true;
 }
 
 bool SystemMonitor::Callback() {
@@ -29,8 +42,18 @@ bool SystemMonitor::Callback() {
       (float(free_bytes) - float(max_malloc_bytes)) / float(free_bytes) *
       float(100);
   doc["least_free_bytes"] = least_free_bytes;
-  mqtt_.send(String(name_), doc);
 
+  float cpuTotal = scheduler_->getCpuLoadTotal();
+  float cpuCycles = scheduler_->getCpuLoadCycle();
+  float cpuIdle = scheduler_->getCpuLoadIdle();
+  scheduler_->cpuLoadReset();
+
+  // Time in idle loop
+  doc["cpu_idle_percent"] = cpuIdle / cpuTotal * 100.0;
+  // Productive work (not idle, not scheduling) --> time in task callbacks
+  doc["productive_percent"] = 100 - ((cpuIdle + cpuCycles) / cpuTotal * 100.0);
+
+  mqtt_.send(name_, doc);
   return true;
 }
 
