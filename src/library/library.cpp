@@ -1,5 +1,8 @@
 #include "library.h"
 
+#include "periphery/periphery.h"
+#include "periphery/peripheryFactory.h"
+
 namespace bernd_box {
 namespace library {
 
@@ -68,6 +71,21 @@ Periphery& Library::getPeriphery(String& name) {
 }
 
 Mqtt& Library::getMQTT() { return mqtt_; }
+
+Result Library::handleCallback(char* topic, uint8_t* payload,
+                               unsigned int length) {
+  const char* who = __PRETTY_FUNCTION__;
+
+  char* command = strrchr(topic, '/');
+  command++;
+
+  DynamicJsonDocument doc(BB_MQTT_JSON_PAYLOAD_SIZE);
+  const DeserializationError error = deserializeJson(doc, payload, length);
+  if (error) {
+    mqtt_.sendError(who, String(F("Deserialize failed: ")) + error.c_str());
+    return Result::kFailure;
+  }
+}
 
 }  // namespace library
 }  // namespace bernd_box

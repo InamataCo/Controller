@@ -5,7 +5,8 @@ namespace bernd_box {
 Mqtt::Mqtt(WiFiClient& wifi_client)
     : client_(wifi_client),
       server_port_(BB_MQTT_PORT),
-      default_qos_(BB_DEFAULT_QOS) {
+      default_qos_(BB_DEFAULT_QOS), 
+      library_(*new bernd_box::library::Library(*this)){
   uint8_t mac_address[6];
   esp_efuse_mac_get_default(mac_address);
 
@@ -205,6 +206,8 @@ void Mqtt::handleCallback(char* topic, uint8_t* message, unsigned int length) {
   // action/a48b109f-975f-42e2-9962-a6fb752a1b6e/pump -> action
   int action_topic_rv = strncmp(topic, BB_MQTT_TOPIC_ACTION_PREFIX,
                                 strlen(BB_MQTT_TOPIC_ACTION_PREFIX));
+  int object_topic_rv = strncmp(topic, BB_MQTT_TOPIC_OBJECT_PREFIX,
+                                strlen(BB_MQTT_TOPIC_OBJECT_PREFIX));
   if (action_topic_rv == 0) {
     // Extract the name from the topic and increment once to skip the last
     // slash: action/a48b109f-975f-42e2-9962-a6fb752a1b6e/pump -> pump
@@ -218,6 +221,9 @@ void Mqtt::handleCallback(char* topic, uint8_t* message, unsigned int length) {
       sendError("mqtt::handleCallback",
                 String(F("No registered callback for action: ")) + action);
     }
+    return;
+  } else if (object_topic_rv == 0) {
+    library_.handleCallback(topic,message,length);
     return;
   }
 

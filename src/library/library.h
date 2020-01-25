@@ -3,8 +3,8 @@
 
 #include "managers/io.h"
 #include "managers/mqtt.h"
-#include "periphery/periphery.h"
-#include "periphery/peripheryFactory.h"
+//#include "periphery/periphery.h"
+//#include "periphery/peripheryFactory.h"
 
 #include <Arduino.h>
 #include <ArduinoJson.h>
@@ -16,29 +16,31 @@
 #include <string>
 
 namespace bernd_box {
-namespace periphery{
+namespace periphery {
 class Periphery;
 }
-}
+}  // namespace bernd_box
 
 namespace bernd_box {
 namespace library {
 
 using namespace bernd_box::periphery;
 
-
 class Library {
- public:
-  Library(Mqtt& mqtt);
+ private:
   Result add(const JsonObjectConst& doc);
   Result remove(const JsonObjectConst& doc);
   Result execute(const JsonObjectConst& doc);
+
+ public:
+  Library(Mqtt& mqtt);
+  Result handleCallback(char* topic, uint8_t* payload, unsigned int length);
   Periphery& getPeriphery(String& name);
   Mqtt& getMQTT();
+
  private:
   Mqtt& mqtt_;
   std::map<String, Periphery&> peripheries_;
-
 };
 }  // namespace library
 }  // namespace bernd_box

@@ -10,6 +10,8 @@
 namespace bernd_box {
 namespace periphery {
 
+using namespace bernd_box::library;
+
 class Periphery {
  public:
   virtual String getType();  // TODO
