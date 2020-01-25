@@ -35,9 +35,10 @@ Result Library::add(const JsonObjectConst& doc) {
 
   // Not present, so create new
   PeripheryFactory& factory = PeripheryFactory::getPeripheryFactory();
-  Periphery& periphery = factory.createPeriphery(*this, name.as<String>(), doc);
-  peripheries_.insert(
-      std::pair<String, Periphery&>(name.as<String>(), periphery));
+  std::shared_ptr<Periphery> periphery(
+      factory.createPeriphery(*this, name.as<String>(), doc));
+  peripheries_.insert(std::pair<String, std::shared_ptr<Periphery>>(
+      name.as<String>(), periphery));
 
   return Result::kSuccess;
 }
@@ -47,17 +48,20 @@ Result Library::remove(const JsonObjectConst& doc) {
 
   JsonVariantConst name = doc[F("name")];
   if (name.isNull() || !name.is<char*>()) {
-    mqtt_.sendError(who, "Missing property: name (string)");
+    mqtt_.sendError(who, String(F("Missing property: name (string)")));
     return Result::kFailure;
   }
 
-  std::map<String, Periphery&>::iterator iterator =
-      peripheries_.find(name.as<String>());
-  if (iterator != peripheries_.end()){
-    Periphery& periphery = iterator->second;
-    delete &periphery;
+  auto iterator = peripheries_.find(name.as<String>());
+  if (iterator != peripheries_.end()) {
+    if (iterator->second.use_count() > 1) {
+      mqtt_.sendError(
+          who, String(F("Object is still in use. Try again later for ")) +
+                   name.as<String>());
+      return Result::kFailure;
+    }
     peripheries_.erase(iterator);
-  } 
+  }
 
   return Result::kSuccess;
 }
@@ -71,25 +75,24 @@ Result Library::execute(const JsonObjectConst& doc) {
     return Result::kFailure;
   }
 
-  std::map<String, Periphery&>::iterator iterator =
+  std::map<String, std::shared_ptr<Periphery>>::iterator iterator =
       peripheries_.find(name.as<String>());
-  if (iterator == peripheries_.end()){
-    mqtt_.sendError(who, "No object found with name "+name.as<String>());
+  if (iterator == peripheries_.end()) {
+    mqtt_.sendError(who, "No object found with name " + name.as<String>());
     return Result::kFailure;
   }
-  Periphery& periphery = iterator->second;
   Serial.println("Periphery = null ");
-  Result result = periphery.executeTask(doc);
+  Result result = iterator->second->executeTask(doc);
   if (result != Result::kSuccess) {
-    mqtt_.sendError(who, "The chosen periphery of type " + periphery.getType() +
+    mqtt_.sendError(who, "The chosen periphery of type " +
+                             iterator->second->getType() +
                              " can not execute this task.");
   }
   return result;
 }
 
-Periphery& Library::getPeriphery(String& name) {
-  std::map<String, Periphery&>::iterator iterator = peripheries_.find(name);
-  return iterator->second;
+std::shared_ptr<Periphery> Library::getPeriphery(String& name) {
+  return peripheries_.find(name)->second;
 }
 
 Mqtt& Library::getMQTT() { return mqtt_; }
@@ -118,7 +121,8 @@ Result Library::handleCallback(char* topic, uint8_t* payload,
                                      strlen(BB_MQTT_TOPIC_EXECUTE_PREFIX));
   if (action_topic_execute == 0) return execute(doc.as<JsonVariantConst>());
   mqtt_.sendError(
-      who, String(F("Topic was neither add, nor remove, nor execute: ")) + command);
+      who,
+      String(F("Topic was neither add, nor remove, nor execute: ")) + command);
   return Result::kFailure;
 }
 }  // namespace library

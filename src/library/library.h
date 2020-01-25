@@ -31,12 +31,12 @@ class Library {
   static Library* getLibrary(Mqtt& mqtt); 
   Library(Mqtt& mqtt);
   Result handleCallback(char* topic, uint8_t* payload, unsigned int length);
-  Periphery& getPeriphery(String& name);
+  std::shared_ptr<Periphery> getPeriphery(String& name);
   Mqtt& getMQTT();
 
  private:
   Mqtt& mqtt_;
-  std::map<String, Periphery&> peripheries_;
+  std::map<String, std::shared_ptr<Periphery>> peripheries_;
 };
 
 }  // namespace library

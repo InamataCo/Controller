@@ -1,6 +1,7 @@
 #ifndef BERND_BOX_PERIPHERY_FACTORY_H
 #define BERND_BOX_PERIPHERY_FACTORY_H
 
+#include <memory>
 #include <Arduino.h>
 #include <ArduinoJson.h>
 #include "periphery.h"
@@ -15,7 +16,7 @@ namespace bernd_box{
 
             public:
                 static PeripheryFactory& getPeripheryFactory();
-                Periphery& createPeriphery(Library& library, const String name, const JsonObjectConst& parameter);
+                std::shared_ptr<Periphery> createPeriphery(Library& library, const String name, const JsonObjectConst& parameter);
         };
 
     }
