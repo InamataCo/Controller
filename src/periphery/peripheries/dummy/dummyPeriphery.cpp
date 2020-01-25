@@ -5,13 +5,15 @@ namespace periphery {
 namespace peripheries {
 namespace dummy {
 
-const String DummyTask::TYPE = "dummy";
+const String DummyTask::TYPE = "beStupid";
+const String DummyPeriphery::TYPE = "Dummy";
 
-DummyPeriphery::DummyPeriphery(Library& library, String& name)
+DummyPeriphery::DummyPeriphery(Library& library, const String name)
     : AbstractPeriphery(library, name) {
   TaskFactory& ref = *new DummyTaskFactory();
   addTaskFactory(DummyTask::TYPE, ref);
 }
+const String& DummyPeriphery::getType() { return DummyPeriphery::TYPE; }
 
 const String& DummyTask::getType() { return DummyTask::TYPE; }
 

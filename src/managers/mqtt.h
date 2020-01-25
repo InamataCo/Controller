@@ -12,7 +12,6 @@
 #include "ArduinoJson.h"
 #include "config.h"
 #include "utils/setupNode.h"
-#include "library/library.h"
 
 namespace bernd_box {
 
@@ -166,7 +165,6 @@ class Mqtt {
   const uint server_port_;
   callback_map callbacks_;
   uint8_t default_qos_;
-  bernd_box::library::Library& library_;
 };
 
 }  // namespace bernd_box

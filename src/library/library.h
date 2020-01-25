@@ -9,12 +9,6 @@
 #include <Arduino.h>
 #include <ArduinoJson.h>
 
-// STD C++ includes placed after Arduino.h
-#include <algorithm>
-#include <cmath>
-#include <map>
-#include <string>
-
 namespace bernd_box {
 namespace periphery {
 class Periphery;
@@ -31,8 +25,10 @@ class Library {
   Result add(const JsonObjectConst& doc);
   Result remove(const JsonObjectConst& doc);
   Result execute(const JsonObjectConst& doc);
+  static Library* library_;
 
  public:
+  static Library* getLibrary(Mqtt& mqtt); 
   Library(Mqtt& mqtt);
   Result handleCallback(char* topic, uint8_t* payload, unsigned int length);
   Periphery& getPeriphery(String& name);
@@ -42,6 +38,7 @@ class Library {
   Mqtt& mqtt_;
   std::map<String, Periphery&> peripheries_;
 };
+
 }  // namespace library
 }  // namespace bernd_box
 

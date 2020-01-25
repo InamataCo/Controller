@@ -1,10 +1,20 @@
 #include "library.h"
 
+#include "config.h"
 #include "periphery/periphery.h"
 #include "periphery/peripheryFactory.h"
 
 namespace bernd_box {
 namespace library {
+
+Library* Library::library_ = nullptr;
+
+Library* Library::getLibrary(Mqtt& mqtt) {
+  if (library_ == nullptr) {
+    library_ = new Library(mqtt);
+  }
+  return library_;
+}
 
 Library::Library(Mqtt& mqtt) : mqtt_(mqtt) {}
 
@@ -25,8 +35,9 @@ Result Library::add(const JsonObjectConst& doc) {
 
   // Not present, so create new
   PeripheryFactory& factory = PeripheryFactory::getPeripheryFactory();
-  Periphery& periphery = factory.createPeriphery(doc);
-  peripheries_.insert(std::pair<String, Periphery&>(name, periphery));
+  Periphery& periphery = factory.createPeriphery(*this, name.as<String>(), doc);
+  peripheries_.insert(
+      std::pair<String, Periphery&>(name.as<String>(), periphery));
 
   return Result::kSuccess;
 }
@@ -40,8 +51,13 @@ Result Library::remove(const JsonObjectConst& doc) {
     return Result::kFailure;
   }
 
-  std::map<String, Periphery&>::iterator iterator = peripheries_.find(name);
-  if (iterator != peripheries_.end()) peripheries_.erase(iterator);
+  std::map<String, Periphery&>::iterator iterator =
+      peripheries_.find(name.as<String>());
+  if (iterator != peripheries_.end()){
+    Periphery& periphery = iterator->second;
+    delete &periphery;
+    peripheries_.erase(iterator);
+  } 
 
   return Result::kSuccess;
 }
@@ -55,8 +71,14 @@ Result Library::execute(const JsonObjectConst& doc) {
     return Result::kFailure;
   }
 
-  std::map<String, Periphery&>::iterator iterator = peripheries_.find(name);
+  std::map<String, Periphery&>::iterator iterator =
+      peripheries_.find(name.as<String>());
+  if (iterator == peripheries_.end()){
+    mqtt_.sendError(who, "No object found with name "+name.as<String>());
+    return Result::kFailure;
+  }
   Periphery& periphery = iterator->second;
+  Serial.println("Periphery = null ");
   Result result = periphery.executeTask(doc);
   if (result != Result::kSuccess) {
     mqtt_.sendError(who, "The chosen periphery of type " + periphery.getType() +
@@ -85,7 +107,19 @@ Result Library::handleCallback(char* topic, uint8_t* payload,
     mqtt_.sendError(who, String(F("Deserialize failed: ")) + error.c_str());
     return Result::kFailure;
   }
-}
 
+  int action_topic_add = strncmp(command, BB_MQTT_TOPIC_ADD_SUFFIX,
+                                 strlen(BB_MQTT_TOPIC_ADD_SUFFIX));
+  if (action_topic_add == 0) return add(doc.as<JsonVariantConst>());
+  int action_topic_remove = strncmp(command, BB_MQTT_TOPIC_REMOVE_PREFIX,
+                                    strlen(BB_MQTT_TOPIC_REMOVE_PREFIX));
+  if (action_topic_remove == 0) return remove(doc.as<JsonVariantConst>());
+  int action_topic_execute = strncmp(command, BB_MQTT_TOPIC_EXECUTE_PREFIX,
+                                     strlen(BB_MQTT_TOPIC_EXECUTE_PREFIX));
+  if (action_topic_execute == 0) return execute(doc.as<JsonVariantConst>());
+  mqtt_.sendError(
+      who, String(F("Topic was neither add, nor remove, nor execute: ")) + command);
+  return Result::kFailure;
+}
 }  // namespace library
 }  // namespace bernd_box

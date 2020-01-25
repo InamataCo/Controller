@@ -10,9 +10,9 @@ namespace periphery {
 using namespace bernd_box::library;
 class AbstractPeriphery : public Periphery {
  public:
-  AbstractPeriphery(Library& library, String& name);
+  AbstractPeriphery(Library& library, const String name);
   Result executeTask(const JsonObjectConst& doc);
-  Library& getLibrary();
+  Library& getLibrary(); 
 
  protected:
   void addTaskFactory(const String& type, TaskFactory& taskFactory);
@@ -20,7 +20,7 @@ class AbstractPeriphery : public Periphery {
 
  private:
   std::map<String, TaskFactory&> taskFactories_;
-  String name_;
+  const String name_;
   Library& library_;
 };
 }  // namespace periphery

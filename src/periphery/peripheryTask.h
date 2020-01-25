@@ -18,7 +18,7 @@ namespace periphery {
 
 class PeripheryTask {
  public:
-  virtual const String& getType();
+  virtual const String& getType() = 0;
   virtual Result execute(Periphery& periphery);
 };
 

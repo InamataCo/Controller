@@ -8,6 +8,9 @@
 #define BB_MQTT_PORT 1883
 #define BB_MQTT_TOPIC_ACTION_PREFIX "action"
 #define BB_MQTT_TOPIC_OBJECT_PREFIX "object"
+#define BB_MQTT_TOPIC_ADD_SUFFIX "add"
+#define BB_MQTT_TOPIC_REMOVE_PREFIX "remove"
+#define BB_MQTT_TOPIC_EXECUTE_PREFIX "execute"
 #define BB_DEFAULT_QOS 1
 
 #endif

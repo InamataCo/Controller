@@ -19,12 +19,14 @@ using namespace bernd_box::periphery;
 
 class DummyPeriphery : public AbstractPeriphery {
  public:
-  DummyPeriphery(Library& library, String& name);
+  DummyPeriphery(Library& library, const String name);
+  const String& getType() final;
+  static const String TYPE;
 };
 
 class DummyTask : public PeripheryTask {
  public:
-  const String& getType();
+  const String& getType() final;
   Result execute(Periphery& periphery);
   static const String TYPE;
 };

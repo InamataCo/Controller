@@ -2,16 +2,20 @@
 #define BERND_BOX_PERIPHERY_FACTORY_H
 
 #include <Arduino.h>
+#include <ArduinoJson.h>
+#include "periphery.h"
+#include "library/library.h"
 
 namespace bernd_box{
     namespace periphery{
 
         class PeripheryFactory{
             private:
+                static PeripheryFactory& peripheryFactory_;
 
             public:
                 static PeripheryFactory& getPeripheryFactory();
-                Periphery& createPeriphery(const JsonObjectConst& parameter);
+                Periphery& createPeriphery(Library& library, const String name, const JsonObjectConst& parameter);
         };
 
     }

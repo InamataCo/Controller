@@ -14,7 +14,7 @@ using namespace bernd_box::library;
 
 class Periphery {
  public:
-  virtual String getType();  // TODO
+  virtual const String& getType() = 0; 
   virtual Result executeTask(const JsonObjectConst& doc);
   virtual Library& getLibrary();
 };
