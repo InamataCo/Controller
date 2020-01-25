@@ -17,7 +17,9 @@
 #include "tasks/connectivity.h"
 #include "tasks/dallas_temperature.h"
 #include "tasks/dissolved_oxygen_sensor.h"
-#include "tasks/l293d_motors.h"
+// #include "tasks/l293d_motors.h"
+#include "peripherals/peripheral_factory.h"
+#include "peripherals/peripheral_manager.h"
 #include "tasks/light_sensors.h"
 #include "tasks/measurement_protocol.h"
 #include "tasks/pump.h"
@@ -64,7 +66,11 @@ bernd_box::tasks::MeasurementProtocol measurementProtocol(
     &scheduler, mqtt, io, report_list, pumpTask, dallasTemperatureTask,
     dissolvedOxygenSensorTask, aciditySensorTask);
 bernd_box::tasks::SystemMonitor systemMonitorTask(&scheduler, mqtt);
-bernd_box::tasks::L293dMotors l293d_motors(&scheduler, io, mqtt);
+// bernd_box::tasks::L293dMotors l293d_motors(&scheduler, io, mqtt);
+
+std::shared_ptr<bernd_box::Mqtt> mqtt2 =
+    std::make_shared<bernd_box::Mqtt>(wifiClient);
+std::unique_ptr<bernd_box::PeripheralManager> peripheral_manager;
 
 //----------------------------------------------------------------------------
 // Setup and loop functions
@@ -79,6 +85,14 @@ void setup() {
   checkConnectivity.enable();
   systemMonitorTask.enable();
 
+  {
+    std::unique_ptr<bernd_box::AbstractPeripheralFactory> peripheral_factory(
+        new bernd_box::PeripheralFactory());
+    std::unique_ptr<bernd_box::PeripheralManager> peripheral_manager_tmp(
+        new bernd_box::PeripheralManager(mqtt2, std::move(peripheral_factory)));
+    peripheral_manager.swap(peripheral_manager_tmp);
+  }
+
   // Try to configure the IO devices, else restart
   if (io.init() != bernd_box::Result::kSuccess) {
     Serial.println(F("IO: Initialization failed. Restarting"));
@@ -91,6 +105,4 @@ void setup() {
   io.setStatusLed(false);
 }
 
-void loop() {
-  scheduler.execute();
-}
+void loop() { scheduler.execute(); }
