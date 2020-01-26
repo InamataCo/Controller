@@ -44,6 +44,13 @@ class Mqtt {
   bool isConnected();
 
   /**
+   * Subscribe to the action and object topics
+   * 
+   * @return int 0 on success
+   */
+  int subscribe();
+
+  /**
    * Updates and connects to a new MQTT server (broker)
    *
    * \param server_ip_address_ The IP address of the new broker
@@ -163,7 +170,17 @@ class Mqtt {
   String error_topic;
   String server_ip_address_;
   const uint server_port_;
-  callback_map callbacks_;
+
+  /// Action prefix for MQTT messages. Includes trailing slash delimiter
+  const __FlashStringHelper* action_prefix_;
+  /// Functions to be called when receiving an action message
+  callback_map action_callbacks_;
+
+  /// Object prefix for MQTT messages. Includes trailing slash delimiter
+  const __FlashStringHelper* object_prefix_;
+  /// Functions to be called when receiving an object message
+  callback_map object_callbacks_;
+  
   uint8_t default_qos_;
 };
 

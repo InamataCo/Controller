@@ -7,6 +7,8 @@ namespace bernd_box {
 Mqtt::Mqtt(WiFiClient& wifi_client)
     : client_(wifi_client),
       server_port_(BB_MQTT_PORT),
+      action_prefix_(F("action/")),
+      object_prefix_(F("object/")),
       default_qos_(BB_DEFAULT_QOS) {
   uint8_t mac_address[6];
   esp_efuse_mac_get_default(mac_address);
@@ -39,8 +41,8 @@ int Mqtt::connect(const uint max_attempts) {
     connected = client_.connect(client_id_.c_str());
   }
 
-  bool error = !client_.connected();
-  if (!error) {
+  bool connect_error = !client_.connected();
+  if (!connect_error) {
     Serial.println(F("\tConnected!"));
     error = !client_.subscribe(
         (String(F("action/")) + client_id_ + F("/+")).c_str(), 1);
@@ -50,13 +52,50 @@ int Mqtt::connect(const uint max_attempts) {
     Serial.print(F("\tFailed to connect after "));
     Serial.print(max_attempts);
     Serial.println(F(" tries."));
+    return connect_error;
+  }
+
+  int subscribe_error = subscribe();
+  if (subscribe_error) {
+    Serial.println(F("\tFailed to subscribe"));
+    return 1;
   }
 
   // 0 on success, 1 on error
-  return error;
+  return 0;
 }
 
 bool Mqtt::isConnected() { return client_.connected(); }
+
+int Mqtt::subscribe() {
+  const __FlashStringHelper* who = F(__PRETTY_FUNCTION__);
+  const __FlashStringHelper* error_prefix = F("Failed to subscribe to: ");
+  const __FlashStringHelper* success_prefix = F("Subscribed to: ");
+
+  const String action_topic = String(action_prefix_) + client_id_ + F("/+");
+  const bool action_success = client_.subscribe(action_topic.c_str(), 1);
+  if (action_success) {
+    Serial.print("\t");
+    Serial.print(success_prefix);
+    Serial.println(action_topic);
+  } else {
+    sendError(who, String(error_prefix) + action_topic);
+    return 1;
+  }
+
+  const String object_topic = String(object_prefix_) + client_id_ + F("/+");
+  const bool object_success = client_.subscribe(object_topic.c_str(), 1);
+  if (object_success) {
+    Serial.print("\t");
+    Serial.print(success_prefix);
+    Serial.println(object_topic);
+  } else {
+    sendError(who, String(error_prefix) + object_topic);
+    return 1;
+  }
+
+  return 0;
+}
 
 int Mqtt::switchBroker(const String& server_ip_address,
                        const String& client_id) {
@@ -163,17 +202,29 @@ void Mqtt::sendRegister() {
       F("Mqtt::sendRegister: Registering UUID and actions with coordinator"));
 
   // Create a list of all registered actions
-  DynamicJsonDocument actions_doc(JSON_ARRAY_SIZE(callbacks_.size()));
+  DynamicJsonDocument actions_doc(JSON_ARRAY_SIZE(action_callbacks_.size()));
   JsonArray actions_array = actions_doc.to<JsonArray>();
-  for (const auto& action : callbacks_) {
+  Serial.println(F("\tActions:"));
+
+  for (const auto& action : action_callbacks_) {
     actions_array.add(action.first.c_str());
-    Serial.println("\t" + action.first);
+    Serial.println("\t\t" + action.first);
+  }
+
+  DynamicJsonDocument objects_doc(JSON_ARRAY_SIZE(object_callbacks_.size()));
+  JsonArray objects_array = objects_doc.to<JsonArray>();
+  Serial.println(F("\tObjects:"));
+  
+  for (const auto& object : object_callbacks_) {
+    objects_array.add(object.first.c_str());
+    Serial.println("\t\t" + object.first);
   }
 
   // Add the UUID entry
   DynamicJsonDocument doc(BB_MQTT_JSON_PAYLOAD_SIZE);
   doc["uuid"] = ESPRandom::uuidToString(getUuid());
   doc["actions"] = actions_array;
+  doc["objects"] = objects_array;
 
   // Calculate the size of the resultant serialized JSON, create a buffer of
   // that size and serialize the JSON into that buffer.
@@ -199,31 +250,45 @@ void Mqtt::sendError(const String& who, const String& message,
 void Mqtt::addAction(
     const String& name,
     std::function<void(char*, uint8_t*, unsigned int)> callback) {
-  callbacks_[name] = callback;
+  action_callbacks_[name] = callback;
 }
 
-void Mqtt::removeAction(const String& name) { callbacks_.erase(name.c_str()); }
+void Mqtt::removeAction(const String& name) {
+  action_callbacks_.erase(name.c_str());
+}
 
 void Mqtt::handleCallback(char* topic, uint8_t* message, unsigned int length) {
-  // Check if the prefix is "action"
-  // action/a48b109f-975f-42e2-9962-a6fb752a1b6e/pump -> action
-  
-  int object_topic_rv = strncmp(topic, BB_MQTT_TOPIC_OBJECT_PREFIX,
-                                strlen(BB_MQTT_TOPIC_OBJECT_PREFIX));
-  int action_topic_rv = strncmp(topic, BB_MQTT_TOPIC_ACTION_PREFIX,
-                                strlen(BB_MQTT_TOPIC_ACTION_PREFIX));
-  if (action_topic_rv == 0) {
+  const __FlashStringHelper* who = F(__PRETTY_FUNCTION__);
+  String topic_str(topic);
+
+  // Handle action messages
+  if (topic_str.startsWith(action_prefix_)) {
     // Extract the name from the topic and increment once to skip the last
     // slash: action/a48b109f-975f-42e2-9962-a6fb752a1b6e/pump -> pump
     char* action = strrchr(topic, '/');
     action++;
-    auto it = callbacks_.find(action);
+    auto it = action_callbacks_.find(action);
 
-    if (it != callbacks_.end()) {
+    if (it != action_callbacks_.end()) {
       it->second(topic, message, length);
     } else {
-      sendError("mqtt::handleCallback",
-                String(F("No registered callback for action: ")) + action);
+      sendError(who, String(F("No registered callback for action: ")) + action);
+    }
+    return;
+  }
+
+  // Handle object messages
+  if (topic_str.startsWith(object_prefix_)) {
+    // Extract the name from the topic and increment once to skip the last
+    // slash: object/a48b109f-975f-42e2-9962-a6fb752a1b6e/pump -> pump
+    char* object = strrchr(topic, '/');
+    object++;
+    auto it = object_callbacks_.find(object);
+
+    if (it != object_callbacks_.end()) {
+      it->second(topic, message, length);
+    } else {
+      sendError(who, String(F("No registered callback for object: ")) + object);
     }
     return;
   } else if (object_topic_rv == 0) {
@@ -231,10 +296,9 @@ void Mqtt::handleCallback(char* topic, uint8_t* message, unsigned int length) {
     return;
   }
 
-  sendError("mqtt::handleCallback",
-            String(F("No registered callback for topic: ")) + topic);
+  sendError(who, String(F("No registered callback for topic: ")) + topic);
 }
 
-const callback_map& Mqtt::getCallbackMap() { return callbacks_; }
+const callback_map& Mqtt::getCallbackMap() { return action_callbacks_; }
 
 }  // namespace bernd_box
