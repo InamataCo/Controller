@@ -11,8 +11,8 @@ namespace bernd_box{
             return peripheryFactory_;
         }
 
-        std::shared_ptr<Periphery> PeripheryFactory::createPeriphery(Library& library, const String name, const JsonObjectConst& parameter){
-            return std::make_shared<peripheries::dummy::DummyPeriphery>(library, name);
+        std::shared_ptr<Periphery> PeripheryFactory::createPeriphery(const JsonObjectConst& parameter){
+            return std::make_shared<peripheries::dummy::DummyPeriphery>();
         }
 
     }

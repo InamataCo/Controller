@@ -1,5 +1,7 @@
 #include "dummyPeriphery.h"
 
+#include "managers/services.h"
+
 namespace bernd_box {
 namespace periphery {
 namespace peripheries {
@@ -8,26 +10,25 @@ namespace dummy {
 const String DummyTask::TYPE = "beStupid";
 const String DummyPeriphery::TYPE = "Dummy";
 
-DummyPeriphery::DummyPeriphery(Library& library, const String name)
-    : AbstractPeriphery(library, name) {
-  TaskFactory& ref = *new DummyTaskFactory();
-  addTaskFactory(DummyTask::TYPE, ref);
+DummyTaskFactory DummyPeriphery::taskFactory_ = DummyTaskFactory();
+
+DummyPeriphery::DummyPeriphery() {
+  addTaskFactory(DummyTask::TYPE, taskFactory_);
 }
 const String& DummyPeriphery::getType() { return DummyPeriphery::TYPE; }
 
-const String& DummyTask::getType() { return DummyTask::TYPE; }
-
-Result DummyTask::execute(Periphery& periphery) {
+Result DummyTask::execute() {
   const char* who = __PRETTY_FUNCTION__;
-  Mqtt& mqtt = periphery.getLibrary().getMQTT();
-
-  mqtt.sendError(who, "I'm too dummy");
+  Services::getMQTT().sendError(who, "I'm too dummy");
   return Result::kSuccess;
 }
 
-PeripheryTask& DummyTaskFactory::createTask(const JsonObjectConst& doc) {
-  return *new DummyTask();
+std::unique_ptr<PeripheryTask> DummyTaskFactory::createTask(
+    std::shared_ptr<Periphery> periphery, const JsonObjectConst& doc) {
+  return std::unique_ptr<PeripheryTask>(new DummyTask(periphery));
 }
+
+DummyTask::DummyTask(std::shared_ptr<Periphery> periphery) : PeripheryTask(periphery) { }
 
 }  // namespace dummy
 }  // namespace peripheries

@@ -6,8 +6,8 @@
 #include "periphery/periphery.h"
 #include "periphery/peripheryTask.h"
 
-#include <ArduinoJson.h>
 #include <Arduino.h>
+#include <ArduinoJson.h>
 
 namespace bernd_box {
 namespace periphery {
@@ -17,25 +17,31 @@ namespace dummy {
 using namespace bernd_box::library;
 using namespace bernd_box::periphery;
 
+class DummyTaskFactory : public TaskFactory {
+ public:
+  std::unique_ptr<PeripheryTask> createTask(
+      std::shared_ptr<Periphery> periphery, const JsonObjectConst& doc);
+};
+
 class DummyPeriphery : public AbstractPeriphery {
  public:
-  DummyPeriphery(Library& library, const String name);
+  DummyPeriphery();
+  virtual ~DummyPeriphery() = default;
   const String& getType() final;
   static const String TYPE;
+
+ private:
+  static DummyTaskFactory taskFactory_;
 };
 
 class DummyTask : public PeripheryTask {
  public:
-  const String& getType() final;
-  Result execute(Periphery& periphery);
+  DummyTask(std::shared_ptr<Periphery> periphery);
+  virtual ~DummyTask() = default;
+
+  Result execute() final;
   static const String TYPE;
 };
-
-class DummyTaskFactory : public TaskFactory {
- public:
-  PeripheryTask& createTask(const JsonObjectConst& doc);
-};
-
 }  // namespace dummy
 }  // namespace peripheries
 }  // namespace periphery

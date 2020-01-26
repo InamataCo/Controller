@@ -4,24 +4,34 @@
 #include "library/library.h"
 #include "managers/io.h"
 #include "periphery.h"
+#include "peripheryTask.h"
 
 namespace bernd_box {
 namespace periphery {
 using namespace bernd_box::library;
+
+class ErrorTaskFactory : public TaskFactory {
+ public:
+  std::unique_ptr<PeripheryTask> createTask(
+      std::shared_ptr<Periphery> periphery, const JsonObjectConst& doc);
+};
+
 class AbstractPeriphery : public Periphery {
  public:
-  AbstractPeriphery(Library& library, const String name);
-  Result executeTask(const JsonObjectConst& doc);
-  Library& getLibrary(); 
+  virtual ~AbstractPeriphery() = default;
+
+  TaskFactory& getTaskFactory(const JsonObjectConst& doc) final;
+  const bool isValid() final;
 
  protected:
   void addTaskFactory(const String& type, TaskFactory& taskFactory);
   void addTaskFactory(std::map<String, TaskFactory&>& taskFactories);
+  void setInvalid();
 
  private:
   std::map<String, TaskFactory&> taskFactories_;
-  const String name_;
-  Library& library_;
+  ErrorTaskFactory errorFactory_ {ErrorTaskFactory()};
+  bool isValid_ = true;
 };
 }  // namespace periphery
 }  // namespace bernd_box

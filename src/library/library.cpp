@@ -3,16 +3,15 @@
 #include "config.h"
 #include "periphery/periphery.h"
 #include "periphery/peripheryFactory.h"
+#include "periphery/peripheryTask.h"
+#include "managers/services.h"
 
 namespace bernd_box {
 namespace library {
 
-Library* Library::library_ = nullptr;
+Library Library::library_ = Library(Services::getMQTT());
 
-Library* Library::getLibrary(Mqtt& mqtt) {
-  if (library_ == nullptr) {
-    library_ = new Library(mqtt);
-  }
+Library& Library::getLibrary() {
   return library_;
 }
 
@@ -36,7 +35,11 @@ Result Library::add(const JsonObjectConst& doc) {
   // Not present, so create new
   PeripheryFactory& factory = PeripheryFactory::getPeripheryFactory();
   std::shared_ptr<Periphery> periphery(
-      factory.createPeriphery(*this, name.as<String>(), doc));
+      factory.createPeriphery(doc));
+  if (periphery->isValid() == false){
+    return Result::kFailure;
+  }
+  
   peripheries_.insert(std::pair<String, std::shared_ptr<Periphery>>(
       name.as<String>(), periphery));
 
@@ -82,7 +85,15 @@ Result Library::execute(const JsonObjectConst& doc) {
     return Result::kFailure;
   }
   Serial.println("Periphery = null ");
-  Result result = iterator->second->executeTask(doc);
+  TaskFactory& task_factory = iterator->second->getTaskFactory(doc);
+  
+  JsonVariantConst parameter = doc[F("parameter")];
+  if (parameter.isNull()) {
+    return Result::kFailure;
+  }
+
+  std::unique_ptr<PeripheryTask> peripheryTask(task_factory.createTask(iterator->second, parameter));
+  Result result = peripheryTask->execute();
   if (result != Result::kSuccess) {
     mqtt_.sendError(who, "The chosen periphery of type " +
                              iterator->second->getType() +
@@ -91,7 +102,7 @@ Result Library::execute(const JsonObjectConst& doc) {
   return result;
 }
 
-std::shared_ptr<Periphery> Library::getPeriphery(String& name) {
+std::shared_ptr<Periphery> Library::getPeriphery(const String& name) {
   return peripheries_.find(name)->second;
 }
 

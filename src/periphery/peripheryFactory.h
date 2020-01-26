@@ -15,8 +15,9 @@ namespace bernd_box{
                 static PeripheryFactory& peripheryFactory_;
 
             public:
+                virtual ~PeripheryFactory() = default;
                 static PeripheryFactory& getPeripheryFactory();
-                std::shared_ptr<Periphery> createPeriphery(Library& library, const String name, const JsonObjectConst& parameter);
+                std::shared_ptr<Periphery> createPeriphery(const JsonObjectConst& parameter);
         };
 
     }

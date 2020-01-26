@@ -3,7 +3,6 @@
 
 #include "library/library.h"
 #include "managers/io.h"
-#include "peripheryTask.h"
 
 #include <ArduinoJson.h>
 
@@ -12,11 +11,14 @@ namespace periphery {
 
 using namespace bernd_box::library;
 
+class TaskFactory;
+
 class Periphery {
  public:
+  virtual ~Periphery() = default;
   virtual const String& getType() = 0; 
-  virtual Result executeTask(const JsonObjectConst& doc);
-  virtual Library& getLibrary();
+  virtual TaskFactory& getTaskFactory(const JsonObjectConst& doc) = 0;
+  virtual const bool isValid() = 0;
 };
 
 }  // namespace periphery

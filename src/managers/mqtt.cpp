@@ -44,9 +44,9 @@ int Mqtt::connect(const uint max_attempts) {
   bool connect_error = !client_.connected();
   if (!connect_error) {
     Serial.println(F("\tConnected!"));
-    error = !client_.subscribe(
+    connect_error = !client_.subscribe(
         (String(F("action/")) + client_id_ + F("/+")).c_str(), 1);
-    error |= !client_.subscribe(
+    connect_error |= !client_.subscribe(
         (String(F("object/")) + client_id_ + F("/+")).c_str(), 1);
   } else {
     Serial.print(F("\tFailed to connect after "));
@@ -275,24 +275,8 @@ void Mqtt::handleCallback(char* topic, uint8_t* message, unsigned int length) {
       sendError(who, String(F("No registered callback for action: ")) + action);
     }
     return;
-  }
-
-  // Handle object messages
-  if (topic_str.startsWith(object_prefix_)) {
-    // Extract the name from the topic and increment once to skip the last
-    // slash: object/a48b109f-975f-42e2-9962-a6fb752a1b6e/pump -> pump
-    char* object = strrchr(topic, '/');
-    object++;
-    auto it = object_callbacks_.find(object);
-
-    if (it != object_callbacks_.end()) {
-      it->second(topic, message, length);
-    } else {
-      sendError(who, String(F("No registered callback for object: ")) + object);
-    }
-    return;
-  } else if (object_topic_rv == 0) {
-    library::Library::getLibrary(*this)->handleCallback(topic, message, length);
+  } else if (topic_str.startsWith(object_prefix_)) {
+    library::Library::getLibrary().handleCallback(topic, message, length);
     return;
   }
 

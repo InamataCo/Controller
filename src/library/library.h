@@ -25,13 +25,13 @@ class Library {
   Result add(const JsonObjectConst& doc);
   Result remove(const JsonObjectConst& doc);
   Result execute(const JsonObjectConst& doc);
-  static Library* library_;
+  static Library library_;
 
  public:
-  static Library* getLibrary(Mqtt& mqtt); 
+  static Library& getLibrary(); 
   Library(Mqtt& mqtt);
   Result handleCallback(char* topic, uint8_t* payload, unsigned int length);
-  std::shared_ptr<Periphery> getPeriphery(String& name);
+  std::shared_ptr<Periphery> getPeriphery(const String& name);
   Mqtt& getMQTT();
 
  private:
