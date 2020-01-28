@@ -8,18 +8,31 @@ namespace peripheries {
 namespace dummy {
 
 const String DummyTask::TYPE = "beStupid";
-const String DummyPeriphery::TYPE = "Dummy";
 
-DummyTaskFactory DummyPeriphery::taskFactory_ = DummyTaskFactory();
 
 DummyPeriphery::DummyPeriphery() {
   addTaskFactory(DummyTask::TYPE, taskFactory_);
 }
-const String& DummyPeriphery::getType() { return DummyPeriphery::TYPE; }
+
+const __FlashStringHelper* DummyPeriphery::getType() { return type(); }
+
+const __FlashStringHelper* DummyPeriphery::type() {
+  return F("DummyPeriphery");
+}
+
+std::shared_ptr<Periphery> DummyPeriphery::factory(const JsonObjectConst&) {
+  return std::make_shared<DummyPeriphery>();
+}
+
+bool DummyPeriphery::registered_ =
+    PeripheryFactory::registerFactory(type(), factory);
+
+// Dummy Task ----------------
+DummyTaskFactory DummyPeriphery::taskFactory_ = DummyTaskFactory();
 
 Result DummyTask::execute() {
   const char* who = __PRETTY_FUNCTION__;
-  Services::getMQTT().sendError(who, "I'm too dummy");
+  Services::getMqtt().sendError(who, "I'm too dummy");
   return Result::kSuccess;
 }
 
@@ -28,7 +41,8 @@ std::unique_ptr<PeripheryTask> DummyTaskFactory::createTask(
   return std::unique_ptr<PeripheryTask>(new DummyTask(periphery));
 }
 
-DummyTask::DummyTask(std::shared_ptr<Periphery> periphery) : PeripheryTask(periphery) { }
+DummyTask::DummyTask(std::shared_ptr<Periphery> periphery)
+    : PeripheryTask(periphery) {}
 
 }  // namespace dummy
 }  // namespace peripheries

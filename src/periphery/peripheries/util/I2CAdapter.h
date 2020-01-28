@@ -3,12 +3,12 @@
 
 #define PARAM_I2CADAPTER_CLOCK "scl"
 #define PARAM_I2CADAPTER_DATA "sda"
-#define TYPE_I2CADAPTER "I2CAdapter"
 
 #define TASK_LIST_I2C_DEVICES "listDevices"
 
-#include "periphery/abstractPeriphery.h"
 #include <Wire.h>
+
+#include "periphery/abstractPeriphery.h"
 
 namespace bernd_box {
 namespace periphery {
@@ -19,18 +19,23 @@ class I2CAdapter : public AbstractPeriphery {
  public:
   I2CAdapter(const JsonObjectConst& parameter);
   ~I2CAdapter();
-  const String& getType() final;
+
+  const __FlashStringHelper* getType() final;
+  static const __FlashStringHelper* type();
+
   TwoWire* getWire();
 
-  private:
-    static bool wire_taken;
-    static bool wire1_taken;
+ private:
+  static std::shared_ptr<Periphery> factory(const JsonObjectConst&);
+  
+  static bool registered_;
 
-    bool* taken_variable;
-    TwoWire* wire_;
+  static bool wire_taken;
+  static bool wire1_taken;
 
+  bool* taken_variable;
+  TwoWire* wire_;
 };
-
 
 class ListI2CDevicesTask : public PeripheryTask {
  public:

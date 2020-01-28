@@ -1,19 +1,17 @@
 #include "library.h"
 
 #include "config.h"
+#include "managers/services.h"
 #include "periphery/periphery.h"
 #include "periphery/peripheryFactory.h"
 #include "periphery/peripheryTask.h"
-#include "managers/services.h"
 
 namespace bernd_box {
 namespace library {
 
-Library Library::library_ = Library(Services::getMQTT());
+Library Library::library_ = Library(Services::getMqtt());
 
-Library& Library::getLibrary() {
-  return library_;
-}
+Library& Library::getLibrary() { return library_; }
 
 Library::Library(Mqtt& mqtt) : mqtt_(mqtt) {}
 
@@ -33,15 +31,13 @@ Result Library::add(const JsonObjectConst& doc) {
   }
 
   // Not present, so create new
-  PeripheryFactory& factory = PeripheryFactory::getPeripheryFactory();
   std::shared_ptr<Periphery> periphery(
-      factory.createPeriphery(doc));
-  if (periphery->isValid() == false){
+      Services::getPeripheryFactory().createPeriphery(doc));
+  if (periphery->isValid() == false) {
     return Result::kFailure;
   }
-  
-  peripheries_.insert(std::pair<String, std::shared_ptr<Periphery>>(
-      name.as<String>(), periphery));
+
+  peripheries_.insert({name.as<String>(), periphery});
 
   return Result::kSuccess;
 }
@@ -86,17 +82,18 @@ Result Library::execute(const JsonObjectConst& doc) {
   }
   Serial.println("Periphery = null ");
   TaskFactory& task_factory = iterator->second->getTaskFactory(doc);
-  
+
   JsonVariantConst parameter = doc[F("parameter")];
   if (parameter.isNull()) {
     return Result::kFailure;
   }
 
-  std::unique_ptr<PeripheryTask> peripheryTask(task_factory.createTask(iterator->second, parameter));
+  std::unique_ptr<PeripheryTask> peripheryTask(
+      task_factory.createTask(iterator->second, parameter));
   Result result = peripheryTask->execute();
   if (result != Result::kSuccess) {
     mqtt_.sendError(who, "The chosen periphery of type " +
-                             iterator->second->getType() +
+                             String(iterator->second->getType()) +
                              " can not execute this task.");
   }
   return result;

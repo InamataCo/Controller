@@ -45,7 +45,7 @@ class Mqtt {
 
   /**
    * Subscribe to the action and object topics
-   * 
+   *
    * @return int 0 on success
    */
   int subscribe();
@@ -165,6 +165,8 @@ class Mqtt {
    */
   void handleCallback(char* topic, uint8_t* payload, unsigned int length);
 
+  const String getMacString();
+
   PubSubClient client_;
   String client_id_;
   String error_topic;
@@ -178,11 +180,9 @@ class Mqtt {
 
   /// Object prefix for MQTT messages. Includes trailing slash delimiter
   const __FlashStringHelper* object_prefix_;
-  /// Functions to be called when receiving an object message
-  callback_map object_callbacks_;
-  
+
   uint8_t default_qos_;
-};
+};  // namespace bernd_box
 
 }  // namespace bernd_box
 

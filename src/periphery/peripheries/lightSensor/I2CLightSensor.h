@@ -11,7 +11,7 @@ namespace light_sensor {
 class I2CLightSensor : public I2CAbstractPeriphery {
  public:
   I2CLightSensor(const JsonObjectConst& parameter);
-  virtual ~I2CLightSensor() = default; 
+  virtual ~I2CLightSensor() = default;
 };
 
 }  // namespace light_sensor

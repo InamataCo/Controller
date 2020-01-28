@@ -1,26 +1,34 @@
 #ifndef BERND_BOX_PERIPHERY_FACTORY_H
 #define BERND_BOX_PERIPHERY_FACTORY_H
 
-#include <memory>
 #include <Arduino.h>
 #include <ArduinoJson.h>
-#include "periphery.h"
+
+#include <memory>
+
 #include "library/library.h"
+#include "periphery.h"
 
-namespace bernd_box{
-    namespace periphery{
+namespace bernd_box {
+namespace periphery {
 
-        class PeripheryFactory{
-            private:
-                static PeripheryFactory& peripheryFactory_;
+class PeripheryFactory {
+ public:
+  using Factory = std::shared_ptr<Periphery> (*)(const JsonObjectConst& parameter);
 
-            public:
-                virtual ~PeripheryFactory() = default;
-                static PeripheryFactory& getPeripheryFactory();
-                std::shared_ptr<Periphery> createPeriphery(const JsonObjectConst& parameter);
-        };
+  virtual ~PeripheryFactory() = default;
 
-    }
-}
+  static bool registerFactory(const String& name, Factory factory);
+
+  std::shared_ptr<Periphery> createPeriphery(const JsonObjectConst& parameter);
+
+  std::map<String, Factory>& getFactories();
+  
+ private:
+  static std::map<String, Factory> factories_;
+};
+
+}  // namespace periphery
+}  // namespace bernd_box
 
 #endif

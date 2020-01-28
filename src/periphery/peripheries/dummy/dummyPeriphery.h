@@ -1,13 +1,14 @@
 #ifndef BERND_BOX_PERIPHERY_PERIPHERIES_DUMMY_DUMMYPERIPHERIE_H
 #define BERND_BOX_PERIPHERY_PERIPHERIES_DUMMY_DUMMYPERIPHERIE_H
 
+#include <Arduino.h>
+#include <ArduinoJson.h>
+
 #include "library/library.h"
 #include "periphery/abstractPeriphery.h"
 #include "periphery/periphery.h"
 #include "periphery/peripheryTask.h"
-
-#include <Arduino.h>
-#include <ArduinoJson.h>
+#include "periphery/peripheryFactory.h"
 
 namespace bernd_box {
 namespace periphery {
@@ -27,10 +28,13 @@ class DummyPeriphery : public AbstractPeriphery {
  public:
   DummyPeriphery();
   virtual ~DummyPeriphery() = default;
-  const String& getType() final;
-  static const String TYPE;
+  const __FlashStringHelper* getType() final;
+  static const __FlashStringHelper* type();
 
  private:
+  static std::shared_ptr<Periphery> factory(const JsonObjectConst&);
+
+  static bool registered_;
   static DummyTaskFactory taskFactory_;
 };
 

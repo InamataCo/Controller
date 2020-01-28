@@ -14,15 +14,15 @@ namespace peripheries {
 using namespace util;
 
 class I2CAbstractPeriphery : public AbstractPeriphery {
- private:
-  std::shared_ptr<I2CAdapter> i2CAdapter_;
+ public:
+  I2CAbstractPeriphery(const JsonObjectConst& parameter);
+  virtual ~I2CAbstractPeriphery() = default;
 
  protected:
   TwoWire* getWire();
 
- public:
-  I2CAbstractPeriphery(const JsonObjectConst& parameter);
-  virtual ~I2CAbstractPeriphery() = default;
+ private:
+  std::shared_ptr<I2CAdapter> i2c_adapter_;
 };
 
 }  // namespace peripheries

@@ -12,26 +12,29 @@ I2CAbstractPeriphery::I2CAbstractPeriphery(const JsonObjectConst& parameter) {
   JsonVariantConst i2c_adapter_name =
       parameter[F(PARAM_I2C_ABSTRACT_PERIPHERY_ADAPTER_NAME)];
   if (i2c_adapter_name.isNull() || !i2c_adapter_name.is<char*>()) {
-    Services::getMQTT().sendError(
+    Services::getMqtt().sendError(
         who, F("Missing property: " PARAM_I2C_ABSTRACT_PERIPHERY_ADAPTER_NAME
                " (string)"));
     setInvalid();
     return;
   }
 
-  i2CAdapter_ = std::dynamic_pointer_cast<I2CAdapter>(
-      Services::getLibrary().getPeriphery(i2c_adapter_name.as<String>()));
-  if (i2CAdapter_ == nullptr) {
-    Services::getMQTT().sendError(
-        who,
-        i2c_adapter_name.as<String>() +
-            String(F(" is not registered or not a valid " TYPE_I2CADAPTER)));
+  const String name = i2c_adapter_name.as<String>();
+  std::shared_ptr<Periphery> periphery =
+      Services::getLibrary().getPeriphery(name);
+
+  // Since the name is specified externally (MQTT message), check type
+  if (periphery->getType() == I2CAdapter::type() && periphery->isValid()) {
+    i2c_adapter_ = std::static_pointer_cast<I2CAdapter>(periphery);
+  } else {
+    Services::getMqtt().sendError(
+        who, name + F(" is not a valid ") + I2CAdapter::type());
     setInvalid();
     return;
   }
 }
 
-TwoWire* I2CAbstractPeriphery::getWire() { return i2CAdapter_->getWire(); }
+TwoWire* I2CAbstractPeriphery::getWire() { return i2c_adapter_->getWire(); }
 
 }  // namespace peripheries
 }  // namespace periphery
