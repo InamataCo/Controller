@@ -1,17 +1,13 @@
 #include "peripheryFactory.h"
 
-#include "invalid_periphery.h"
-#include "managers/services.h"
-#include "peripheries/bh1750/bh1750_sensor.h"
-#include "peripheries/dummy/dummyPeriphery.h"
-#include "peripheries/util/I2CAdapter.h"
-
 namespace bernd_box {
 namespace periphery {
 
-std::map<String, PeripheryFactory::Factory> PeripheryFactory::factories_;
+std::map<const String, PeripheryFactory::Callback> PeripheryFactory::factories_;
 
-bool PeripheryFactory::registerFactory(const String& name, Factory factory) {
+PeripheryFactory::PeripheryFactory(Mqtt& mqtt) : mqtt_(mqtt) {}
+
+bool PeripheryFactory::registerFactory(const String& name, Callback factory) {
   if (factories_.count(name) == 0) {
     factories_.emplace(name, factory);
     return true;
@@ -25,7 +21,7 @@ std::shared_ptr<Periphery> PeripheryFactory::createPeriphery(
 
   const JsonVariantConst type = parameter[F("type")];
   if (type.isNull() || !type.is<char*>()) {
-    Services::getMqtt().sendError(who, "Missing property: name (string)");
+    mqtt_.sendError(who, "Missing property: name (string)");
     return std::make_shared<InvalidPeriphery>();
   }
 
@@ -37,8 +33,12 @@ std::shared_ptr<Periphery> PeripheryFactory::createPeriphery(
   }
 }
 
-std::map<String, PeripheryFactory::Factory>& PeripheryFactory::getFactories() {
-  return factories_;
+std::vector<String> PeripheryFactory::getFactoryNames() {
+  std::vector<String> names;
+  for(const auto& factory : factories_) {
+    names.push_back(factory.first);
+  }
+  return names;
 }
 
 }  // namespace periphery

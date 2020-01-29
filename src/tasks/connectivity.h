@@ -6,6 +6,7 @@
 #include "managers/mqtt.h"
 #include "managers/network.h"
 #include "utils/setupNode.h"
+#include "managers/services.h"
 
 namespace bernd_box {
 namespace tasks {
@@ -15,7 +16,7 @@ class CheckConnectivity : public Task {
   const std::chrono::milliseconds default_period_{100};
 
  public:
-  CheckConnectivity(Scheduler* scheduler, Network& network, Mqtt& mqtt, Io& io,
+  CheckConnectivity(Scheduler* scheduler, Network& network, Io& io,
                     const std::chrono::seconds wifi_connect_timeout,
                     const uint mqtt_connection_attempts);
   virtual ~CheckConnectivity();

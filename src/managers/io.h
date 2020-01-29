@@ -13,6 +13,7 @@
 #include <ArduinoJson.h>
 
 #include "managers/mqtt.h"
+#include "managers/services.h"
 
 // STD C++ includes placed after Arduino.h
 #include <algorithm>
@@ -23,16 +24,6 @@
 #include "io_types.h"
 
 namespace bernd_box {
-
-enum class Result {
-  kSuccess = 0,             // Operation completed successfully
-  kFailure = 1,             // Catch-all error state
-  kNotReady = 2,            // Device not ready to be used
-  kDeviceDisconnected = 3,  // Device could not be found
-  kInvalidPin = 4,          // Invalid pin configuration
-  kIdNotFound = 5,          // Sensor ID not found in respective category
-  kNameAlreadyExists = 6,   // Device name already exists
-};
 
 class Io {
  public:

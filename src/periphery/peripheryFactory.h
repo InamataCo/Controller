@@ -5,8 +5,15 @@
 #include <ArduinoJson.h>
 
 #include <memory>
+#include <vector>
 
-#include "library/library.h"
+#include "invalid_periphery.h"
+#include "managers/mqtt.h"
+// #include "library/library.h"
+// #include "managers/services.h"
+// #include "peripheries/bh1750/bh1750_sensor.h"
+// #include "peripheries/dummy/dummyPeriphery.h"
+// #include "peripheries/util/I2CAdapter.h"
 #include "periphery.h"
 
 namespace bernd_box {
@@ -14,18 +21,21 @@ namespace periphery {
 
 class PeripheryFactory {
  public:
-  using Factory = std::shared_ptr<Periphery> (*)(const JsonObjectConst& parameter);
+  using Callback =
+      std::shared_ptr<Periphery> (*)(const JsonObjectConst& parameter);
 
+  PeripheryFactory(Mqtt& mqtt);
   virtual ~PeripheryFactory() = default;
 
-  static bool registerFactory(const String& name, Factory factory);
+  static bool registerFactory(const String& name, Callback factory);
 
   std::shared_ptr<Periphery> createPeriphery(const JsonObjectConst& parameter);
 
-  std::map<String, Factory>& getFactories();
-  
+  std::vector<String> getFactoryNames();
+
  private:
-  static std::map<String, Factory> factories_;
+  Mqtt& mqtt_;
+  static std::map<const String, Callback> factories_;
 };
 
 }  // namespace periphery

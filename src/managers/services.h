@@ -4,23 +4,26 @@
 #include <WiFiClient.h>
 
 #include "library/library.h"
-#include "mqtt.h"
+#include "managers/mqtt.h"
 #include "periphery/peripheryFactory.h"
 
 namespace bernd_box {
 
 class Services {
+ public:
+  static Mqtt& getMqtt();
+  // static Io& getIo();
+  static bernd_box::library::Library& getLibrary();
+  // static periphery::PeripheryFactory& getPeripheryFactory();
+
  private:
   static Mqtt mqtt_;
   static WiFiClient wifi_client_;
+  static library::Library library_;
+  // static Io io_;
   static periphery::PeripheryFactory periphery_factory_;
 
   static WiFiClient& getWifiClient();
-
- public:
-  static Mqtt& getMqtt();
-  static library::Library& getLibrary();
-  static periphery::PeripheryFactory& getPeripheryFactory();
 };
 
 }  // namespace bernd_box

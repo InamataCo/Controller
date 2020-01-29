@@ -1,26 +1,17 @@
 #include "library.h"
 
-#include "config.h"
-#include "managers/services.h"
-#include "periphery/periphery.h"
-#include "periphery/peripheryFactory.h"
-#include "periphery/peripheryTask.h"
-
 namespace bernd_box {
 namespace library {
 
-Library Library::library_ = Library(Services::getMqtt());
-
-Library& Library::getLibrary() { return library_; }
-
-Library::Library(Mqtt& mqtt) : mqtt_(mqtt) {}
+Library::Library(Mqtt& mqtt, periphery::PeripheryFactory& periphery_factory)
+    : mqtt_(mqtt), periphery_factory_(periphery_factory) {}
 
 Result Library::add(const JsonObjectConst& doc) {
-  const char* who = __PRETTY_FUNCTION__;
+  const __FlashStringHelper* who = F(__PRETTY_FUNCTION__);
 
   JsonVariantConst name = doc[F("name")];
   if (name.isNull() || !name.is<char*>()) {
-    mqtt_.sendError(who, "Missing property: name (string)");
+    mqtt_.sendError(__PRETTY_FUNCTION__, "Missing property: name (string)");
     return Result::kFailure;
   }
 
@@ -31,8 +22,8 @@ Result Library::add(const JsonObjectConst& doc) {
   }
 
   // Not present, so create new
-  std::shared_ptr<Periphery> periphery(
-      Services::getPeripheryFactory().createPeriphery(doc));
+  std::shared_ptr<periphery::Periphery> periphery(
+      periphery_factory_.createPeriphery(doc));
   if (periphery->isValid() == false) {
     return Result::kFailure;
   }
@@ -74,21 +65,20 @@ Result Library::execute(const JsonObjectConst& doc) {
     return Result::kFailure;
   }
 
-  std::map<String, std::shared_ptr<Periphery>>::iterator iterator =
-      peripheries_.find(name.as<String>());
+  auto iterator = peripheries_.find(name.as<String>());
   if (iterator == peripheries_.end()) {
     mqtt_.sendError(who, "No object found with name " + name.as<String>());
     return Result::kFailure;
   }
   Serial.println("Periphery = null ");
-  TaskFactory& task_factory = iterator->second->getTaskFactory(doc);
+  periphery::TaskFactory& task_factory = iterator->second->getTaskFactory(doc);
 
   JsonVariantConst parameter = doc[F("parameter")];
   if (parameter.isNull()) {
     return Result::kFailure;
   }
 
-  std::unique_ptr<PeripheryTask> peripheryTask(
+  std::unique_ptr<periphery::PeripheryTask> peripheryTask(
       task_factory.createTask(iterator->second, parameter));
   Result result = peripheryTask->execute();
   if (result != Result::kSuccess) {
@@ -99,7 +89,8 @@ Result Library::execute(const JsonObjectConst& doc) {
   return result;
 }
 
-std::shared_ptr<Periphery> Library::getPeriphery(const String& name) {
+std::shared_ptr<periphery::Periphery> Library::getPeriphery(
+    const String& name) {
   return peripheries_.find(name)->second;
 }
 

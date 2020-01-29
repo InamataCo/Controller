@@ -11,15 +11,15 @@
 #include "managers/io.h"
 #include "managers/mqtt.h"
 #include "managers/network.h"
+#include "managers/services.h"
+// #include "peripherals/peripheral_factory.h"
+// #include "peripherals/peripheral_manager.h"
 #include "tasks/acidity_sensor.h"
 #include "tasks/air_sensors.h"
 #include "tasks/analog_sensors.h"
 #include "tasks/connectivity.h"
 #include "tasks/dallas_temperature.h"
 #include "tasks/dissolved_oxygen_sensor.h"
-// #include "tasks/l293d_motors.h"
-#include "peripherals/peripheral_factory.h"
-#include "peripherals/peripheral_manager.h"
 #include "tasks/light_sensors.h"
 #include "tasks/measurement_protocol.h"
 #include "tasks/pump.h"
@@ -28,11 +28,9 @@
 
 //----------------------------------------------------------------------------
 // Global instances
-WiFiClient wifiClient;
 Scheduler scheduler;
 
-bernd_box::Mqtt mqtt(wifiClient);
-bernd_box::Io io(mqtt);
+bernd_box::Io io(bernd_box::Services::getMqtt());
 bernd_box::Network network(bernd_box::ssid, bernd_box::password);
 
 //----------------------------------------------------------------------------
@@ -51,23 +49,29 @@ std::vector<bernd_box::tasks::ReportItem> report_list{
     {bernd_box::tasks::Action::kSleep, std::chrono::minutes(15)},
 };
 
-bernd_box::tasks::Pump pumpTask(&scheduler, io, mqtt);
+bernd_box::tasks::Pump pumpTask(&scheduler, io, bernd_box::Services::getMqtt());
 bernd_box::tasks::CheckConnectivity checkConnectivity(
-    &scheduler, network, mqtt, io, bernd_box::wifi_connect_timeout,
+    &scheduler, network, io, bernd_box::wifi_connect_timeout,
     bernd_box::mqtt_connection_attempts);
-bernd_box::tasks::DallasTemperature dallasTemperatureTask(&scheduler, io, mqtt);
-bernd_box::tasks::AnalogSensors analogSensorsTask(&scheduler, io, mqtt);
-bernd_box::tasks::AciditySensor aciditySensorTask(&scheduler, io, mqtt);
-bernd_box::tasks::LightSensors lightSensorsTask(&scheduler, io, mqtt);
-bernd_box::tasks::AirSensors airSensorsTask(&scheduler, io, mqtt);
-bernd_box::tasks::DissolvedOxygenSensor dissolvedOxygenSensorTask(&scheduler,
-                                                                  io, mqtt);
+bernd_box::tasks::DallasTemperature dallasTemperatureTask(
+    &scheduler, io, bernd_box::Services::getMqtt());
+bernd_box::tasks::AnalogSensors analogSensorsTask(
+    &scheduler, io, bernd_box::Services::getMqtt());
+bernd_box::tasks::AciditySensor aciditySensorTask(
+    &scheduler, io, bernd_box::Services::getMqtt());
+bernd_box::tasks::LightSensors lightSensorsTask(&scheduler, io,
+                                                bernd_box::Services::getMqtt());
+bernd_box::tasks::AirSensors airSensorsTask(&scheduler, io,
+                                            bernd_box::Services::getMqtt());
+bernd_box::tasks::DissolvedOxygenSensor dissolvedOxygenSensorTask(
+    &scheduler, io, bernd_box::Services::getMqtt());
 bernd_box::tasks::MeasurementProtocol measurementProtocol(
-    &scheduler, mqtt, io, report_list, pumpTask, dallasTemperatureTask,
-    dissolvedOxygenSensorTask, aciditySensorTask);
-bernd_box::tasks::SystemMonitor systemMonitorTask(&scheduler, mqtt);
-// bernd_box::tasks::L293dMotors l293d_motors(&scheduler, io, mqtt);
-
+    &scheduler, bernd_box::Services::getMqtt(), io, report_list, pumpTask,
+    dallasTemperatureTask, dissolvedOxygenSensorTask, aciditySensorTask);
+bernd_box::tasks::SystemMonitor systemMonitorTask(
+    &scheduler, bernd_box::Services::getMqtt());
+// bernd_box::tasks::L293dMotors l293d_motors(&scheduler, io,
+// bernd_box::Services::getMqtt());
 
 //----------------------------------------------------------------------------
 // Setup and loop functions

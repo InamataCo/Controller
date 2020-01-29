@@ -1,15 +1,16 @@
-#include "mqtt.h"
-
-#include "library/library.h"
-#include "services.h"
+#include "managers/mqtt.h"
 
 namespace bernd_box {
 
-Mqtt::Mqtt(WiFiClient& wifi_client)
+Mqtt::Mqtt(WiFiClient& wifi_client,
+           std::function<std::vector<String>()> get_factory_names,
+           std::function<void(char*, uint8_t*, unsigned int)> library_callback)
     : client_(wifi_client),
       server_port_(BB_MQTT_PORT),
       action_prefix_(F("action/")),
       object_prefix_(F("object/")),
+      library_callback_(library_callback),
+      get_factory_names_(get_factory_names),
       default_qos_(BB_DEFAULT_QOS) {
   client_.setCallback(std::bind(&Mqtt::handleCallback, this, _1, _2, _3));
 }
@@ -98,10 +99,14 @@ int Mqtt::subscribe() {
 int Mqtt::switchBroker(const String& server_ip_address,
                        const String& client_id) {
   int error = 0;
+
   // If the client ID changes, also change the ID on which errors are reported
   if (!client_id.isEmpty()) {
     client_id_ = client_id;
     error_topic = "tele/" + String(client_id_) + "/error";
+  } else {
+    Serial.println(F("Failed to set error topic"));
+    return 1;
   }
 
   // Simple sanity check for IP address value
@@ -219,14 +224,15 @@ void Mqtt::sendRegister() {
   doc["actions"] = actions_array;
 
   // Create a list of all registered periphery factories
-  auto factories = Services::getPeripheryFactory().getFactories();
+  std::vector<String> factories = get_factory_names_();
   DynamicJsonDocument factories_doc(JSON_ARRAY_SIZE(factories.size()));
   JsonArray factories_array = factories_doc.to<JsonArray>();
   Serial.println(F("\tPeriphery types:"));
 
-  for (const auto& factory : factories) {
-    factories_array.add(factory.first.c_str());
-    Serial.println("\t\t" + factory.first);
+  for (auto factory : factories) {
+    factories_array.add(factory.c_str());
+    Serial.print("\t\t");
+    Serial.println(factory);
   }
   doc["periphery_types"] = factories_array;
 
@@ -237,7 +243,7 @@ void Mqtt::sendRegister() {
   size_t n = serializeJson(doc, register_buf.data(), register_buf.size());
 
   bool success = client_.publish("register", register_buf.data(), n);
-  if(!success) {
+  if (!success) {
     sendError(F(__PRETTY_FUNCTION__), F("Failed to send register"));
   }
 }
@@ -247,10 +253,14 @@ void Mqtt::sendError(const String& who, const String& message,
   String error = who;
   error += ": ";
   error += message;
-  client_.publish(error_topic.c_str(), error.c_str());
 
   if (additional_serial_log == true) {
     Serial.println(error.c_str());
+  }
+
+  bool success = client_.publish(error_topic.c_str(), error.c_str());
+  if (!success) {
+    Serial.println(F("Failed to send error message"));
   }
 }
 
@@ -283,7 +293,7 @@ void Mqtt::handleCallback(char* topic, uint8_t* message, unsigned int length) {
     }
     return;
   } else if (topic_str.startsWith(object_prefix_)) {
-    library::Library::getLibrary().handleCallback(topic, message, length);
+    library_callback_(topic, message, length);
     return;
   }
 
@@ -304,7 +314,7 @@ const String Mqtt::getMacString() {
     }
     mac_address_string += String(mac_address_int[i], HEX);
     if (i < 5) {
-      mac_address_string += ":"; 
+      mac_address_string += ":";
     }
   }
   mac_address_string.toUpperCase();

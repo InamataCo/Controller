@@ -15,9 +15,6 @@ namespace periphery {
 namespace peripheries {
 namespace dummy {
 
-using namespace bernd_box::library;
-using namespace bernd_box::periphery;
-
 class DummyTaskFactory : public TaskFactory {
  public:
   std::unique_ptr<PeripheryTask> createTask(
