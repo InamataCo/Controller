@@ -5,8 +5,8 @@ namespace bernd_box {
 Mqtt Services::mqtt_ =
     Mqtt(wifi_client_,
          std::bind(&periphery::PeripheryFactory::getFactoryNames,
-                   periphery_factory_),
-         std::bind(&library::Library::handleCallback, library_, _1, _2, _3));
+                   &periphery_factory_),
+         std::bind(&library::Library::handleCallback, &library_, _1, _2, _3));
 
 WiFiClient Services::wifi_client_;
 

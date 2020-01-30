@@ -3,6 +3,7 @@
 
 #include <Arduino.h>
 #include <ArduinoJson.h>
+#include <memory>
 
 #include "config.h"
 // #include "managers/io.h"
@@ -18,9 +19,8 @@ namespace library {
 class Library {
  public:
   Library(Mqtt& mqtt, periphery::PeripheryFactory& periphery_factory);
-  Result handleCallback(char* topic, uint8_t* payload, unsigned int length);
+  void handleCallback(char* topic, uint8_t* payload, unsigned int length);
   std::shared_ptr<periphery::Periphery> getPeriphery(const String& name);
-  Mqtt& getMQTT();
 
  private:
   Result add(const JsonObjectConst& doc);

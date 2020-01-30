@@ -11,13 +11,13 @@ Result Library::add(const JsonObjectConst& doc) {
 
   JsonVariantConst name = doc[F("name")];
   if (name.isNull() || !name.is<char*>()) {
-    mqtt_.sendError(__PRETTY_FUNCTION__, "Missing property: name (string)");
+    mqtt_.sendError(who, F("Missing property: name (string)"));
     return Result::kFailure;
   }
 
   // Check if element is present
   if (peripheries_.count(name) > 0) {
-    mqtt_.sendError(who, "This name has already been added.");
+    mqtt_.sendError(who, F("This name has already been added."));
     return Result::kFailure;
   }
 
@@ -94,10 +94,8 @@ std::shared_ptr<periphery::Periphery> Library::getPeriphery(
   return peripheries_.find(name)->second;
 }
 
-Mqtt& Library::getMQTT() { return mqtt_; }
-
-Result Library::handleCallback(char* topic, uint8_t* payload,
-                               unsigned int length) {
+void Library::handleCallback(char* topic, uint8_t* payload,
+                             unsigned int length) {
   const char* who = __PRETTY_FUNCTION__;
 
   char* command = strrchr(topic, '/');
@@ -107,22 +105,29 @@ Result Library::handleCallback(char* topic, uint8_t* payload,
   const DeserializationError error = deserializeJson(doc, payload, length);
   if (error) {
     mqtt_.sendError(who, String(F("Deserialize failed: ")) + error.c_str());
-    return Result::kFailure;
+    return;
   }
 
   int action_topic_add = strncmp(command, BB_MQTT_TOPIC_ADD_SUFFIX,
                                  strlen(BB_MQTT_TOPIC_ADD_SUFFIX));
-  if (action_topic_add == 0) return add(doc.as<JsonVariantConst>());
+  if (action_topic_add == 0) {
+    add(doc.as<JsonVariantConst>());
+    return;
+  }
   int action_topic_remove = strncmp(command, BB_MQTT_TOPIC_REMOVE_PREFIX,
                                     strlen(BB_MQTT_TOPIC_REMOVE_PREFIX));
-  if (action_topic_remove == 0) return remove(doc.as<JsonVariantConst>());
+  if (action_topic_remove == 0) {
+    remove(doc.as<JsonVariantConst>());
+    return;
+  }
   int action_topic_execute = strncmp(command, BB_MQTT_TOPIC_EXECUTE_PREFIX,
                                      strlen(BB_MQTT_TOPIC_EXECUTE_PREFIX));
-  if (action_topic_execute == 0) return execute(doc.as<JsonVariantConst>());
-  mqtt_.sendError(
-      who,
-      String(F("Topic was neither add, nor remove, nor execute: ")) + command);
-  return Result::kFailure;
+  if (action_topic_execute == 0) {
+    execute(doc.as<JsonVariantConst>());
+    return;
+  }
+  mqtt_.sendError(who, String(F("Unknown action [add, remove, execute]: ")) + command);
+  return;
 }
 }  // namespace library
 }  // namespace bernd_box

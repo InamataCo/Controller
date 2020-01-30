@@ -229,10 +229,9 @@ void Mqtt::sendRegister() {
   JsonArray factories_array = factories_doc.to<JsonArray>();
   Serial.println(F("\tPeriphery types:"));
 
-  for (auto factory : factories) {
+  for (const auto& factory : factories) {
     factories_array.add(factory.c_str());
-    Serial.print("\t\t");
-    Serial.println(factory);
+    Serial.println("\t\t" + factory);
   }
   doc["periphery_types"] = factories_array;
 
