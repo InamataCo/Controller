@@ -22,7 +22,7 @@ std::shared_ptr<Periphery> PeripheryFactory::createPeriphery(
 
   const JsonVariantConst type = parameter[F("type")];
   if (type.isNull() || !type.is<char*>()) {
-    mqtt_.sendError(who, "Missing property: name (string)");
+    mqtt_.sendError(who, "Missing property: type (string)");
     return std::make_shared<InvalidPeriphery>();
   }
 
