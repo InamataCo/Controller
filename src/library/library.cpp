@@ -72,7 +72,6 @@ Result Library::execute(const JsonObjectConst& doc) {
     mqtt_.sendError(who, "No object found with name " + name.as<String>());
     return Result::kFailure;
   }
-  Serial.println("Periphery = null ");
   periphery::TaskFactory& task_factory = iterator->second->getTaskFactory(doc);
 
   JsonVariantConst parameter = doc[F("parameter")];
@@ -83,6 +82,7 @@ Result Library::execute(const JsonObjectConst& doc) {
   periphery::PeripheryTask& peripheryTask = 
       task_factory.createTask(iterator->second, parameter);
   Services::getScheduler().addTask(peripheryTask);
+  peripheryTask.enable();
   return Result::kSuccess;
 }
 

@@ -30,14 +30,20 @@ DummyTaskFactory DummyPeriphery::taskFactory_ = DummyTaskFactory();
 
 bool DummyTask::Callback() {
   const char* who = __PRETTY_FUNCTION__;
-  Services::getMqtt().sendError(who, "I'm too dummy");
-  disable();
-  return false;
+  Serial.println("Too dummy");
+  Services::getMqtt().send(who, "I'm too dummy");
+  return true;
+}
+
+void DummyTask::OnTaskDisable(){  
+  Serial.println("I'm getting disabled... going to disappear :(");
 }
 
 PeripheryTask& DummyTaskFactory::createTask(
     std::shared_ptr<Periphery> periphery, const JsonObjectConst& doc) {
-  return *new DummyTask(periphery);
+  PeripheryTask& task = *new DummyTask(periphery);
+  task.setIterations(1);
+  return task;
 }
 
 DummyTask::DummyTask(std::shared_ptr<Periphery> periphery)

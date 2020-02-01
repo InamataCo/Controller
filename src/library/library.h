@@ -5,6 +5,7 @@
 #include <ArduinoJson.h>
 
 #include <memory>
+#include <map>
 
 #include "config.h"
 #include "managers/io_types.h"

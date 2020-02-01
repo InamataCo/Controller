@@ -4,11 +4,12 @@
 #include <Arduino.h>
 
 #include <memory>
+#include <set>
 
 // #include "managers/io.h"
+#include "TaskSchedulerDeclarations.h"
 #include "managers/io_types.h"
 #include "periphery.h"
-#include "TaskSchedulerDeclarations.h"
 
 namespace bernd_box {
 namespace periphery {
@@ -23,16 +24,26 @@ class PeripheryTask : public Task {
   virtual ~PeripheryTask() = default;
 
   virtual void OnDisable() final;
-  virtual void OnTaskDisable(); 
+  virtual void OnTaskDisable();
 
   std::shared_ptr<Periphery> getPeriphery();
 };
 
 class TaskFactory {
  public:
-  virtual PeripheryTask& createTask(
-      std::shared_ptr<Periphery> periphery,
-      const JsonObjectConst& parameter) = 0;
+  virtual PeripheryTask& createTask(std::shared_ptr<Periphery> periphery,
+                                    const JsonObjectConst& parameter) = 0;
+};
+
+class PeripheryTaskRemovalTask : public Task {
+ private:
+  std::set<PeripheryTask*> tasks_;
+  bool Callback();
+
+ public:
+  PeripheryTaskRemovalTask(Scheduler& scheduler);
+  virtual ~PeripheryTaskRemovalTask() = default;
+  void add(PeripheryTask& to_be_removed);
 };
 
 }  // namespace periphery
