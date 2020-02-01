@@ -1,6 +1,4 @@
-#include "I2CAdapter.h"
-
-#include "managers/services.h"
+#include "i2c_adapter.h"
 
 namespace bernd_box {
 namespace periphery {
@@ -8,9 +6,6 @@ namespace peripheries {
 namespace util {
 
 const String ListI2CDevicesTask::TYPE = TASK_LIST_I2C_DEVICES;
-
-const __FlashStringHelper* I2CAdapter::type() { return F("I2CAdapter"); }
-const __FlashStringHelper* I2CAdapter::getType() { return type(); }
 
 bool I2CAdapter::wire_taken = false;
 bool I2CAdapter::wire1_taken = false;
@@ -51,6 +46,13 @@ I2CAdapter::I2CAdapter(const JsonObjectConst& parameter) {
 }
 
 I2CAdapter::~I2CAdapter() { *taken_variable = false; }
+
+const String& I2CAdapter::getType() { return type(); }
+
+const String& I2CAdapter::type() {
+  static const String name{"I2CAdapter"};
+  return name;
+}
 
 TwoWire* I2CAdapter::getWire() { return wire_; }
 

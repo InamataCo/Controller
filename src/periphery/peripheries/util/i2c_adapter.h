@@ -8,7 +8,8 @@
 
 #include <Wire.h>
 
-#include "periphery/abstractPeriphery.h"
+#include "managers/services.h"
+#include "periphery/abstract_periphery.h"
 
 namespace bernd_box {
 namespace periphery {
@@ -18,16 +19,16 @@ namespace util {
 class I2CAdapter : public AbstractPeriphery {
  public:
   I2CAdapter(const JsonObjectConst& parameter);
-  ~I2CAdapter();
+  virtual ~I2CAdapter();
 
-  const __FlashStringHelper* getType() final;
-  static const __FlashStringHelper* type();
+  const String& getType() final;
+  static const String& type();
 
   TwoWire* getWire();
 
  private:
   static std::shared_ptr<Periphery> factory(const JsonObjectConst&);
-  
+
   static bool registered_;
 
   static bool wire_taken;

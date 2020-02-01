@@ -1,6 +1,4 @@
-#include "dummyPeriphery.h"
-
-#include "managers/services.h"
+#include "dummy_periphery.h"
 
 namespace bernd_box {
 namespace periphery {
@@ -9,15 +7,15 @@ namespace dummy {
 
 const String DummyTask::TYPE = "beStupid";
 
-
 DummyPeriphery::DummyPeriphery() {
   addTaskFactory(DummyTask::TYPE, taskFactory_);
 }
 
-const __FlashStringHelper* DummyPeriphery::getType() { return type(); }
+const String& DummyPeriphery::getType() { return type(); }
 
-const __FlashStringHelper* DummyPeriphery::type() {
-  return F("DummyPeriphery");
+const String& DummyPeriphery::type() {
+  static const String name{"DummyPeriphery"};
+  return name;
 }
 
 std::shared_ptr<Periphery> DummyPeriphery::factory(const JsonObjectConst&) {

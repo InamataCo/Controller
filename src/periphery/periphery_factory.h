@@ -9,11 +9,6 @@
 
 #include "invalid_periphery.h"
 #include "managers/mqtt.h"
-// #include "library/library.h"
-// #include "managers/services.h"
-// #include "peripheries/bh1750/bh1750_sensor.h"
-// #include "peripheries/dummy/dummyPeriphery.h"
-// #include "peripheries/util/I2CAdapter.h"
 #include "periphery.h"
 
 namespace bernd_box {

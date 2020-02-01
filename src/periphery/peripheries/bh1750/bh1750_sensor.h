@@ -1,7 +1,7 @@
 #ifndef BERND_BOX_PERIPHERY_PERIPHERIES_BH1750_BH1750_SENSOR_H
 #define BERND_BOX_PERIPHERY_PERIPHERIES_BH1750_BH1750_SENSOR_H
 
-#include "periphery/peripheries/lightSensor/I2CLightSensor.h"
+#include "periphery/peripheries/lightSensor/i2c_light_sensor.h"
 
 namespace bernd_box {
 namespace periphery {

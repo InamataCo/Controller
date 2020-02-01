@@ -1,7 +1,7 @@
 #ifndef BERND_BOX_PERIPHERY_PERIPHERIES_LIGHTSENSOR_I2CLIGHTSENSOR_H
 #define BERND_BOX_PERIPHERY_PERIPHERIES_LIGHTSENSOR_I2CLIGHTSENSOR_H
 
-#include "periphery/peripheries/I2CAbstractPeriphery.h"
+#include "periphery/peripheries/i2c_abstract_periphery.h"
 
 namespace bernd_box {
 namespace periphery {

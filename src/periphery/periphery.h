@@ -14,7 +14,7 @@ class Periphery {
  public:
   virtual ~Periphery() = default;
   
-  virtual const __FlashStringHelper* getType() = 0; 
+  virtual const String& getType() = 0; 
   virtual TaskFactory& getTaskFactory(const JsonObjectConst& doc) = 0;
   virtual const bool isValid() = 0;
 };

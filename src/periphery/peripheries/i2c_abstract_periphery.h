@@ -4,8 +4,8 @@
 #define PARAM_I2C_ABSTRACT_PERIPHERY_ADAPTER_NAME "adapter"
 
 #include <Wire.h>
-#include "periphery/abstractPeriphery.h"
-#include "periphery/peripheries/util/I2CAdapter.h"
+#include "periphery/abstract_periphery.h"
+#include "periphery/peripheries/util/i2c_adapter.h"
 
 namespace bernd_box {
 namespace periphery {

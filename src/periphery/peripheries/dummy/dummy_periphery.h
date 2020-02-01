@@ -5,10 +5,11 @@
 #include <ArduinoJson.h>
 
 #include "library/library.h"
-#include "periphery/abstractPeriphery.h"
+#include "managers/services.h"
+#include "periphery/abstract_periphery.h"
 #include "periphery/periphery.h"
-#include "periphery/peripheryTask.h"
-#include "periphery/peripheryFactory.h"
+#include "periphery/periphery_factory.h"
+#include "periphery/periphery_task.h"
 
 namespace bernd_box {
 namespace periphery {
@@ -25,8 +26,8 @@ class DummyPeriphery : public AbstractPeriphery {
  public:
   DummyPeriphery();
   virtual ~DummyPeriphery() = default;
-  const __FlashStringHelper* getType() final;
-  static const __FlashStringHelper* type();
+  const String& getType() final;
+  static const String& type();
 
  private:
   static std::shared_ptr<Periphery> factory(const JsonObjectConst&);

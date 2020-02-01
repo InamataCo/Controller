@@ -17,7 +17,6 @@ class PeripheryTask /*: public Task*/ {
  private:
   std::shared_ptr<Periphery> periphery_;
 
- protected:
  public:
   PeripheryTask(std::shared_ptr<Periphery> periphery);
   virtual ~PeripheryTask() = default;

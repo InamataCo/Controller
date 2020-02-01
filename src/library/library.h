@@ -3,15 +3,15 @@
 
 #include <Arduino.h>
 #include <ArduinoJson.h>
+
 #include <memory>
 
 #include "config.h"
-// #include "managers/io.h"
 #include "managers/io_types.h"
 #include "managers/mqtt.h"
 #include "periphery/periphery.h"
-#include "periphery/peripheryFactory.h"
-#include "periphery/peripheryTask.h"
+#include "periphery/periphery_factory.h"
+#include "periphery/periphery_task.h"
 
 namespace bernd_box {
 namespace library {

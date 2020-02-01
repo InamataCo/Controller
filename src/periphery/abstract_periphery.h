@@ -3,10 +3,8 @@
 
 #include <map>
 
-// #include "library/library.h"
-// #include "managers/io.h"
 #include "periphery.h"
-#include "peripheryTask.h"
+#include "periphery_task.h"
 
 namespace bernd_box {
 namespace periphery {

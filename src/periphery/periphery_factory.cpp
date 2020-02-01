@@ -1,4 +1,4 @@
-#include "peripheryFactory.h"
+#include "periphery_factory.h"
 
 namespace bernd_box {
 namespace periphery {

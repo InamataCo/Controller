@@ -5,7 +5,7 @@
 
 #include "library/library.h"
 #include "managers/mqtt.h"
-#include "periphery/peripheryFactory.h"
+#include "periphery/periphery_factory.h"
 
 namespace bernd_box {
 

@@ -28,7 +28,7 @@ Result Library::add(const JsonObjectConst& doc) {
     return Result::kFailure;
   }
 
-  peripheries_.insert({name.as<String>(), periphery});
+  peripheries_.emplace(name.as<String>(), periphery);
 
   return Result::kSuccess;
 }
@@ -126,7 +126,8 @@ void Library::handleCallback(char* topic, uint8_t* payload,
     execute(doc.as<JsonVariantConst>());
     return;
   }
-  mqtt_.sendError(who, String(F("Unknown action [add, remove, execute]: ")) + command);
+  mqtt_.sendError(
+      who, String(F("Unknown action [add, remove, execute]: ")) + command);
   return;
 }
 }  // namespace library
