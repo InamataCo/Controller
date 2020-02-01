@@ -2,13 +2,13 @@
 #define BERND_BOX_PERIPHERY_TASK_H
 
 #include <Arduino.h>
-#include <TaskSchedulerDeclarations.h>
 
 #include <memory>
 
 // #include "managers/io.h"
 #include "managers/io_types.h"
 #include "periphery.h"
+#include "TaskSchedulerDeclarations.h"
 
 namespace bernd_box {
 namespace periphery {

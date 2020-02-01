@@ -28,14 +28,14 @@
 
 //----------------------------------------------------------------------------
 // Global instances
-Scheduler scheduler;
+Scheduler& scheduler = bernd_box::Services::getScheduler();
 
 bernd_box::Io io(bernd_box::Services::getMqtt());
 bernd_box::Network network(bernd_box::ssid, bernd_box::password);
 
 //----------------------------------------------------------------------------
 // TaskScheduler tasks and report list
-std::vector<bernd_box::tasks::ReportItem> report_list{
+/*std::vector<bernd_box::tasks::ReportItem> report_list{
     {bernd_box::tasks::Action::kPump, std::chrono::seconds(20)},
     {bernd_box::tasks::Action::kWaterTemperature},
     {bernd_box::tasks::Action::kPump, std::chrono::seconds(20)},
@@ -49,11 +49,11 @@ std::vector<bernd_box::tasks::ReportItem> report_list{
     {bernd_box::tasks::Action::kSleep, std::chrono::minutes(15)},
 };
 
-bernd_box::tasks::Pump pumpTask(&scheduler, io, bernd_box::Services::getMqtt());
+bernd_box::tasks::Pump pumpTask(&scheduler, io, bernd_box::Services::getMqtt());*/
 bernd_box::tasks::CheckConnectivity checkConnectivity(
     &scheduler, network, io, bernd_box::wifi_connect_timeout,
     bernd_box::mqtt_connection_attempts);
-bernd_box::tasks::DallasTemperature dallasTemperatureTask(
+/*bernd_box::tasks::DallasTemperature dallasTemperatureTask(
     &scheduler, io, bernd_box::Services::getMqtt());
 bernd_box::tasks::AnalogSensors analogSensorsTask(
     &scheduler, io, bernd_box::Services::getMqtt());
@@ -67,7 +67,7 @@ bernd_box::tasks::DissolvedOxygenSensor dissolvedOxygenSensorTask(
     &scheduler, io, bernd_box::Services::getMqtt());
 bernd_box::tasks::MeasurementProtocol measurementProtocol(
     &scheduler, bernd_box::Services::getMqtt(), io, report_list, pumpTask,
-    dallasTemperatureTask, dissolvedOxygenSensorTask, aciditySensorTask);
+    dallasTemperatureTask, dissolvedOxygenSensorTask, aciditySensorTask);*/
 bernd_box::tasks::SystemMonitor systemMonitorTask(
     &scheduler, bernd_box::Services::getMqtt());
 // bernd_box::tasks::L293dMotors l293d_motors(&scheduler, io,

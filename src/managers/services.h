@@ -2,11 +2,11 @@
 #define BERND_BOX_MANAGERS_SERVICES_H
 
 #include <WiFiClient.h>
+#include <TaskSchedulerDeclarations.h>
 
 #include "library/library.h"
 #include "managers/mqtt.h"
 #include "periphery/periphery_factory.h"
-#include "TaskScheduler.h"
 
 namespace bernd_box {
 

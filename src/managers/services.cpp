@@ -13,6 +13,8 @@ WiFiClient Services::wifi_client_;
 library::Library Services::library_ =
     library::Library(mqtt_, periphery_factory_);
 
+Scheduler Services::scheduler_;
+
 // Io Services::io_ = Io(mqtt_);
 
 periphery::PeripheryFactory Services::periphery_factory_ =
