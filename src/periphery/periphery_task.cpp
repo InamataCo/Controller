@@ -40,6 +40,7 @@ bool PeripheryTaskRemovalTask::Callback() {
     tasks_.erase(it);
   }
   tasks_.clear();
+  return true;
 }
 
 }  // namespace periphery
