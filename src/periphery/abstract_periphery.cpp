@@ -3,11 +3,6 @@
 namespace bernd_box {
 namespace periphery {
 
-std::unique_ptr<PeripheryTask> ErrorTaskFactory::createTask(
-      std::shared_ptr<Periphery> periphery, const JsonObjectConst& doc){
-        return nullptr;
-      }
-
 TaskFactory& AbstractPeriphery::getTaskFactory(const JsonObjectConst& doc) {
   JsonVariantConst task = doc[F("task")];
   if (task.isNull() || !task.is<char*>()) {

@@ -13,21 +13,24 @@
 namespace bernd_box {
 namespace periphery {
 
-class PeripheryTask /*: public Task*/ {
+class PeripheryTask : public Task {
  private:
   std::shared_ptr<Periphery> periphery_;
+  Scheduler& scheduler_;
 
  public:
   PeripheryTask(std::shared_ptr<Periphery> periphery);
   virtual ~PeripheryTask() = default;
 
+  virtual void OnDisable() final;
+  virtual void OnTaskDisable(); 
+
   std::shared_ptr<Periphery> getPeriphery();
-  virtual Result execute() = 0;
 };
 
 class TaskFactory {
  public:
-  virtual std::unique_ptr<PeripheryTask> createTask(
+  virtual PeripheryTask& createTask(
       std::shared_ptr<Periphery> periphery,
       const JsonObjectConst& parameter) = 0;
 };

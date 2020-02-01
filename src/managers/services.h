@@ -6,20 +6,25 @@
 #include "library/library.h"
 #include "managers/mqtt.h"
 #include "periphery/periphery_factory.h"
+#include "TaskScheduler.h"
 
 namespace bernd_box {
+
+using namespace bernd_box::library;
 
 class Services {
  public:
   static Mqtt& getMqtt();
   // static Io& getIo();
-  static bernd_box::library::Library& getLibrary();
+  static Library& getLibrary();
   // static periphery::PeripheryFactory& getPeripheryFactory();
+  static Scheduler& getScheduler();
 
  private:
   static Mqtt mqtt_;
   static WiFiClient wifi_client_;
-  static library::Library library_;
+  static Library library_;
+  static Scheduler scheduler_;
   // static Io io_;
   static periphery::PeripheryFactory periphery_factory_;
 

@@ -5,15 +5,10 @@
 
 #include "periphery.h"
 #include "periphery_task.h"
+#include "baseTasks.h"
 
 namespace bernd_box {
 namespace periphery {
-
-class ErrorTaskFactory : public TaskFactory {
- public:
-  std::unique_ptr<PeripheryTask> createTask(
-      std::shared_ptr<Periphery> periphery, const JsonObjectConst& doc);
-};
 
 class AbstractPeriphery : public Periphery {
  public:

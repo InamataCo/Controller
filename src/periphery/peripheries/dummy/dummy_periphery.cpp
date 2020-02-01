@@ -28,15 +28,16 @@ bool DummyPeriphery::registered_ =
 // Dummy Task ----------------
 DummyTaskFactory DummyPeriphery::taskFactory_ = DummyTaskFactory();
 
-Result DummyTask::execute() {
+bool DummyTask::Callback() {
   const char* who = __PRETTY_FUNCTION__;
   Services::getMqtt().sendError(who, "I'm too dummy");
-  return Result::kSuccess;
+  disable();
+  return false;
 }
 
-std::unique_ptr<PeripheryTask> DummyTaskFactory::createTask(
+PeripheryTask& DummyTaskFactory::createTask(
     std::shared_ptr<Periphery> periphery, const JsonObjectConst& doc) {
-  return std::unique_ptr<PeripheryTask>(new DummyTask(periphery));
+  return *new DummyTask(periphery);
 }
 
 DummyTask::DummyTask(std::shared_ptr<Periphery> periphery)

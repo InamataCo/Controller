@@ -18,7 +18,7 @@ namespace dummy {
 
 class DummyTaskFactory : public TaskFactory {
  public:
-  std::unique_ptr<PeripheryTask> createTask(
+  PeripheryTask& createTask(
       std::shared_ptr<Periphery> periphery, const JsonObjectConst& doc);
 };
 
@@ -41,7 +41,7 @@ class DummyTask : public PeripheryTask {
   DummyTask(std::shared_ptr<Periphery> periphery);
   virtual ~DummyTask() = default;
 
-  Result execute() final;
+  bool Callback() final;
   static const String TYPE;
 };
 }  // namespace dummy

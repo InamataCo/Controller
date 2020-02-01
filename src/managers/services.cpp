@@ -22,6 +22,8 @@ library::Library& Services::getLibrary() { return library_; }
 
 Mqtt& Services::getMqtt() { return mqtt_; }
 
+Scheduler& Services::getScheduler() { return scheduler_; }
+
 // periphery::PeripheryFactory& Services::getPeripheryFactory() {
 //   return periphery_factory_;
 // }

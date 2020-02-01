@@ -7,7 +7,6 @@
 #include <memory>
 #include <vector>
 
-#include "invalid_periphery.h"
 #include "managers/mqtt.h"
 #include "periphery.h"
 

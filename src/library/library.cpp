@@ -1,5 +1,7 @@
 #include "library.h"
 
+#include "managers/services.h"
+
 namespace bernd_box {
 namespace library {
 
@@ -78,15 +80,10 @@ Result Library::execute(const JsonObjectConst& doc) {
     return Result::kFailure;
   }
 
-  std::unique_ptr<periphery::PeripheryTask> peripheryTask(
-      task_factory.createTask(iterator->second, parameter));
-  Result result = peripheryTask->execute();
-  if (result != Result::kSuccess) {
-    mqtt_.sendError(who, "The chosen periphery of type " +
-                             String(iterator->second->getType()) +
-                             " can not execute this task.");
-  }
-  return result;
+  periphery::PeripheryTask& peripheryTask = 
+      task_factory.createTask(iterator->second, parameter);
+  Services::getScheduler().addTask(peripheryTask);
+  return Result::kSuccess;
 }
 
 std::shared_ptr<periphery::Periphery> Library::getPeriphery(

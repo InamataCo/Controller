@@ -1,4 +1,5 @@
 #include "periphery_factory.h"
+#include "invalid_periphery.h"
 
 namespace bernd_box {
 namespace periphery {
