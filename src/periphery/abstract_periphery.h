@@ -1,14 +1,13 @@
 #ifndef BERND_BOX_PERIPHERY_ABSTRACTPERIPHERY_H
 #define BERND_BOX_PERIPHERY_ABSTRACTPERIPHERY_H
 
-#include "library/library.h"
-#include "managers/io.h"
+#include <map>
+
 #include "periphery.h"
-#include "peripheryTask.h"
+#include "periphery_task.h"
 
 namespace bernd_box {
 namespace periphery {
-using namespace bernd_box::library;
 
 class ErrorTaskFactory : public TaskFactory {
  public:
@@ -30,7 +29,7 @@ class AbstractPeriphery : public Periphery {
 
  private:
   std::map<String, TaskFactory&> taskFactories_;
-  ErrorTaskFactory errorFactory_ {ErrorTaskFactory()};
+  ErrorTaskFactory errorFactory_{ErrorTaskFactory()};
   bool isValid_ = true;
 };
 }  // namespace periphery

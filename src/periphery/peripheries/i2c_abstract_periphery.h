@@ -4,8 +4,8 @@
 #define PARAM_I2C_ABSTRACT_PERIPHERY_ADAPTER_NAME "adapter"
 
 #include <Wire.h>
-#include "periphery/abstractPeriphery.h"
-#include "periphery/peripheries/util/I2CAdapter.h"
+#include "periphery/abstract_periphery.h"
+#include "periphery/peripheries/util/i2c_adapter.h"
 
 namespace bernd_box {
 namespace periphery {
@@ -14,15 +14,15 @@ namespace peripheries {
 using namespace util;
 
 class I2CAbstractPeriphery : public AbstractPeriphery {
- private:
-  std::shared_ptr<I2CAdapter> i2CAdapter_;
+ public:
+  I2CAbstractPeriphery(const JsonObjectConst& parameter);
+  virtual ~I2CAbstractPeriphery() = default;
 
  protected:
   TwoWire* getWire();
 
- public:
-  I2CAbstractPeriphery(const JsonObjectConst& parameter);
-  virtual ~I2CAbstractPeriphery() = default;
+ private:
+  std::shared_ptr<I2CAdapter> i2c_adapter_;
 };
 
 }  // namespace peripheries

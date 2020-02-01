@@ -4,7 +4,10 @@
 #include <Arduino.h>
 #include <TaskSchedulerDeclarations.h>
 
-#include "managers/io.h"
+#include <memory>
+
+// #include "managers/io.h"
+#include "managers/io_types.h"
 #include "periphery.h"
 
 namespace bernd_box {
@@ -13,9 +16,6 @@ namespace periphery {
 class PeripheryTask /*: public Task*/ {
  private:
   std::shared_ptr<Periphery> periphery_;
-
- protected:
-  
 
  public:
   PeripheryTask(std::shared_ptr<Periphery> periphery);
@@ -27,7 +27,8 @@ class PeripheryTask /*: public Task*/ {
 
 class TaskFactory {
  public:
-  virtual std::unique_ptr<PeripheryTask> createTask(std::shared_ptr<Periphery> periphery,
+  virtual std::unique_ptr<PeripheryTask> createTask(
+      std::shared_ptr<Periphery> periphery,
       const JsonObjectConst& parameter) = 0;
 };
 

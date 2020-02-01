@@ -2,15 +2,20 @@
 #ifndef ESP_MONITOR_MQTT
 #define ESP_MONITOR_MQTT
 
-#include <PubSubClient.h>
-#include <WiFi.h>
+#include "Arduino.h"
 
 #include <functional>
 #include <map>
 #include <vector>
 
+#include <PubSubClient.h>
+#include <WiFi.h>
+
+
 #include "ArduinoJson.h"
 #include "config.h"
+// #include "services.h"
+// #include "periphery/peripheryFactory.h"
 #include "utils/setupNode.h"
 
 namespace bernd_box {
@@ -26,7 +31,9 @@ class Mqtt {
    *
    * \param wifi_client An ESP WiFi client to perform TCP/IP and UDP operations
    */
-  Mqtt(WiFiClient& wifi_client);
+  Mqtt(WiFiClient& wifi_client,
+       std::function<std::vector<String>()> get_factory_names,
+       std::function<void(char*, uint8_t*, unsigned int)> library_callback);
 
   /**
    * Loop until connected to MQTT server or tries exceeded
@@ -45,7 +52,7 @@ class Mqtt {
 
   /**
    * Subscribe to the action and object topics
-   * 
+   *
    * @return int 0 on success
    */
   int subscribe();
@@ -165,6 +172,8 @@ class Mqtt {
    */
   void handleCallback(char* topic, uint8_t* payload, unsigned int length);
 
+  const String getMacString();
+
   PubSubClient client_;
   String client_id_;
   String error_topic;
@@ -178,11 +187,11 @@ class Mqtt {
 
   /// Object prefix for MQTT messages. Includes trailing slash delimiter
   const __FlashStringHelper* object_prefix_;
-  /// Functions to be called when receiving an object message
-  callback_map object_callbacks_;
-  
+  std::function<void(char*, uint8_t*, unsigned int)> library_callback_;
+  std::function<std::vector<String>()> get_factory_names_;
+
   uint8_t default_qos_;
-};
+};  // namespace bernd_box
 
 }  // namespace bernd_box
 

@@ -1,4 +1,4 @@
-#include "I2CLightSensor.h"
+#include "i2c_light_sensor.h"
 
 namespace bernd_box {
 namespace periphery {
