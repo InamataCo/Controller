@@ -9,6 +9,8 @@
   "The periphery does not support the requested task."
   
 #define TASK_LIST_OPERATIONS "list_operations"
+#define TASK_LIST_RESULT_NODE "result"
+#define TASK_LIST_TYPE_NODE "type"
 
 namespace bernd_box {
 namespace periphery {

@@ -16,6 +16,7 @@ class AbstractPeriphery : public Periphery {
 
   TaskFactory& getTaskFactory(const JsonObjectConst& doc) final;
   const bool isValid() final;
+  virtual const std::list<String>& getAvaiableTasks();
 
  protected:
   void addTaskFactory(const String& type, TaskFactory& taskFactory);
@@ -23,8 +24,9 @@ class AbstractPeriphery : public Periphery {
   void setInvalid();
 
  private:
-  std::map<String, TaskFactory&> taskFactories_;
-  ErrorTaskFactory errorFactory_{ErrorTaskFactory()};
+  std::map<String, TaskFactory&> task_factories_;
+  std::list<String> avaiable_tasks_;
+  ErrorTaskFactory error_factory_{ErrorTaskFactory()};
   bool isValid_ = true;
 };
 }  // namespace periphery

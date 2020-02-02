@@ -6,12 +6,12 @@ namespace periphery {
 TaskFactory& AbstractPeriphery::getTaskFactory(const JsonObjectConst& doc) {
   JsonVariantConst task = doc[F("task")];
   if (task.isNull() || !task.is<char*>()) {
-    return errorFactory_;
+    return error_factory_;
   }
 
-  auto taskFactoriesIterator = taskFactories_.find(task);
-  if (taskFactoriesIterator == taskFactories_.end()) {
-    return errorFactory_;
+  auto taskFactoriesIterator = task_factories_.find(task);
+  if (taskFactoriesIterator == task_factories_.end()) {
+    return error_factory_;
   }
 
   return taskFactoriesIterator->second;
@@ -19,12 +19,20 @@ TaskFactory& AbstractPeriphery::getTaskFactory(const JsonObjectConst& doc) {
 
 void AbstractPeriphery::addTaskFactory(const String& type,
                                        TaskFactory& taskFactory) {
-  taskFactories_.insert(std::pair<String, TaskFactory&>(type, taskFactory));
+  task_factories_.insert(std::pair<String, TaskFactory&>(type, taskFactory));
+  avaiable_tasks_.push_back(type);
 }
 
 void AbstractPeriphery::addTaskFactory(
-    std::map<String, TaskFactory&>& taskFactories) {
-  taskFactories_.insert(taskFactories.begin(), taskFactories.end());
+    std::map<String, TaskFactory&>& task_factories) {
+  task_factories_.insert(task_factories.begin(), task_factories.end());
+  for (auto it = task_factories.begin(); it != task_factories.end(); ++it) {
+    avaiable_tasks_.push_back(it->first);
+  }
+}
+
+const std::list<String>& AbstractPeriphery::getAvaiableTasks(){
+  return avaiable_tasks_;
 }
 
 const bool AbstractPeriphery::isValid() { return isValid_; }
