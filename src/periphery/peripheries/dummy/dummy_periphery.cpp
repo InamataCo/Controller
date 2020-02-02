@@ -28,6 +28,10 @@ bool DummyPeriphery::registered_ =
 // Dummy Task ----------------
 DummyTaskFactory DummyPeriphery::taskFactory_ = DummyTaskFactory();
 
+DummyTask::~DummyTask(){
+  Serial.println("Deleting DummyTask");
+}
+
 bool DummyTask::Callback() {
   const char* who = __PRETTY_FUNCTION__;
   Serial.println("Too dummy");

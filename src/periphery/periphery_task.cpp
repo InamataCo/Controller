@@ -14,7 +14,6 @@ std::shared_ptr<Periphery> PeripheryTask::getPeriphery() { return periphery_; }
 
 void PeripheryTask::OnDisable() {
   OnTaskDisable();
-  scheduler_.deleteTask(*this);
 
   static PeripheryTaskRemovalTask ptrt(scheduler_);
   ptrt.add(*this);
@@ -24,7 +23,6 @@ void PeripheryTask::OnTaskDisable() {}
 
 PeripheryTaskRemovalTask::PeripheryTaskRemovalTask(Scheduler& scheduler)
     : Task(&scheduler) {
-  setIterations(1);
   scheduler.addTask(*this);
 }
 
