@@ -39,7 +39,7 @@ class DummyPeriphery : public AbstractPeriphery {
 class DummyTask : public PeripheryTask {
  public:
   DummyTask(std::shared_ptr<Periphery> periphery);
-  virtual ~DummyTask() = default;
+  virtual ~DummyTask();
 
   bool Callback() final;
   void OnTaskDisable() final;

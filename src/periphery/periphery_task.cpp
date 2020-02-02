@@ -28,6 +28,7 @@ PeripheryTaskRemovalTask::PeripheryTaskRemovalTask(Scheduler& scheduler)
 
 void PeripheryTaskRemovalTask::add(PeripheryTask& pt) {
   tasks_.insert(&pt);
+  setIterations(1);
   enableIfNot();
 }
 
