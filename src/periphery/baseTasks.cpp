@@ -15,6 +15,10 @@ PeripheryTask& ErrorTaskFactory::createTask(
 ErrorTask::ErrorTask(std::shared_ptr<Periphery> periphery)
     : PeripheryTask(periphery) {}
 
+const __FlashStringHelper* ErrorTask::getType() { return type(); }
+
+const __FlashStringHelper* ErrorTask::type() { return F("ErrorTask"); }
+
 bool ErrorTask::Callback() {
   const __FlashStringHelper* who = F(__PRETTY_FUNCTION__);
   Services::getMqtt().sendError(who, String(F(ERROR_TASK_ERROR_MESSAGE)));
@@ -26,6 +30,12 @@ const String ListOperationsTask::TYPE = TASK_ERROR;
 PeripheryTask& ListOperationsTaskFactory::createTask(
     std::shared_ptr<Periphery> periphery, const JsonObjectConst& doc) {
   return *new ListOperationsTask(periphery);
+}
+
+const __FlashStringHelper* ListOperationsTask::getType() { return type(); }
+
+const __FlashStringHelper* ListOperationsTask::type() {
+  return F("ListOperationsTask");
 }
 
 ListOperationsTask::ListOperationsTask(std::shared_ptr<Periphery> periphery)

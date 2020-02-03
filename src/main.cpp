@@ -5,6 +5,7 @@
  */
 
 #include <Arduino.h>
+#include <ArduinoJson.h>
 #include <TaskScheduler.h>
 
 #include "configuration.h"
@@ -14,6 +15,7 @@
 #include "managers/services.h"
 // #include "peripherals/peripheral_factory.h"
 // #include "peripherals/peripheral_manager.h"
+#include "periphery/capabilities/get_value.h"
 #include "tasks/acidity_sensor.h"
 #include "tasks/air_sensors.h"
 #include "tasks/analog_sensors.h"
@@ -94,6 +96,18 @@ void setup() {
   }
 
   checkConnectivity.isSetup_ = true;
+
+  const std::set<String>& get_value_types =
+      bernd_box::periphery::capabilities::GetValue::getTypes();
+  DynamicJsonDocument get_value_types_doc(
+      JSON_ARRAY_SIZE(get_value_types.size()));
+  JsonArray get_value_types_array = get_value_types_doc.to<JsonArray>();
+
+  for(const auto& type : get_value_types) {
+    get_value_types_array.add(type.c_str());
+  }
+
+  bernd_box::Services::getMqtt().send("capability::GetValue", get_value_types_doc);
 
   io.setStatusLed(false);
 }

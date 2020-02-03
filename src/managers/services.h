@@ -27,6 +27,7 @@ class Services {
   static Scheduler scheduler_;
   // static Io io_;
   static periphery::PeripheryFactory periphery_factory_;
+  static periphery::PeripheryTaskFactory periphery_task_factory_;
 
   static WiFiClient& getWifiClient();
 };

@@ -2,20 +2,16 @@
 #ifndef ESP_MONITOR_MQTT
 #define ESP_MONITOR_MQTT
 
-#include "Arduino.h"
+#include <PubSubClient.h>
+#include <WiFi.h>
 
 #include <functional>
 #include <map>
 #include <vector>
 
-#include <PubSubClient.h>
-#include <WiFi.h>
-
-
+#include "Arduino.h"
 #include "ArduinoJson.h"
 #include "config.h"
-// #include "services.h"
-// #include "periphery/peripheryFactory.h"
 #include "utils/setupNode.h"
 
 namespace bernd_box {
@@ -33,7 +29,8 @@ class Mqtt {
    */
   Mqtt(WiFiClient& wifi_client,
        std::function<std::vector<String>()> get_factory_names,
-       std::function<void(char*, uint8_t*, unsigned int)> library_callback);
+       std::function<void(char*, uint8_t*, unsigned int)> library_callback,
+       std::function<void(char*, uint8_t*, unsigned int)> task_callback);
 
   /**
    * Loop until connected to MQTT server or tries exceeded
@@ -178,19 +175,26 @@ class Mqtt {
   String client_id_;
   String error_topic;
   String server_ip_address_;
-  const uint server_port_;
+  const uint server_port_ = 1883;
 
   /// Action prefix for MQTT messages. Includes trailing slash delimiter
-  const __FlashStringHelper* action_prefix_;
+  const __FlashStringHelper* action_prefix_ = F("action/");
   /// Functions to be called when receiving an action message
   callback_map action_callbacks_;
 
   /// Object prefix for MQTT messages. Includes trailing slash delimiter
-  const __FlashStringHelper* object_prefix_;
-  std::function<void(char*, uint8_t*, unsigned int)> library_callback_;
+  const __FlashStringHelper* object_prefix_ = F("object/");
+  /// Function to handle object messages
+  std::function<void(char*, uint8_t*, unsigned int)> object_callback_;
+
+  /// Task prefix for MQTT messages. Includes trailing slash delimiter
+  const __FlashStringHelper* task_prefix_ = F("task/");
+  /// Function to handle task messages
+  std::function<void(char*, uint8_t*, unsigned int)> task_callback_;
+
   std::function<std::vector<String>()> get_factory_names_;
 
-  uint8_t default_qos_;
+  uint8_t default_qos_ = 1;
 };  // namespace bernd_box
 
 }  // namespace bernd_box
