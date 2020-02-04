@@ -21,8 +21,6 @@ class PeripheryTaskFactory {
 
   static bool registerTask(const String& type, Factory factory);
 
-  void mqttCallback(char* topic, uint8_t* payload, unsigned int length);
-
   bool createTask(std::shared_ptr<Periphery> periphery,
                   const JsonObjectConst& parameter);
 

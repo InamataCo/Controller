@@ -4,8 +4,8 @@
 #include <Arduino.h>
 #include <ArduinoJson.h>
 
-#include <memory>
 #include <map>
+#include <memory>
 
 #include "config.h"
 #include "managers/io_types.h"
@@ -24,6 +24,13 @@ class Library {
           periphery::PeripheryTaskFactory& periphery_task_factory);
   void handleCallback(char* topic, uint8_t* payload, unsigned int length);
   void taskCallback(char* topic, uint8_t* payload, unsigned int length);
+
+  /**
+   * Returns a shared pointer to the object or a nullptr if not found
+   *
+   * @param name Name of the periphery to be found
+   * @return A shared pointer of the object, or a nullptr if it does not exist
+   */
   std::shared_ptr<periphery::Periphery> getPeriphery(const String& name);
 
  private:

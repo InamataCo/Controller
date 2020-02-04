@@ -91,7 +91,12 @@ Result Library::execute(const JsonObjectConst& doc) {
 
 std::shared_ptr<periphery::Periphery> Library::getPeriphery(
     const String& name) {
-  return peripheries_.find(name)->second;
+  auto periphery = peripheries_.find(name);
+  if(periphery != peripheries_.end()) {
+    return periphery->second;
+  } else {
+    return std::shared_ptr<periphery::Periphery>();
+  }
 }
 
 void Library::handleCallback(char* topic, uint8_t* payload,

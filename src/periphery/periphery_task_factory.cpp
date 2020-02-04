@@ -10,20 +10,6 @@ bool PeripheryTaskFactory::registerTask(const String& type,
   return true;
 }
 
-void PeripheryTaskFactory::mqttCallback(char* topic, uint8_t* payload,
-                                        unsigned int length) {
-  // Extract the name from the topic and increment once to skip the last
-  // slash: task/a48b109f-975f-42e2-9962-a6fb752a1b6e/add -> add
-  char* action = strrchr(topic, '/');
-  action++;
-  if (strcmp(action, "start")) {
-  } else if (strcmp(action, "stop")) {
-  } else {
-    mqtt_.sendError(F(__PRETTY_FUNCTION__),
-                    String("Unknown task command [start, stop]: ") + action);
-  }
-}
-
 bool PeripheryTaskFactory::createTask(std::shared_ptr<Periphery> periphery,
                                       const JsonObjectConst& parameters) {
   const char* who = __PRETTY_FUNCTION__;
@@ -48,6 +34,7 @@ bool PeripheryTaskFactory::createTask(std::shared_ptr<Periphery> periphery,
 }
 
 bool PeripheryTaskFactory::stopTask(const JsonObjectConst& parameter) {
+  Serial.println("next_task_id_: " + String(next_task_id_));
   return false;
 }
 
