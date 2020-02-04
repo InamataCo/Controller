@@ -4,11 +4,17 @@ namespace bernd_box {
 namespace tasks {
 
 TaskFactory::TaskFactory(Mqtt& mqtt, Scheduler& scheduler)
-    : ::Task(&scheduler), mqtt_(mqtt), scheduler_(scheduler) {}
+    : BaseTask(scheduler, [this](const int id) { markTaskForRemoval(id); }),
+      mqtt_(mqtt),
+      scheduler_(scheduler) {}
 
 bool TaskFactory::registerTask(const String& type, Factory factory) {
   return factories_.insert({type, factory}).second;
 }
+
+const __FlashStringHelper* TaskFactory::getType() { return type(); }
+
+const __FlashStringHelper* TaskFactory::type() { return F("TaskFactory"); }
 
 void TaskFactory::mqttCallback(char* topic, uint8_t* payload,
                                unsigned int length) {
@@ -26,18 +32,16 @@ void TaskFactory::mqttCallback(char* topic, uint8_t* payload,
     return;
   }
 
-  if (command_str.equals(task_add_suffix_)) {
+  if (command_str.equals(mqtt_add_suffix_)) {
     createTask(doc.as<JsonObjectConst>());
-    return;
-  }
-
-  if (command_str.equals(task_remove_suffix_)) {
+  } else if (command_str.equals(mqtt_remove_suffix_)) {
     stopTask(doc.as<JsonObjectConst>());
-    return;
+  } else if (command_str.equals(mqtt_status_suffix)) {
+    sendStatus(doc.as<JsonObjectConst>());
+  } else {
+    mqtt_.sendError(
+        who, String(F("Unknown action [add, remove, status]: ")) + command);
   }
-
-  mqtt_.sendError(who, String(F("Unknown action [add, remove]: ")) + command);
-  return;
 }
 
 bool TaskFactory::createTask(const JsonObjectConst& parameters) {
@@ -90,6 +94,25 @@ bool TaskFactory::stopTask(const JsonObjectConst& parameters) {
                              String(task_id.as<int>()));
     return false;
   }
+}
+
+void TaskFactory::sendStatus(const JsonObjectConst& parameters) {
+  DynamicJsonDocument doc(BB_MQTT_JSON_PAYLOAD_SIZE);
+  JsonObject status_object = doc.createNestedObject("status");
+  JsonArray tasks_array = status_object.createNestedArray("tasks");
+
+  for (const auto& task : tasks_) {
+    JsonObject task_object = tasks_array.createNestedObject();
+    task_object["id"] = task.first;
+    task_object["type"] = task.second->getType();
+
+    // Not enough storage
+    if(task_object["type"].isNull()) {
+      mqtt_.sendError(F(__PRETTY_FUNCTION__), "Failed creating status");
+    }
+  }
+
+  mqtt_.send(type(), doc);
 }
 
 const int TaskFactory::getNextTaskId() { return next_task_id_++; }

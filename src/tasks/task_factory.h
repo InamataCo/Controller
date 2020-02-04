@@ -17,7 +17,7 @@ namespace tasks {
  *
  * For usage instructions see the API.md documentation
  */
-class TaskFactory : private ::Task {
+class TaskFactory : public BaseTask {
  public:
   /// Callback to create a task
   using Factory = std::unique_ptr<BaseTask> (*)(
@@ -45,6 +45,20 @@ class TaskFactory : private ::Task {
   static bool registerTask(const String& type, Factory factory);
 
   /**
+   * Get the object's type and used in polymorphic situations
+   * 
+   * @return Name of the type
+   */
+  const __FlashStringHelper* getType() final;
+
+  /**
+   * Get the object's type and used during the static initialization
+   * 
+   * @return Name of the type
+   */
+  static const __FlashStringHelper* type();
+
+  /**
    * Callback for incoming MQTT messages for the TaskFactory
    *
    * @param topic MQTT topic of the message
@@ -68,6 +82,12 @@ class TaskFactory : private ::Task {
    * @return True on success
    */
   bool stopTask(const JsonObjectConst& parameters);
+
+  /**
+   * Sends the current status of the task factory
+   * 
+   */
+  void sendStatus(const JsonObjectConst& parameers);
 
  private:
   /**
@@ -93,14 +113,16 @@ class TaskFactory : private ::Task {
   bool Callback();
 
   /// Name of the command to create a task (last subtopic of MQTT message)
-  const __FlashStringHelper* task_add_suffix_ = F("add");
+  const __FlashStringHelper* mqtt_add_suffix_ = F("add");
   /// Name of the command to stop a task (last subtopic of MQTT message)
-  const __FlashStringHelper* task_remove_suffix_ = F("remove");
+  const __FlashStringHelper* mqtt_remove_suffix_ = F("remove");
+  /// Name of the command to return the status (last subtopic of MQTT message)
+  const __FlashStringHelper* mqtt_status_suffix = F("status");
 
   /// Callback map of the sub-factories to create new task objects
   static std::map<String, Factory> factories_;
   /// Manages lifetime of tasks
-  std::map<int, std::unique_ptr<Task>> tasks_;
+  std::map<int, std::unique_ptr<BaseTask>> tasks_;
   /// Tasks to be removed in the next scheduler pass
   std::vector<int> removal_task_ids_;
 
