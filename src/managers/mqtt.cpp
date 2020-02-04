@@ -42,10 +42,6 @@ int Mqtt::connect(const uint max_attempts) {
   bool connect_error = !client_.connected();
   if (!connect_error) {
     Serial.println(F("\tConnected!"));
-    connect_error = !client_.subscribe(
-        (String(F("action/")) + client_id_ + F("/+")).c_str(), 1);
-    connect_error |= !client_.subscribe(
-        (String(F("object/")) + client_id_ + F("/+")).c_str(), 1);
   } else {
     Serial.print(F("\tFailed to connect after "));
     Serial.print(max_attempts);
@@ -53,10 +49,15 @@ int Mqtt::connect(const uint max_attempts) {
     return connect_error;
   }
 
-  int subscribe_error = subscribe();
+  int subscribe_error = !client_.subscribe(
+      (String(F("action/")) + client_id_ + F("/+")).c_str(), 1);
+  subscribe_error |= !client_.subscribe(
+      (String(F("object/")) + client_id_ + F("/+")).c_str(), 1);
+  subscribe_error |= !client_.subscribe(
+      (String(F("task/")) + client_id_ + F("/+")).c_str(), 1);
   if (subscribe_error) {
     Serial.println(F("\tFailed to subscribe"));
-    return 1;
+    return subscribe_error;
   }
 
   // 0 on success, 1 on error

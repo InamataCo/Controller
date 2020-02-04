@@ -29,7 +29,8 @@ class ReadSensor : public BaseTask {
       const JsonObjectConst& parameters, Scheduler& scheduler,
       BaseTask::RemoveCallback remove_callback);
 
-  std::shared_ptr<periphery::capabilities::GetValue> get_value_periphery;
+  std::shared_ptr<periphery::capabilities::GetValue> get_value_periphery_;
+  String periphery_name_;
 };
 
 }  // namespace tasks

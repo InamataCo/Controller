@@ -25,7 +25,9 @@ ReadSensor::ReadSensor(const JsonObjectConst& parameters, Scheduler& scheduler,
     return;
   }
 
-  if (!periphery::capabilities::GetValue::isSupported(periperhy->getType())) {
+  get_value_periphery_ =
+      std::dynamic_pointer_cast<periphery::capabilities::GetValue>(periperhy);
+  if(!get_value_periphery_) {
     Services::getMqtt().sendError(
         who, String(F("GetValue capability not supported: ")) +
                  periphery_name.as<String>() + String(F(" is a ")) +
@@ -33,15 +35,31 @@ ReadSensor::ReadSensor(const JsonObjectConst& parameters, Scheduler& scheduler,
     setInvalid();
     return;
   }
+
+  periphery_name_ = periphery_name.as<char*>();
+
+  setIterations(1);
+  enable();
 }
 
 const __FlashStringHelper* ReadSensor::getType() { return type(); }
 
 const __FlashStringHelper* ReadSensor::type() { return F("ReadSensor"); }
 
-bool ReadSensor::OnEnable() { return true; }
+bool ReadSensor::OnEnable() {
+  return true;
+}
 
-bool ReadSensor::Callback() { return false; }
+bool ReadSensor::Callback() {
+  DynamicJsonDocument result_doc(BB_MQTT_JSON_PAYLOAD_SIZE);
+  JsonObject result_object = result_doc.to<JsonObject>();
+  result_object[F("value")] = get_value_periphery_->getValue();
+  result_object[F("periphery_name")] = periphery_name_.c_str();
+
+  Services::getMqtt().send(type(), result_doc);
+
+  return true;
+}
 
 bool ReadSensor::registered_ = TaskFactory::registerTask(type(), factory);
 

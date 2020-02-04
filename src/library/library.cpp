@@ -5,11 +5,8 @@
 namespace bernd_box {
 namespace library {
 
-Library::Library(Mqtt& mqtt, periphery::PeripheryFactory& periphery_factory,
-                 periphery::PeripheryTaskFactory& periphery_task_factory)
-    : mqtt_(mqtt),
-      periphery_factory_(periphery_factory),
-      periphery_task_factory_(periphery_task_factory) {}
+Library::Library(Mqtt& mqtt, periphery::PeripheryFactory& periphery_factory)
+    : mqtt_(mqtt), periphery_factory_(periphery_factory) {}
 
 Result Library::add(const JsonObjectConst& doc) {
   const __FlashStringHelper* who = F(__PRETTY_FUNCTION__);
@@ -92,7 +89,7 @@ Result Library::execute(const JsonObjectConst& doc) {
 std::shared_ptr<periphery::Periphery> Library::getPeriphery(
     const String& name) {
   auto periphery = peripheries_.find(name);
-  if(periphery != peripheries_.end()) {
+  if (periphery != peripheries_.end()) {
     return periphery->second;
   } else {
     return std::shared_ptr<periphery::Periphery>();
@@ -133,46 +130,6 @@ void Library::handleCallback(char* topic, uint8_t* payload,
   }
   mqtt_.sendError(
       who, String(F("Unknown action [add, remove, execute]: ")) + command);
-  return;
-}
-
-void Library::taskCallback(char* topic, uint8_t* payload, unsigned int length) {
-  const char* who = __PRETTY_FUNCTION__;
-
-  char* command = strrchr(topic, '/');
-  command++;
-  String command_str(command);
-
-  DynamicJsonDocument doc(BB_MQTT_JSON_PAYLOAD_SIZE);
-  const DeserializationError error = deserializeJson(doc, payload, length);
-  if (error) {
-    mqtt_.sendError(who, String(F("Deserialize failed: ")) + error.c_str());
-    return;
-  }
-
-  if (command_str.equals(task_add_suffix)) {
-    JsonVariantConst name = doc[F("name")];
-    if (name.isNull() || !name.is<char*>()) {
-      mqtt_.sendError(who, "Missing property: name (string)");
-      return;
-    }
-
-    auto periphery = peripheries_.find(name.as<String>());
-    if (periphery == peripheries_.end()) {
-      mqtt_.sendError(who, "No object found with name " + name.as<String>());
-      return;
-    }
-
-    periphery_task_factory_.createTask(periphery->second, doc.as<JsonVariantConst>());
-    return;
-  }
-
-  if (command_str.equals(task_remove_suffix)) {
-    periphery_task_factory_.stopTask(doc.as<JsonVariantConst>());
-    return;
-  }
-
-  mqtt_.sendError(who, String(F("Unknown action [add, remove]: ")) + command);
   return;
 }
 
