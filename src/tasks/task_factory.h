@@ -21,8 +21,7 @@ class TaskFactory : public BaseTask {
  public:
   /// Callback to create a task
   using Factory = std::unique_ptr<BaseTask> (*)(
-      const JsonObjectConst& parameters, Scheduler& scheduler,
-      BaseTask::RemoveCallback remove_callback);
+      const JsonObjectConst& parameters, Scheduler& scheduler);
 
   /**
    * Create a task factory that forwards 'add' commands to the subfactories

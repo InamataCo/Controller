@@ -3,9 +3,8 @@
 namespace bernd_box {
 namespace tasks {
 
-ReadSensor::ReadSensor(const JsonObjectConst& parameters, Scheduler& scheduler,
-                       BaseTask::RemoveCallback remove_callback)
-    : GetValueTask(parameters, scheduler, remove_callback) {
+ReadSensor::ReadSensor(const JsonObjectConst& parameters, Scheduler& scheduler)
+    : GetValueTask(parameters, scheduler) {
   // Perform one iteration, then exit
   setIterations(1);
   enable();
@@ -32,10 +31,9 @@ bool ReadSensor::Callback() {
 bool ReadSensor::registered_ = TaskFactory::registerTask(type(), factory);
 
 std::unique_ptr<BaseTask> ReadSensor::factory(
-    const JsonObjectConst& parameters, Scheduler& scheduler,
-    BaseTask::RemoveCallback remover) {
+    const JsonObjectConst& parameters, Scheduler& scheduler) {
   auto read_sensor = std::unique_ptr<ReadSensor>(
-      new ReadSensor(parameters, scheduler, remover));
+      new ReadSensor(parameters, scheduler));
   if (read_sensor->isValid()) {
     return read_sensor;
   } else {

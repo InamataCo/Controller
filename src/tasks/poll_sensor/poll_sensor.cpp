@@ -3,9 +3,8 @@
 namespace bernd_box {
 namespace tasks {
 
-PollSensor::PollSensor(const JsonObjectConst& parameters, Scheduler& scheduler,
-                       BaseTask::RemoveCallback remove_callback)
-    : GetValueTask(parameters, scheduler, remove_callback) {
+PollSensor::PollSensor(const JsonObjectConst& parameters, Scheduler& scheduler)
+    : GetValueTask(parameters, scheduler) {
   const __FlashStringHelper* who = F(__PRETTY_FUNCTION__);
 
   // Get the interval with which to poll the sensor

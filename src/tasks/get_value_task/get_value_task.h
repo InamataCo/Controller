@@ -16,8 +16,7 @@ namespace tasks {
  */
 class GetValueTask : public BaseTask {
  public:
-  GetValueTask(const JsonObjectConst& parameters, Scheduler& scheduler,
-               BaseTask::RemoveCallback remove_callback);
+  GetValueTask(const JsonObjectConst& parameters, Scheduler& scheduler);
   virtual ~GetValueTask() = default;
 
   std::shared_ptr<periphery::capabilities::GetValue> getPeriphery();

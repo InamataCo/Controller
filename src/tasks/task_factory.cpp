@@ -4,7 +4,7 @@ namespace bernd_box {
 namespace tasks {
 
 TaskFactory::TaskFactory(Mqtt& mqtt, Scheduler& scheduler)
-    : BaseTask(scheduler, [this](const int id) { markTaskForRemoval(id); }),
+    : BaseTask(scheduler),
       mqtt_(mqtt),
       scheduler_(scheduler) {}
 
@@ -57,8 +57,7 @@ bool TaskFactory::createTask(const JsonObjectConst& parameters) {
   const auto& factory = factories_.find(type);
   if (factory != factories_.end()) {
     // Create a task via the respective task factory
-    auto remover = [this](const int id) { return markTaskForRemoval(id); };
-    auto task = factory->second(parameters, scheduler_, remover);
+    auto task = factory->second(parameters, scheduler_);
 
     // Expect the factory to return a nullptr on failure
     if (task) {

@@ -4,9 +4,8 @@ namespace bernd_box {
 namespace tasks {
 
 GetValueTask::GetValueTask(const JsonObjectConst& parameters,
-                           Scheduler& scheduler,
-                           BaseTask::RemoveCallback remove_callback)
-    : BaseTask(scheduler, remove_callback) {
+                           Scheduler& scheduler)
+    : BaseTask(scheduler) {
   const __FlashStringHelper* who = F(__PRETTY_FUNCTION__);
 
   // Get the name to later find the pointer to the periphery object
