@@ -7,7 +7,7 @@
 #define TASK_ERROR "error"
 #define ERROR_TASK_ERROR_MESSAGE \
   "The periphery does not support the requested task."
-  
+
 #define TASK_LIST_OPERATIONS "list_operations"
 #define TASK_LIST_RESULT_NODE "result"
 #define TASK_LIST_TYPE_NODE "type"
@@ -19,7 +19,7 @@ class ErrorTaskFactory : public TaskFactory {
  public:
   virtual ~ErrorTaskFactory() = default;
   PeripheryTask& createTask(std::shared_ptr<Periphery> periphery,
-      const JsonObjectConst& doc);
+                            const JsonObjectConst& doc);
 };
 
 class ErrorTask : public PeripheryTask {
@@ -27,22 +27,27 @@ class ErrorTask : public PeripheryTask {
   ErrorTask(std::shared_ptr<Periphery> periphery);
   virtual ~ErrorTask() = default;
 
+  const __FlashStringHelper* getType();
+  static const __FlashStringHelper* type();
+
   bool Callback() final;
   static const String TYPE;
 };
-
 
 class ListOperationsTaskFactory : public TaskFactory {
  public:
   virtual ~ListOperationsTaskFactory() = default;
   PeripheryTask& createTask(std::shared_ptr<Periphery> periphery,
-      const JsonObjectConst& doc);
+                            const JsonObjectConst& doc);
 };
 
 class ListOperationsTask : public PeripheryTask {
  public:
   ListOperationsTask(std::shared_ptr<Periphery> periphery);
   virtual ~ListOperationsTask() = default;
+
+  const __FlashStringHelper* getType() final;
+  static const __FlashStringHelper* type();
 
   bool Callback() final;
   static const String TYPE;

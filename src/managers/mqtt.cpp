@@ -4,14 +4,13 @@ namespace bernd_box {
 
 Mqtt::Mqtt(WiFiClient& wifi_client,
            std::function<std::vector<String>()> get_factory_names,
-           std::function<void(char*, uint8_t*, unsigned int)> library_callback)
+           std::function<void(char*, uint8_t*, unsigned int)> object_callback,
+           std::function<void(char*, uint8_t*, unsigned int)> task_callback)
     : client_(wifi_client),
-      server_port_(BB_MQTT_PORT),
-      action_prefix_(F("action/")),
-      object_prefix_(F("object/")),
-      library_callback_(library_callback),
-      get_factory_names_(get_factory_names),
-      default_qos_(BB_DEFAULT_QOS) {
+      object_callback_(object_callback),
+      task_callback_(task_callback),
+      get_factory_names_(get_factory_names) {
+  // Callback from the PubSubClient MQTT library
   client_.setCallback(std::bind(&Mqtt::handleCallback, this, _1, _2, _3));
 }
 
@@ -43,10 +42,6 @@ int Mqtt::connect(const uint max_attempts) {
   bool connect_error = !client_.connected();
   if (!connect_error) {
     Serial.println(F("\tConnected!"));
-    connect_error = !client_.subscribe(
-        (String(F("action/")) + client_id_ + F("/+")).c_str(), 1);
-    connect_error |= !client_.subscribe(
-        (String(F("object/")) + client_id_ + F("/+")).c_str(), 1);
   } else {
     Serial.print(F("\tFailed to connect after "));
     Serial.print(max_attempts);
@@ -54,10 +49,15 @@ int Mqtt::connect(const uint max_attempts) {
     return connect_error;
   }
 
-  int subscribe_error = subscribe();
+  int subscribe_error = !client_.subscribe(
+      (String(F("action/")) + client_id_ + F("/+")).c_str(), 1);
+  subscribe_error |= !client_.subscribe(
+      (String(F("object/")) + client_id_ + F("/+")).c_str(), 1);
+  subscribe_error |= !client_.subscribe(
+      (String(F("task/")) + client_id_ + F("/+")).c_str(), 1);
   if (subscribe_error) {
     Serial.println(F("\tFailed to subscribe"));
-    return 1;
+    return subscribe_error;
   }
 
   // 0 on success, 1 on error
@@ -292,7 +292,10 @@ void Mqtt::handleCallback(char* topic, uint8_t* message, unsigned int length) {
     }
     return;
   } else if (topic_str.startsWith(object_prefix_)) {
-    library_callback_(topic, message, length);
+    object_callback_(topic, message, length);
+    return;
+  } else if (topic_str.startsWith(task_prefix_)) {
+    task_callback_(topic, message, length);
     return;
   }
 

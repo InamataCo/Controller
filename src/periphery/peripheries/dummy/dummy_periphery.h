@@ -43,6 +43,9 @@ class DummyTask : public PeripheryTask {
 
   bool Callback() final;
   void OnTaskDisable() final;
+
+  const __FlashStringHelper* getType();
+  static const __FlashStringHelper* type();
   static const String TYPE;
 };
 }  // namespace dummy

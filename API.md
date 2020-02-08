@@ -37,6 +37,33 @@ Note: The I2C adapter has to have been added
 
 ## Tasks
 
+### Start: `tasks/<uuid>/start`
+
+The start command starts a new task. Each start command has to have the following JSON parameters in addition to peripheral specific parameters.
+
+| parameter  | content                       |
+| ---------- | ----------------------------- |
+| type       | type of the peripheral        |
+| peripheral | unique name of the peripheral |
+
+On successful creation of the task, the following JSON is returned. In order to stop a long running task, its ID has to be stored on creation and then sent when it is to be stopped. The _type_ corresponds to the task's type while the _periphery_ equals the name of the periphery being used by the task. This may also be null.
+
+| parameter | content                          |
+| --------- | -------------------------------- |
+| id        | unique ID of the task            |
+| type      | type of the task                 |
+| periphery | name of the periphery being used |
+
+### Stop: `tasks/<uuid>/stop`
+
+In order to stop a task, send its ID to the stop topic.
+
+| parameter | content               |
+| --------- | --------------------- |
+| id        | unique ID of the task |
+
+## Actions
+
 ### L293D Motors
 
 The L293D motor drivers are used to power motors with up to 21 W (36V / 600mA). They require two pins to define the turning direction and one to enable and set the speed.

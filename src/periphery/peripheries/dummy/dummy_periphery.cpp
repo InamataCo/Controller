@@ -53,6 +53,9 @@ PeripheryTask& DummyTaskFactory::createTask(
 DummyTask::DummyTask(std::shared_ptr<Periphery> periphery)
     : PeripheryTask(periphery) {}
 
+const __FlashStringHelper* DummyTask::type() { return F("DummyTask"); }
+const __FlashStringHelper* DummyTask::getType() { return type(); }
+
 }  // namespace dummy
 }  // namespace peripheries
 }  // namespace periphery

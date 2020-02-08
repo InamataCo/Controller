@@ -79,7 +79,7 @@ Result Library::execute(const JsonObjectConst& doc) {
     return Result::kFailure;
   }
 
-  periphery::PeripheryTask& peripheryTask = 
+  periphery::PeripheryTask& peripheryTask =
       task_factory.createTask(iterator->second, parameter);
   Services::getScheduler().addTask(peripheryTask);
   peripheryTask.enable();
@@ -88,7 +88,12 @@ Result Library::execute(const JsonObjectConst& doc) {
 
 std::shared_ptr<periphery::Periphery> Library::getPeriphery(
     const String& name) {
-  return peripheries_.find(name)->second;
+  auto periphery = peripheries_.find(name);
+  if (periphery != peripheries_.end()) {
+    return periphery->second;
+  } else {
+    return std::shared_ptr<periphery::Periphery>();
+  }
 }
 
 void Library::handleCallback(char* topic, uint8_t* payload,
@@ -127,5 +132,6 @@ void Library::handleCallback(char* topic, uint8_t* payload,
       who, String(F("Unknown action [add, remove, execute]: ")) + command);
   return;
 }
+
 }  // namespace library
 }  // namespace bernd_box
