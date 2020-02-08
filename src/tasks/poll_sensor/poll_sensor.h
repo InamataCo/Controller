@@ -11,8 +11,7 @@ namespace tasks {
 
 class PollSensor : public GetValueTask {
  public:
-  PollSensor(const JsonObjectConst& parameters, Scheduler& scheduler,
-             BaseTask::RemoveCallback remover);
+  PollSensor(const JsonObjectConst& parameters, Scheduler& scheduler);
   virtual ~PollSensor() = default;
 
   const __FlashStringHelper* getType() final;
@@ -24,8 +23,7 @@ class PollSensor : public GetValueTask {
  private:
   static bool registered_;
   static std::unique_ptr<BaseTask> factory(
-      const JsonObjectConst& parameters, Scheduler& scheduler,
-      BaseTask::RemoveCallback remove_callback);
+      const JsonObjectConst& parameters, Scheduler& scheduler);
 };
 
 }  // namespace tasks

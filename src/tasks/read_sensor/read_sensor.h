@@ -15,8 +15,7 @@ namespace tasks {
  */
 class ReadSensor : public GetValueTask {
  public:
-  ReadSensor(const JsonObjectConst& parameters, Scheduler& scheduler,
-             BaseTask::RemoveCallback remove_callback);
+  ReadSensor(const JsonObjectConst& parameters, Scheduler& scheduler);
   virtual ~ReadSensor() = default;
 
   const __FlashStringHelper* getType() final;
@@ -28,8 +27,7 @@ class ReadSensor : public GetValueTask {
  private:
   static bool registered_;
   static std::unique_ptr<BaseTask> factory(
-      const JsonObjectConst& parameters, Scheduler& scheduler,
-      BaseTask::RemoveCallback remove_callback);
+      const JsonObjectConst& parameters, Scheduler& scheduler);
 };
 
 }  // namespace tasks

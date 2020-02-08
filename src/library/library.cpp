@@ -61,21 +61,26 @@ Result Library::remove(const JsonObjectConst& doc) {
 Result Library::execute(const JsonObjectConst& doc) {
   const char* who = __PRETTY_FUNCTION__;
 
-  JsonVariantConst name = doc[F("name")];
+  JsonVariantConst name = doc[F(PERIPHERY_TASK_NAME_NODE)];
   if (name.isNull() || !name.is<char*>()) {
-    mqtt_.sendError(who, "Missing property: name (string)");
+    mqtt_.sendError(who, String(F("Missing property: " PERIPHERY_TASK_NAME_NODE
+                                  " (string)")));
     return Result::kFailure;
   }
 
   auto iterator = peripheries_.find(name.as<String>());
   if (iterator == peripheries_.end()) {
-    mqtt_.sendError(who, "No object found with name " + name.as<String>());
+    mqtt_.sendError(
+        who, String(F("No object found with name ")) + name.as<String>());
     return Result::kFailure;
   }
   periphery::TaskFactory& task_factory = iterator->second->getTaskFactory(doc);
 
-  JsonVariantConst parameter = doc[F("parameter")];
+  JsonVariantConst parameter = doc[F(PERIPHERY_TASK_PARAMETER_NODE)];
   if (parameter.isNull()) {
+    mqtt_.sendError(who,
+                    String(F("Missing property: " PERIPHERY_TASK_PARAMETER_NODE
+                             " (may be empty)")));
     return Result::kFailure;
   }
 
@@ -83,6 +88,15 @@ Result Library::execute(const JsonObjectConst& doc) {
       task_factory.createTask(iterator->second, parameter);
   Services::getScheduler().addTask(peripheryTask);
   peripheryTask.enable();
+
+  JsonVariantConst response_code = doc[F(PERIPHERY_TASK_RESPONSE_CODE_NODE)];
+  if (!response_code.isNull() && response_code.is<char*>()) {
+    DynamicJsonDocument resultDoc(BB_MQTT_JSON_PAYLOAD_SIZE);
+    resultDoc[PERIPHERY_TASK_RESPONSE_CODE_NODE] = response_code.as<String>();
+    resultDoc[PERIPHERY_TASK_TASK_ID_NODE] = peripheryTask.getId();
+    mqtt_.send(who, resultDoc);
+  }
+
   return Result::kSuccess;
 }
 

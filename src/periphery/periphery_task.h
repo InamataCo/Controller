@@ -10,6 +10,14 @@
 #include "managers/io_types.h"
 #include "periphery.h"
 
+
+#define PERIPHERY_TASK_NAME_NODE "name"
+#define PERIPHERY_TASK_TYPE_NODE "type"
+#define PERIPHERY_TASK_PARAMETER_NODE "parameter"
+#define PERIPHERY_TASK_RESPONSE_CODE_NODE "responseCode"
+#define PERIPHERY_TASK_TASK_ID_NODE "taskID"
+#define PERIPHERY_TASK_RESULT_NODE "result"
+
 namespace bernd_box {
 namespace periphery {
 
@@ -35,15 +43,15 @@ class TaskFactory {
                                     const JsonObjectConst& parameter) = 0;
 };
 
-class PeripheryTaskRemovalTask : public Task {
+class TaskRemovalTask : public Task {
  private:
-  std::set<PeripheryTask*> tasks_;
+  std::set<Task*> tasks_;
   bool Callback();
 
  public:
-  PeripheryTaskRemovalTask(Scheduler& scheduler);
-  virtual ~PeripheryTaskRemovalTask() = default;
-  void add(PeripheryTask& to_be_removed);
+  TaskRemovalTask(Scheduler& scheduler);
+  virtual ~TaskRemovalTask() = default;
+  void add(Task& to_be_removed);
 };
 
 }  // namespace periphery
