@@ -13,9 +13,7 @@ bool GetValue::isSupported(const String& type) {
   return std::binary_search(types.begin(), types.end(), type);
 }
 
-const std::set<String>& GetValue::getTypes() {
-  return getSupportedTypes();
-}
+const std::set<String>& GetValue::getTypes() { return getSupportedTypes(); }
 
 std::set<String>& GetValue::getSupportedTypes() {
   static std::set<String> supported_types;

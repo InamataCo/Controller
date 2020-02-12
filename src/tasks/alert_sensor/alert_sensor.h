@@ -13,8 +13,7 @@ class AlertSensor : public GetValueTask {
  public:
   enum class TriggerType { kRising, kFalling, kEither };
 
-  AlertSensor(const JsonObjectConst& parameters, Scheduler& scheduler,
-              BaseTask::RemoveCallback remover);
+  AlertSensor(const JsonObjectConst& parameters, Scheduler& scheduler);
   virtual ~AlertSensor() = default;
 
   const __FlashStringHelper* getType() final;
@@ -60,9 +59,8 @@ class AlertSensor : public GetValueTask {
   bool isFallingThreshold(const float value);
 
   static bool registered_;
-  static std::unique_ptr<BaseTask> factory(
-      const JsonObjectConst& parameters, Scheduler& scheduler,
-      BaseTask::RemoveCallback remove_callback);
+  static std::unique_ptr<BaseTask> factory(const JsonObjectConst& parameters,
+                                           Scheduler& scheduler);
 
   static const std::map<TriggerType, const __FlashStringHelper*>
       trigger_type_strings_;

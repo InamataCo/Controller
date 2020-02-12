@@ -4,9 +4,8 @@ namespace bernd_box {
 namespace tasks {
 
 AlertSensor::AlertSensor(const JsonObjectConst& parameters,
-                         Scheduler& scheduler,
-                         BaseTask::RemoveCallback remove_callback)
-    : GetValueTask(parameters, scheduler, remove_callback) {
+                         Scheduler& scheduler)
+    : GetValueTask(parameters, scheduler) {
   const __FlashStringHelper* who = F(__PRETTY_FUNCTION__);
 
   // Get the type of trigger [rising, falling, either]
@@ -132,10 +131,9 @@ bool AlertSensor::isFallingThreshold(const float value) {
 bool AlertSensor::registered_ = TaskFactory::registerTask(type(), factory);
 
 std::unique_ptr<BaseTask> AlertSensor::factory(
-    const JsonObjectConst& parameters, Scheduler& scheduler,
-    BaseTask::RemoveCallback remove_callback) {
-  auto alert_sensor = std::unique_ptr<AlertSensor>(
-      new AlertSensor(parameters, scheduler, remove_callback));
+    const JsonObjectConst& parameters, Scheduler& scheduler) {
+  auto alert_sensor =
+      std::unique_ptr<AlertSensor>(new AlertSensor(parameters, scheduler));
   if (alert_sensor->isValid()) {
     return alert_sensor;
   } else {
