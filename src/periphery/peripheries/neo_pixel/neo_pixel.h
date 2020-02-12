@@ -32,9 +32,9 @@ class NeoPixel : public AbstractPeriphery, public capabilities::LedStrip {
   static bool capability_led_strip_;
 
   static const uint8_t blue_offset_{0};
-  static const uint8_t green_offset_{1};
-  static const uint8_t red_offset_{2};
-  static const uint8_t white_offset_{3};
+  static const uint8_t green_offset_{2};
+  static const uint8_t red_offset_{4};
+  static const uint8_t white_offset_{6};
 
   static struct Keys {
     const __FlashStringHelper* color_encoding = F("color_encoding");

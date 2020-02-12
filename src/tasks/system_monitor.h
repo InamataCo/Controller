@@ -45,6 +45,9 @@ class SystemMonitor : public Task {
   Mqtt& mqtt_;
   /// The suffix of the telemetry and action topic to publish on
   const __FlashStringHelper* name_;
+
+  // Max time is ~72 minutes due to an overflow in the CPU load counter
+  static const std::chrono::seconds default_interval_;
 };
 
 }  // namespace tasks

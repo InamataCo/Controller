@@ -8,19 +8,23 @@ CheckConnectivity::CheckConnectivity(
     const std::chrono::seconds wifi_connect_timeout,
     const uint mqtt_connection_attempts)
     : Task(scheduler),
-      isSetup_(false),
       network_(network),
       mqtt_(Services::getMqtt()),
       io_(io),
       wifi_connect_timeout_(wifi_connect_timeout),
-      mqtt_connection_attempts_(mqtt_connection_attempts) {
+      mqtt_connection_attempts_(mqtt_connection_attempts),
+      is_setup_(false) {
   Task::setIterations(TASK_FOREVER);
   Task::setInterval(std::chrono::milliseconds(default_period_).count());
 }
 
 CheckConnectivity::~CheckConnectivity() {}
 
-bool CheckConnectivity::OnEnable() { return Callback(); }
+bool CheckConnectivity::OnEnable() {
+  bool success = Callback();
+  is_setup_ = success;
+  return success;
+}
 
 bool CheckConnectivity::Callback() {
   io_.setStatusLed(true);
@@ -60,17 +64,17 @@ bool CheckConnectivity::Callback() {
   if (!mqtt_.isConnected()) {
     // Get the local MQTT broker's IP address and connect to it
     String local_ip_address = network_.getCoordinatorLocalIpAddress();
-    if(local_ip_address.isEmpty()) {
+    if (local_ip_address.isEmpty()) {
       Serial.println(
           F("Failed to get coordinator's local IP address. Restarting in 10s"));
       ::delay(10000);
       ESP.restart();
     }
 
-    int error = mqtt_.switchBroker(local_ip_address, ESPRandom::uuidToString(getUuid()));
-    if(error) {
-      Serial.println(
-          F("Unable to connect to MQTT broker. Restarting in 10s"));
+    int error = mqtt_.switchBroker(local_ip_address,
+                                   ESPRandom::uuidToString(getUuid()));
+    if (error) {
+      Serial.println(F("Unable to connect to MQTT broker. Restarting in 10s"));
       ::delay(10000);
       ESP.restart();
     }
@@ -80,7 +84,7 @@ bool CheckConnectivity::Callback() {
   }
 
   // Only receive after the actions have been registered
-  if (isSetup_) {
+  if (is_setup_) {
     mqtt_.receive();
   }
 

@@ -35,7 +35,14 @@ NeoPixel::NeoPixel(const JsonObjectConst& parameters) {
     return;
   }
 
-  uint8_t color_encoding_int = getColorEncoding(color_encoding_str);
+  uint8_t color_encoding_int = getColorEncoding(color_encoding_str.as<char*>());
+  if (color_encoding_int == 0) {
+    Services::getMqtt().sendError(
+        who, String(F("Invalid color_encoding value: ")) + color_encoding_int);
+    setInvalid();
+    return;
+  }
+
   uint8_t pixel_type = color_encoding_int + NEO_KHZ800;
 
   driver_ = Adafruit_NeoPixel(led_count, led_pin, pixel_type);
@@ -83,24 +90,24 @@ uint8_t NeoPixel::getColorEncoding(String encoding_str) {
   // Skip first color, as 0 shifted is always 0
   for (int i = 1; i < encoding_str.length(); i++) {
     if (encoding_str[i] == 'b') {
-      neo_encoding |= blue_offset_;
+      neo_encoding |= i << blue_offset_;
       continue;
     }
     if (encoding_str[i] == 'g') {
-      neo_encoding |= (i << green_offset_);
+      neo_encoding |= i << green_offset_;
       continue;
     }
     if (encoding_str[i] == 'r') {
-      neo_encoding |= (i << red_offset_);
+      neo_encoding |= i << red_offset_;
 
       // For 3 color encodings, use the red value for white
       if (encoding_str.length() == 3) {
-        neo_encoding |= (i << white_offset_);
+        neo_encoding |= i << white_offset_;
       }
       continue;
     }
     if (encoding_str[i] == 'w') {
-      neo_encoding |= (i << white_offset_);
+      neo_encoding |= i << white_offset_;
       continue;
     }
   }

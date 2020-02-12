@@ -89,13 +89,11 @@ void setup() {
   systemMonitorTask.enable();
 
   // Try to configure the IO devices, else restart
-  if (io.init() != bernd_box::Result::kSuccess) {
-    Serial.println(F("IO: Initialization failed. Restarting"));
-    delay(1000);
-    ESP.restart();
-  }
-
-  checkConnectivity.isSetup_ = true;
+  // if (io.init() != bernd_box::Result::kSuccess) {
+  //   Serial.println(F("IO: Initialization failed. Restarting"));
+  //   delay(1000);
+  //   ESP.restart();
+  // }
 
   const std::set<String>& get_value_types =
       bernd_box::periphery::capabilities::GetValue::getTypes();
@@ -103,11 +101,12 @@ void setup() {
       JSON_ARRAY_SIZE(get_value_types.size()));
   JsonArray get_value_types_array = get_value_types_doc.to<JsonArray>();
 
-  for(const auto& type : get_value_types) {
+  for (const auto& type : get_value_types) {
     get_value_types_array.add(type.c_str());
   }
 
-  bernd_box::Services::getMqtt().send("capability::GetValue", get_value_types_doc);
+  bernd_box::Services::getMqtt().send("capability::GetValue",
+                                      get_value_types_doc);
 
   io.setStatusLed(false);
 }
