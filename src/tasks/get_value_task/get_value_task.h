@@ -1,8 +1,9 @@
 #pragma once
 
+#include <ArduinoJson.h>
+
 #include <memory>
 
-#include "ArduinoJson.h"
 #include "managers/services.h"
 #include "periphery/capabilities/get_value.h"
 #include "tasks/base_task.h"

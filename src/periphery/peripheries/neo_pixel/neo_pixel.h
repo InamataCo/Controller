@@ -8,6 +8,7 @@
 #include "managers/services.h"
 #include "periphery/abstract_periphery.h"
 #include "periphery/capabilities/led_strip.h"
+#include "utils/color.h"
 
 namespace bernd_box {
 namespace periphery {
@@ -23,7 +24,7 @@ class NeoPixel : public AbstractPeriphery, public capabilities::LedStrip {
   const String& getType() final;
   static const String& type();
 
-  void turnOn(Color color) final;
+  void turnOn(utils::Color color) final;
   void turnOff() final;
 
  private:
@@ -46,6 +47,7 @@ class NeoPixel : public AbstractPeriphery, public capabilities::LedStrip {
   bool cleanColorEncoding(String& color_encoding);
 
   Adafruit_NeoPixel driver_;
+  bool is_driver_started_ = false;
 };
 
 }  // namespace neo_pixel

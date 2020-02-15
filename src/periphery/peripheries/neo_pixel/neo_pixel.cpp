@@ -45,7 +45,9 @@ NeoPixel::NeoPixel(const JsonObjectConst& parameters) {
 
   uint8_t pixel_type = color_encoding_int + NEO_KHZ800;
 
-  driver_ = Adafruit_NeoPixel(led_count, led_pin, pixel_type);
+  driver_.setPin(led_pin);
+  driver_.updateType(pixel_type);
+  driver_.updateLength(led_count);
 }
 
 const String& NeoPixel::getType() { return type(); }
@@ -55,8 +57,11 @@ const String& NeoPixel::type() {
   return name;
 }
 
-void NeoPixel::turnOn(Color color) {
-  driver_.begin();
+void NeoPixel::turnOn(utils::Color color) {
+  if (!is_driver_started_) {
+    driver_.begin();
+    is_driver_started_ = true;
+  }
   driver_.fill(color.getWrgbInt());
   driver_.show();
 }

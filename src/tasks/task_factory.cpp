@@ -4,9 +4,7 @@ namespace bernd_box {
 namespace tasks {
 
 TaskFactory::TaskFactory(Mqtt& mqtt, Scheduler& scheduler)
-    : BaseTask(scheduler),
-      mqtt_(mqtt),
-      scheduler_(scheduler) {}
+    : BaseTask(scheduler), mqtt_(mqtt), scheduler_(scheduler) {}
 
 bool TaskFactory::registerTask(const String& type, Factory factory) {
   return factories_.insert({type, factory}).second;
@@ -62,8 +60,15 @@ bool TaskFactory::createTask(const JsonObjectConst& parameters) {
     // Expect the factory to return a nullptr on failure
     if (task) {
       const int task_id = getNextTaskId();
-      tasks_.emplace(task_id, std::move(task));
-      return true;
+      auto inserted_task = tasks_.emplace(task_id, std::move(task));
+      if (inserted_task.second) {
+        inserted_task.first->second->enable();
+        return true;
+      } else {
+        mqtt_.sendError(who,
+                        String(F("Failed registering task. ID: ")) + task_id);
+        return false;
+      }
     } else {
       // Error reporting handled by sub-factory
       return false;
@@ -106,7 +111,7 @@ void TaskFactory::sendStatus(const JsonObjectConst& parameters) {
     task_object["type"] = task.second->getType();
 
     // Not enough storage
-    if(task_object["type"].isNull()) {
+    if (task_object["type"].isNull()) {
       mqtt_.sendError(F(__PRETTY_FUNCTION__), "Failed creating status");
     }
   }

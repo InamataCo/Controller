@@ -4,23 +4,6 @@ namespace bernd_box {
 namespace periphery {
 namespace capabilities {
 
-LedStrip::Color LedStrip::Color::fromRgbw(uint8_t r, uint8_t g, uint8_t b,
-                                          uint8_t w) {
-  return Color(r, g, b, w);
-}
-
-LedStrip::Color LedStrip::Color::fromBrightness(float percent) {
-  uint8_t value = percent * 255;
-  return Color(value, value, value, value);
-}
-
-LedStrip::Color::Color() : wrgb_(0) {}
-
-LedStrip::Color::Color(uint8_t r, uint8_t g, uint8_t b, uint8_t w)
-    : wrgb_((w << 24) | (r << 16) | (g << 8) | b) {}
-
-uint32_t LedStrip::Color::getWrgbInt() { return wrgb_; }
-
 bool LedStrip::registerType(const String& type) {
   return getSupportedTypes().insert(type).second;
 }
