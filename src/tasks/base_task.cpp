@@ -31,8 +31,12 @@ void TaskRemovalTask::add(Task& pt) {
 bool TaskRemovalTask::Callback() {
   for (auto it = tasks_.begin(); it != tasks_.end(); ++it) {
     Task* task = *it;
-    delete task;
-    tasks_.erase(it);
+
+    BaseTask* base_task = static_cast<BaseTask*>(task);
+    if (base_task) {
+      delete base_task;
+      tasks_.erase(it);
+    }
   }
   tasks_.clear();
   return true;

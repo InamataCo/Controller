@@ -35,8 +35,11 @@ void TaskRemovalTask::add(Task& pt) {
 bool TaskRemovalTask::Callback() {
   for (auto it = tasks_.begin(); it != tasks_.end(); ++it) {
     Task* task = *it;
-    delete task;
-    tasks_.erase(it);
+    PeripheryTask* periphery_task = static_cast<PeripheryTask*>(task);
+    if (periphery_task) {
+      delete periphery_task;
+      tasks_.erase(it);
+    }
   }
   tasks_.clear();
   return true;

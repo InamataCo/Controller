@@ -7,6 +7,7 @@
 #include "library/library.h"
 #include "managers/mqtt.h"
 #include "periphery/periphery_factory.h"
+#include "tasks/task_controller.h"
 #include "tasks/task_factory.h"
 
 namespace bernd_box {
@@ -29,6 +30,7 @@ class Services {
   // static Io io_;
   static periphery::PeripheryFactory periphery_factory_;
   static tasks::TaskFactory task_factory_;
+  static tasks::TaskController task_controller_;
 
   static WiFiClient& getWifiClient();
 };

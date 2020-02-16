@@ -22,7 +22,7 @@ class PollSensor : public GetValueTask {
 
  private:
   static bool registered_;
-  static std::unique_ptr<BaseTask> factory(
+  static BaseTask* factory(
       const JsonObjectConst& parameters, Scheduler& scheduler);
 };
 

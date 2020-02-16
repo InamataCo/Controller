@@ -26,7 +26,7 @@ class SetLight : public BaseTask {
 
  private:
   static bool registered_;
-  static std::unique_ptr<BaseTask> factory(const JsonObjectConst& parameters,
+  static BaseTask* factory(const JsonObjectConst& parameters,
                                            Scheduler& scheduler);
 
   std::shared_ptr<periphery::capabilities::LedStrip> periphery_;

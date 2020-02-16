@@ -59,7 +59,7 @@ class AlertSensor : public GetValueTask {
   bool isFallingThreshold(const float value);
 
   static bool registered_;
-  static std::unique_ptr<BaseTask> factory(const JsonObjectConst& parameters,
+  static BaseTask* factory(const JsonObjectConst& parameters,
                                            Scheduler& scheduler);
 
   static const std::map<TriggerType, const __FlashStringHelper*>

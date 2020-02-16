@@ -123,14 +123,13 @@ bool SetLight::Callback() { return true; }
 
 bool SetLight::registered_ = TaskFactory::registerTask(type(), factory);
 
-std::unique_ptr<BaseTask> SetLight::factory(const JsonObjectConst& parameters,
+BaseTask* SetLight::factory(const JsonObjectConst& parameters,
                                             Scheduler& scheduler) {
-  auto alert_sensor =
-      std::unique_ptr<SetLight>(new SetLight(parameters, scheduler));
+  auto alert_sensor = new SetLight(parameters, scheduler);
   if (alert_sensor->isValid()) {
     return alert_sensor;
   } else {
-    return std::unique_ptr<BaseTask>();
+    return nullptr;
   }
 }
 

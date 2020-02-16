@@ -30,14 +30,13 @@ bool ReadSensor::Callback() {
 
 bool ReadSensor::registered_ = TaskFactory::registerTask(type(), factory);
 
-std::unique_ptr<BaseTask> ReadSensor::factory(
+BaseTask* ReadSensor::factory(
     const JsonObjectConst& parameters, Scheduler& scheduler) {
-  auto read_sensor = std::unique_ptr<ReadSensor>(
-      new ReadSensor(parameters, scheduler));
+  auto read_sensor = new ReadSensor(parameters, scheduler);
   if (read_sensor->isValid()) {
     return read_sensor;
   } else {
-    return std::unique_ptr<BaseTask>();
+    return nullptr;
   }
 }
 

@@ -130,14 +130,13 @@ bool AlertSensor::isFallingThreshold(const float value) {
 
 bool AlertSensor::registered_ = TaskFactory::registerTask(type(), factory);
 
-std::unique_ptr<BaseTask> AlertSensor::factory(
+BaseTask* AlertSensor::factory(
     const JsonObjectConst& parameters, Scheduler& scheduler) {
-  auto alert_sensor =
-      std::unique_ptr<AlertSensor>(new AlertSensor(parameters, scheduler));
+  auto alert_sensor = new AlertSensor(parameters, scheduler);
   if (alert_sensor->isValid()) {
     return alert_sensor;
   } else {
-    return std::unique_ptr<BaseTask>();
+    return nullptr;
   }
 }
 
