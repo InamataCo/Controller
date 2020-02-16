@@ -4,7 +4,7 @@ namespace bernd_box {
 
 Mqtt Services::mqtt_{
     wifi_client_,
-    std::bind(&periphery::PeripheryFactory::getFactoryNames,
+    std::bind(&peripheral::PeripheralFactory::getFactoryNames,
               &periphery_factory_),
     std::bind(&library::Library::handleCallback, &library_, _1, _2, _3),
     std::bind(&tasks::TaskController::mqttCallback, &task_controller_, _1, _2,
@@ -18,7 +18,7 @@ Scheduler Services::scheduler_;
 
 // Io Services::io_ = Io(mqtt_);
 
-periphery::PeripheryFactory Services::periphery_factory_{mqtt_};
+peripheral::PeripheralFactory Services::periphery_factory_{mqtt_};
 
 library::Library& Services::getLibrary() { return library_; }
 

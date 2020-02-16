@@ -15,7 +15,7 @@
 #include "managers/services.h"
 // #include "peripherals/peripheral_factory.h"
 // #include "peripherals/peripheral_manager.h"
-#include "periphery/capabilities/get_value.h"
+#include "peripheral/capabilities/get_value.h"
 // #include "tasks/acidity_sensor.h"
 // #include "tasks/air_sensors.h"
 // #include "tasks/analog_sensors.h"
@@ -96,7 +96,7 @@ void setup() {
   // }
 
   const std::set<String>& get_value_types =
-      bernd_box::periphery::capabilities::GetValue::getTypes();
+      bernd_box::peripheral::capabilities::GetValue::getTypes();
   DynamicJsonDocument get_value_types_doc(
       JSON_ARRAY_SIZE(get_value_types.size()));
   JsonArray get_value_types_array = get_value_types_doc.to<JsonArray>();

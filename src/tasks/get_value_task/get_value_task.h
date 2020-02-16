@@ -5,7 +5,7 @@
 #include <memory>
 
 #include "managers/services.h"
-#include "periphery/capabilities/get_value.h"
+#include "peripheral/capabilities/get_value.h"
 #include "tasks/base_task.h"
 
 namespace bernd_box {
@@ -20,11 +20,11 @@ class GetValueTask : public BaseTask {
   GetValueTask(const JsonObjectConst& parameters, Scheduler& scheduler);
   virtual ~GetValueTask() = default;
 
-  std::shared_ptr<periphery::capabilities::GetValue> getPeriphery();
+  std::shared_ptr<peripheral::capabilities::GetValue> getPeriphery();
   const String& getPeripheryName();
 
  private:
-  std::shared_ptr<periphery::capabilities::GetValue> periphery_;
+  std::shared_ptr<peripheral::capabilities::GetValue> periphery_;
   String periphery_name_;
 };
 

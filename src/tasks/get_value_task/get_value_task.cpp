@@ -29,7 +29,7 @@ GetValueTask::GetValueTask(const JsonObjectConst& parameters,
 
   // Check that the periphery supports the GetValue interface capability
   periphery_ =
-      std::dynamic_pointer_cast<periphery::capabilities::GetValue>(periperhy);
+      std::dynamic_pointer_cast<peripheral::capabilities::GetValue>(periperhy);
   if (!periphery_) {
     Services::getMqtt().sendError(
         who, String(F("GetValue capability not supported: ")) +
@@ -43,7 +43,7 @@ GetValueTask::GetValueTask(const JsonObjectConst& parameters,
   periphery_name_ = periphery_name.as<char*>();
 }
 
-std::shared_ptr<periphery::capabilities::GetValue>
+std::shared_ptr<peripheral::capabilities::GetValue>
 GetValueTask::getPeriphery() {
   return periphery_;
 }

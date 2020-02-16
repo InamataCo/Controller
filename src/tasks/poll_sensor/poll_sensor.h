@@ -3,7 +3,7 @@
 #include <memory>
 
 #include "ArduinoJson.h"
-#include "periphery/capabilities/get_value.h"
+#include "peripheral/capabilities/get_value.h"
 #include "tasks/get_value_task/get_value_task.h"
 
 namespace bernd_box {

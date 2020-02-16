@@ -5,7 +5,7 @@
 namespace bernd_box {
 namespace library {
 
-Library::Library(Mqtt& mqtt, periphery::PeripheryFactory& periphery_factory)
+Library::Library(Mqtt& mqtt, peripheral::PeripheralFactory& periphery_factory)
     : mqtt_(mqtt), periphery_factory_(periphery_factory) {}
 
 Result Library::add(const JsonObjectConst& doc) {
@@ -24,7 +24,7 @@ Result Library::add(const JsonObjectConst& doc) {
   }
 
   // Not present, so create new
-  std::shared_ptr<periphery::Periphery> periphery(
+  std::shared_ptr<peripheral::Peripheral> periphery(
       periphery_factory_.createPeriphery(doc));
   if (periphery->isValid() == false) {
     return Result::kFailure;
@@ -58,7 +58,7 @@ Result Library::remove(const JsonObjectConst& doc) {
   return Result::kSuccess;
 }
 
-Result Library::execute(const JsonObjectConst& doc) {
+/* Result Library::execute(const JsonObjectConst& doc) {
   const char* who = __PRETTY_FUNCTION__;
 
   JsonVariantConst name = doc[F(PERIPHERY_TASK_NAME_NODE)];
@@ -74,7 +74,7 @@ Result Library::execute(const JsonObjectConst& doc) {
         who, String(F("No object found with name ")) + name.as<String>());
     return Result::kFailure;
   }
-  periphery::TaskFactory& task_factory = iterator->second->getTaskFactory(doc);
+  peripheral::TaskFactory& task_factory = iterator->second->getTaskFactory(doc);
 
   JsonVariantConst parameter = doc[F(PERIPHERY_TASK_PARAMETER_NODE)];
   if (parameter.isNull()) {
@@ -84,7 +84,7 @@ Result Library::execute(const JsonObjectConst& doc) {
     return Result::kFailure;
   }
 
-  periphery::PeripheryTask& peripheryTask =
+  peripheral::PeripheryTask& peripheryTask =
       task_factory.createTask(iterator->second, parameter);
   Services::getScheduler().addTask(peripheryTask);
   peripheryTask.enable();
@@ -98,15 +98,15 @@ Result Library::execute(const JsonObjectConst& doc) {
   }
 
   return Result::kSuccess;
-}
+} */
 
-std::shared_ptr<periphery::Periphery> Library::getPeriphery(
+std::shared_ptr<peripheral::Peripheral> Library::getPeriphery(
     const String& name) {
   auto periphery = peripheries_.find(name);
   if (periphery != peripheries_.end()) {
     return periphery->second;
   } else {
-    return std::shared_ptr<periphery::Periphery>();
+    return std::shared_ptr<peripheral::Peripheral>();
   }
 }
 
@@ -134,12 +134,6 @@ void Library::handleCallback(char* topic, uint8_t* payload,
                                     strlen(BB_MQTT_TOPIC_REMOVE_PREFIX));
   if (action_topic_remove == 0) {
     remove(doc.as<JsonVariantConst>());
-    return;
-  }
-  int action_topic_execute = strncmp(command, BB_MQTT_TOPIC_EXECUTE_PREFIX,
-                                     strlen(BB_MQTT_TOPIC_EXECUTE_PREFIX));
-  if (action_topic_execute == 0) {
-    execute(doc.as<JsonVariantConst>());
     return;
   }
   mqtt_.sendError(

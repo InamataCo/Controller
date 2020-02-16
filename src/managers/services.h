@@ -6,7 +6,7 @@
 
 #include "library/library.h"
 #include "managers/mqtt.h"
-#include "periphery/periphery_factory.h"
+#include "peripheral/periphery_factory.h"
 #include "tasks/task_controller.h"
 #include "tasks/task_factory.h"
 
@@ -19,7 +19,7 @@ class Services {
   static Mqtt& getMqtt();
   // static Io& getIo();
   static Library& getLibrary();
-  // static periphery::PeripheryFactory& getPeripheryFactory();
+  // static peripheral::PeripheryFactory& getPeripheryFactory();
   static Scheduler& getScheduler();
 
  private:
@@ -28,7 +28,7 @@ class Services {
   static Library library_;
   static Scheduler scheduler_;
   // static Io io_;
-  static periphery::PeripheryFactory periphery_factory_;
+  static peripheral::PeripheralFactory periphery_factory_;
   static tasks::TaskFactory task_factory_;
   static tasks::TaskController task_controller_;
 

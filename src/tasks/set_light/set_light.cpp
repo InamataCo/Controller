@@ -28,7 +28,7 @@ SetLight::SetLight(const JsonObjectConst& parameters, Scheduler& scheduler)
 
   // Check that the periphery supports the GetValue interface capability
   periphery_ =
-      std::dynamic_pointer_cast<periphery::capabilities::LedStrip>(periperhy);
+      std::dynamic_pointer_cast<peripheral::capabilities::LedStrip>(periperhy);
   if (!periphery_) {
     Services::getMqtt().sendError(
         who, String(F("LedStrip capability not supported: ")) +

@@ -5,7 +5,7 @@
 #include <memory>
 
 #include "managers/services.h"
-#include "periphery/capabilities/led_strip.h"
+#include "peripheral/capabilities/led_strip.h"
 #include "tasks/base_task.h"
 #include "utils/color.h"
 
@@ -29,7 +29,7 @@ class SetLight : public BaseTask {
   static BaseTask* factory(const JsonObjectConst& parameters,
                                            Scheduler& scheduler);
 
-  std::shared_ptr<periphery::capabilities::LedStrip> periphery_;
+  std::shared_ptr<peripheral::capabilities::LedStrip> periphery_;
   String periphery_name_;
 
   utils::Color color_;
