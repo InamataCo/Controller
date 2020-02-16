@@ -3,7 +3,6 @@
 #include <Arduino.h>
 #include <ArduinoJson.h>
 
-#include "library/library.h"
 #include "managers/services.h"
 #include "peripheral/peripheral.h"
 #include "peripheral/periphery_factory.h"

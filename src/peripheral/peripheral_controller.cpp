@@ -1,14 +1,14 @@
-#include "library.h"
+#include "peripheral_controller.h"
 
 #include "managers/services.h"
 
 namespace bernd_box {
-namespace library {
+namespace peripheral {
 
-Library::Library(Mqtt& mqtt, peripheral::PeripheralFactory& periphery_factory)
+PeripheralController::PeripheralController(Mqtt& mqtt, peripheral::PeripheralFactory& periphery_factory)
     : mqtt_(mqtt), periphery_factory_(periphery_factory) {}
 
-Result Library::add(const JsonObjectConst& doc) {
+Result PeripheralController::add(const JsonObjectConst& doc) {
   const __FlashStringHelper* who = F(__PRETTY_FUNCTION__);
 
   JsonVariantConst name = doc[F("name")];
@@ -35,7 +35,7 @@ Result Library::add(const JsonObjectConst& doc) {
   return Result::kSuccess;
 }
 
-Result Library::remove(const JsonObjectConst& doc) {
+Result PeripheralController::remove(const JsonObjectConst& doc) {
   const char* who = __PRETTY_FUNCTION__;
 
   JsonVariantConst name = doc[F("name")];
@@ -100,7 +100,7 @@ Result Library::remove(const JsonObjectConst& doc) {
   return Result::kSuccess;
 } */
 
-std::shared_ptr<peripheral::Peripheral> Library::getPeriphery(
+std::shared_ptr<peripheral::Peripheral> PeripheralController::getPeriphery(
     const String& name) {
   auto periphery = peripheries_.find(name);
   if (periphery != peripheries_.end()) {
@@ -110,7 +110,7 @@ std::shared_ptr<peripheral::Peripheral> Library::getPeriphery(
   }
 }
 
-void Library::handleCallback(char* topic, uint8_t* payload,
+void PeripheralController::handleCallback(char* topic, uint8_t* payload,
                              unsigned int length) {
   const char* who = __PRETTY_FUNCTION__;
 

@@ -13,13 +13,13 @@
 #include "peripheral/periphery_factory.h"
 
 namespace bernd_box {
-namespace library {
+namespace peripheral {
 
 using namespace peripheral;
 
-class Library {
+class PeripheralController {
  public:
-  Library(Mqtt& mqtt, PeripheralFactory& periphery_factory);
+  PeripheralController(Mqtt& mqtt, PeripheralFactory& periphery_factory);
   void handleCallback(char* topic, uint8_t* payload, unsigned int length);
 
   /**

@@ -1,31 +1,31 @@
 #ifndef BERND_BOX_MANAGERS_SERVICES_H
 #define BERND_BOX_MANAGERS_SERVICES_H
 
-#include <WiFiClient.h>
 #include <TaskSchedulerDeclarations.h>
+#include <WiFiClient.h>
 
-#include "library/library.h"
 #include "managers/mqtt.h"
+#include "peripheral/peripheral_controller.h"
 #include "peripheral/periphery_factory.h"
 #include "tasks/task_controller.h"
 #include "tasks/task_factory.h"
 
 namespace bernd_box {
 
-using namespace bernd_box::library;
+using namespace bernd_box::peripheral;
 
 class Services {
  public:
   static Mqtt& getMqtt();
   // static Io& getIo();
-  static Library& getLibrary();
+  static PeripheralController& getLibrary();
   // static peripheral::PeripheryFactory& getPeripheryFactory();
   static Scheduler& getScheduler();
 
  private:
   static Mqtt mqtt_;
   static WiFiClient wifi_client_;
-  static Library library_;
+  static PeripheralController library_;
   static Scheduler scheduler_;
   // static Io io_;
   static peripheral::PeripheralFactory periphery_factory_;
