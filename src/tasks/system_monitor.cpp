@@ -9,10 +9,7 @@ SystemMonitor::SystemMonitor(Scheduler* scheduler, Mqtt& mqtt)
       mqtt_(mqtt),
       name_(F("system_monitor")) {
   setIterations(TASK_FOREVER);
-
-  // Max time is ~72 minutes due to an overflow in the CPU load counter
-  std::chrono::seconds default_interval(60);
-  Task::setInterval(std::chrono::milliseconds(default_interval).count());
+  Task::setInterval(std::chrono::milliseconds(default_interval_).count());
 }
 SystemMonitor::~SystemMonitor() {}
 
@@ -56,6 +53,8 @@ bool SystemMonitor::Callback() {
   mqtt_.send(name_, doc);
   return true;
 }
+
+const std::chrono::seconds SystemMonitor::default_interval_{60};
 
 }  // namespace tasks
 }  // namespace bernd_box

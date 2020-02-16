@@ -18,15 +18,15 @@ PollSensor::PollSensor(const JsonObjectConst& parameters, Scheduler& scheduler)
 
   setInterval(interval_ms);
 
-  // Optionally get the number of iterations. Forever if null
-  JsonVariantConst iterations = parameters[F("iterations")];
-  if (iterations.isNull()) {
+  // Optionally get the duration for which to poll the sensor [default: forever]
+  JsonVariantConst duration_ms = parameters[F("duration_ms")];
+  if (duration_ms.isNull()) {
     setIterations(TASK_FOREVER);
-  } else if (iterations.is<unsigned int>()) {
-    setIterations(iterations);
+  } else if (duration_ms.is<unsigned int>()) {
+    setIterations(duration_ms.as<unsigned int>() / getInterval());
   } else {
     Services::getMqtt().sendError(
-        who, F("Invalid optional property: iterations (unsigned int)"));
+        who, F("Wrong type for optional property: duration_ms (unsigned int)"));
     setInvalid();
     return;
   }

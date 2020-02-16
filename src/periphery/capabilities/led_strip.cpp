@@ -1,21 +1,21 @@
-#include "get_value.h"
+#include "led_strip.h"
 
 namespace bernd_box {
 namespace periphery {
 namespace capabilities {
 
-bool GetValue::registerType(const String& type) {
+bool LedStrip::registerType(const String& type) {
   return getSupportedTypes().insert(type).second;
 }
 
-bool GetValue::isSupported(const String& type) {
+bool LedStrip::isSupported(const String& type) {
   const std::set<String>& types = getSupportedTypes();
   return std::binary_search(types.begin(), types.end(), type);
 }
 
-const std::set<String>& GetValue::getTypes() { return getSupportedTypes(); }
+const std::set<String>& LedStrip::getTypes() { return getSupportedTypes(); }
 
-std::set<String>& GetValue::getSupportedTypes() {
+std::set<String>& LedStrip::getSupportedTypes() {
   static std::set<String> supported_types;
   return supported_types;
 }

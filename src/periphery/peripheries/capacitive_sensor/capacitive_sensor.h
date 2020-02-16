@@ -16,7 +16,7 @@ namespace capacative_sensor {
 class CapacitiveSensor : public AbstractPeriphery,
                          public capabilities::GetValue {
  public:
-  CapacitiveSensor(const JsonObjectConst& parameter);
+  CapacitiveSensor(const JsonObjectConst& parameters);
   virtual ~CapacitiveSensor() = default;
 
   // Type registration in the periphery factory / library

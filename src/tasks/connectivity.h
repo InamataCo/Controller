@@ -21,9 +21,6 @@ class CheckConnectivity : public Task {
                     const uint mqtt_connection_attempts);
   virtual ~CheckConnectivity();
 
-  /// The MQTT receive callback is only enabled after the setup is complete
-  bool isSetup_;
-
  private:
   bool OnEnable() final;
   bool Callback() final;
@@ -33,6 +30,9 @@ class CheckConnectivity : public Task {
   Io& io_;
   const std::chrono::seconds wifi_connect_timeout_;
   const uint mqtt_connection_attempts_;
+  
+  /// The MQTT receive callback is only enabled after the setup is complete
+  bool is_setup_;
 };
 
 }  // namespace tasks
