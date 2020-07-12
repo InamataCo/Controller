@@ -5,13 +5,19 @@ namespace bernd_box {
 Network::Network(const char* ssid, const char* password)
     : ssid_(ssid),
       password_(password),
-      connect_wait_duration_(std::chrono::milliseconds(500)) {}
+      connect_wait_duration_(std::chrono::milliseconds(500)) {
+  wiFiMulti_.addAP(ssid_, password_);
+}
 
 bool Network::connect(std::chrono::duration<int> timeout) {
   Serial.print(F("Network::connect: Connecting to "));
   Serial.println(ssid_);
 
-  WiFi.begin(ssid_, password_);
+  while (wiFiMulti_.run() != WL_CONNECTED) {
+    delay(100);
+    Serial.print(".");
+  }
+  Serial.println();
 
   std::chrono::milliseconds total_wait_time(0);
 
@@ -152,6 +158,8 @@ int Network::setClock(std::chrono::seconds timeout_s) {
   Serial.print(asctime(&timeinfo));
   return 0;
 }
+
+bool Network::isTimeSet() { return false; }
 
 String Network::getSsid() { return WiFi.SSID(); }
 

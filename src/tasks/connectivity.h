@@ -13,7 +13,7 @@ namespace tasks {
 
 class CheckConnectivity : public Task {
  private:
-  const std::chrono::milliseconds default_period_{100};
+  const std::chrono::milliseconds default_period_{200};
 
  public:
   CheckConnectivity(Scheduler* scheduler, Network& network, Io& io,
@@ -25,14 +25,24 @@ class CheckConnectivity : public Task {
   bool OnEnable() final;
   bool Callback() final;
 
+  bool CheckNetwork();
+  bool CheckInternetTime();
+  bool HandleServer();
+  bool CheckMqtt();
+
   Network& network_;
   Mqtt& mqtt_;
+  Server& server_;
   Io& io_;
   const std::chrono::seconds wifi_connect_timeout_;
   const uint mqtt_connection_attempts_;
   
   /// The MQTT receive callback is only enabled after the setup is complete
   bool is_setup_;
+  /// Last time the internet time was checked
+  long last_time_check_ms;
+  /// Check the internet time every 24 hours
+  long time_check_duration_ms = 24 * 60 * 60 * 1000; 
 };
 
 }  // namespace tasks

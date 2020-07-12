@@ -3,17 +3,17 @@
 namespace bernd_box {
 namespace tasks {
 
-SystemMonitor::SystemMonitor(Scheduler* scheduler, Mqtt& mqtt)
+SystemMonitor::SystemMonitor(Scheduler* scheduler)
     : Task(scheduler),
       scheduler_(scheduler),
-      mqtt_(mqtt),
+      server_(Services::getServer()),
       name_(F("system_monitor")) {
   setIterations(TASK_FOREVER);
   Task::setInterval(std::chrono::milliseconds(default_interval_).count());
 }
 SystemMonitor::~SystemMonitor() {}
 
-void SystemMonitor::setInterval(std::chrono::milliseconds interval) {
+void SystemMonitor::SetInterval(std::chrono::milliseconds interval) {
   Task::setInterval(interval.count());
 }
 
@@ -50,7 +50,7 @@ bool SystemMonitor::Callback() {
   // Productive work (not idle, not scheduling) --> time in task callbacks
   doc["productive_percent"] = 100 - ((cpuIdle + cpuCycles) / cpuTotal * 100.0);
 
-  mqtt_.send(name_, doc);
+  server_.Send(name_, doc);
   return true;
 }
 

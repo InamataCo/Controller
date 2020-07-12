@@ -13,6 +13,7 @@
 #include "managers/mqtt.h"
 #include "managers/network.h"
 #include "managers/services.h"
+#include "utils/ota.h"
 // #include "peripherals/peripheral_factory.h"
 // #include "peripherals/peripheral_manager.h"
 #include "peripheral/capabilities/get_value.h"
@@ -70,8 +71,7 @@ bernd_box::tasks::DissolvedOxygenSensor dissolvedOxygenSensorTask(
 bernd_box::tasks::MeasurementProtocol measurementProtocol(
     &scheduler, bernd_box::Services::getMqtt(), io, report_list, pumpTask,
     dallasTemperatureTask, dissolvedOxygenSensorTask, aciditySensorTask);*/
-bernd_box::tasks::SystemMonitor systemMonitorTask(
-    &scheduler, bernd_box::Services::getMqtt());
+bernd_box::tasks::SystemMonitor systemMonitorTask(&scheduler);
 // bernd_box::tasks::L293dMotors l293d_motors(&scheduler, io,
 // bernd_box::Services::getMqtt());
 
@@ -95,20 +95,32 @@ void setup() {
   //   ESP.restart();
   // }
 
-  const std::set<String>& get_value_types =
-      bernd_box::peripheral::capabilities::GetValue::getTypes();
-  DynamicJsonDocument get_value_types_doc(
-      JSON_ARRAY_SIZE(get_value_types.size()));
-  JsonArray get_value_types_array = get_value_types_doc.to<JsonArray>();
+  // const std::set<String>& get_value_types =
+  //     bernd_box::peripheral::capabilities::GetValue::getTypes();
+  // DynamicJsonDocument get_value_types_doc(
+  //     JSON_ARRAY_SIZE(get_value_types.size()));
+  // JsonArray get_value_types_array = get_value_types_doc.to<JsonArray>();
 
-  for (const auto& type : get_value_types) {
-    get_value_types_array.add(type.c_str());
-  }
+  // for (const auto& type : get_value_types) {
+  //   get_value_types_array.add(type.c_str());
+  // }
 
-  bernd_box::Services::getMqtt().send("capability::GetValue",
-                                      get_value_types_doc);
+  // bernd_box::Services::getMqtt().send("capability::GetValue",
+  //                                     get_value_types_doc);
 
+  sdg::setup_ota("bernd_box_a", "sdg");
   io.setStatusLed(false);
 }
 
-void loop() { scheduler.execute(); }
+long last_update_ms = 0;
+long update_period_ms = 500;
+
+void loop() {
+  if (millis() - last_update_ms > update_period_ms) {
+    last_update_ms = millis();
+    Serial.print("h");
+  }
+
+  sdg::handle_ota();
+  scheduler.execute();
+}

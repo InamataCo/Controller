@@ -5,7 +5,7 @@
 
 #include "TaskSchedulerDeclarations.h"
 #include "config.h"
-#include "managers/mqtt.h"
+#include "managers/services.h"
 
 namespace bernd_box {
 namespace tasks {
@@ -16,7 +16,7 @@ namespace tasks {
  */
 class SystemMonitor : public Task {
  public:
-  SystemMonitor(Scheduler* scheduler, Mqtt& mqtt);
+  SystemMonitor(Scheduler* scheduler);
   virtual ~SystemMonitor();
 
   /**
@@ -24,7 +24,7 @@ class SystemMonitor : public Task {
    *
    * \param interval How often the check should be performed
    */
-  void setInterval(std::chrono::milliseconds interval);
+  void SetInterval(std::chrono::milliseconds interval);
 
  private:
   /**
@@ -42,7 +42,7 @@ class SystemMonitor : public Task {
   bool Callback() final;
 
   Scheduler* scheduler_;
-  Mqtt& mqtt_;
+  Server& server_;
   /// The suffix of the telemetry and action topic to publish on
   const __FlashStringHelper* name_;
 

@@ -3,8 +3,11 @@
 
 #include <TaskSchedulerDeclarations.h>
 #include <WiFiClient.h>
+#include <WiFiClientSecure.h>
 
 #include "managers/mqtt.h"
+#include "managers/server.h"
+#include "managers/web_socket.h"
 #include "peripheral/peripheral_controller.h"
 #include "peripheral/periphery_factory.h"
 #include "tasks/task_controller.h"
@@ -17,6 +20,7 @@ using namespace bernd_box::peripheral;
 class Services {
  public:
   static Mqtt& getMqtt();
+  static Server& getServer();
   // static Io& getIo();
   static PeripheralController& getLibrary();
   // static peripheral::PeripheryFactory& getPeripheryFactory();
@@ -24,6 +28,7 @@ class Services {
 
  private:
   static Mqtt mqtt_;
+  static WebSocket web_socket_;
   static WiFiClient wifi_client_;
   static PeripheralController library_;
   static Scheduler scheduler_;

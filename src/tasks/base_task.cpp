@@ -29,13 +29,17 @@ void TaskRemovalTask::add(Task& pt) {
 }
 
 bool TaskRemovalTask::Callback() {
-  for (auto it = tasks_.begin(); it != tasks_.end(); ++it) {
+  for (auto it = tasks_.begin(); it != tasks_.end(); ) {
     Task* task = *it;
 
-    BaseTask* base_task = static_cast<BaseTask*>(task);
+    BaseTask* base_task = dynamic_cast<BaseTask*>(task);
     if (base_task) {
       delete base_task;
-      tasks_.erase(it);
+      it = tasks_.erase(it);
+    } else {
+      Serial.print(F(__PRETTY_FUNCTION__));
+      Serial.println(F(": Attempted to delete non-base class"));
+      ++it;
     }
   }
   tasks_.clear();

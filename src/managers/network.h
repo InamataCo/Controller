@@ -11,11 +11,14 @@
 #ifndef BERND_BOX_NETWORK_H
 #define BERND_BOX_NETWORK_H
 
+#include <Arduino.h>
+#include <ArduinoJson.h>
 #include <HTTPClient.h>
+#include <WiFi.h>
+#include <WiFiMulti.h>
 
 #include <chrono>
 
-#include "ArduinoJson.h"
 #include "config.h"
 #include "utils/setupNode.h"
 
@@ -60,6 +63,8 @@ class Network {
   // Setting clock just to be sure...
   int setClock(std::chrono::seconds timeout_s);
 
+  bool isTimeSet();
+
   String getSsid();
 
   /**
@@ -72,6 +77,8 @@ class Network {
  private:
   const char* ssid_;
   const char* password_;
+
+  WiFiMulti wiFiMulti_;
 
   /// HTTPS client with support for TLS connections
   HTTPClient httpClient_;

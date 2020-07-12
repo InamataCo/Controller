@@ -10,6 +10,7 @@ CheckConnectivity::CheckConnectivity(
     : Task(scheduler),
       network_(network),
       mqtt_(Services::getMqtt()),
+      server_(Services::getServer()),
       io_(io),
       wifi_connect_timeout_(wifi_connect_timeout),
       mqtt_connection_attempts_(mqtt_connection_attempts),
@@ -29,7 +30,16 @@ bool CheckConnectivity::OnEnable() {
 bool CheckConnectivity::Callback() {
   io_.setStatusLed(true);
 
-  // If not connected to the WiFi, try to reconnect. Else reboot
+  CheckNetwork();
+  CheckInternetTime();
+  // CheckMqtt();
+  HandleServer();
+
+  io_.setStatusLed(false);
+  return true;
+}
+
+bool CheckConnectivity::CheckNetwork() {
   if (!network_.isConnected()) {
     if (network_.connect(wifi_connect_timeout_) == false) {
       Serial.println(
@@ -40,16 +50,23 @@ bool CheckConnectivity::Callback() {
     }
 
     // Contact the server. If it fails there is something wrong. Do not proceed.
-    String response = network_.pingSdgServer();
-    if (response.isEmpty()) {
-      Serial.println(
-          F("CheckConnectivity::Callback: Failed to ping the server.\n"
-            "Restarting in 10s"));
-      delay(10000);
-      ESP.restart();
-    }
+    // String response = network_.pingSdgServer();
+    // if (response.isEmpty()) {
+    //   Serial.println(
+    //       F("CheckConnectivity::Callback: Failed to ping the server.\n"
+    //         "Restarting in 10s"));
+    //   delay(10000);
+    //   ESP.restart();
+    // }
+  }
 
-    // Set the clock. Used to timestamp measurements and check TLS certificates
+  return true;
+}
+
+bool CheckConnectivity::CheckInternetTime() {
+  if (millis() - last_time_check_ms > time_check_duration_ms) {
+    last_time_check_ms = millis();
+
     int error = network_.setClock(std::chrono::seconds(30));
     if (error) {
       Serial.println(
@@ -60,6 +77,10 @@ bool CheckConnectivity::Callback() {
     }
   }
 
+  return true;
+}
+
+bool CheckConnectivity::CheckMqtt() {
   // If not connected to an MQTT broker, attempt to reconnect. Else reboot
   if (!mqtt_.isConnected()) {
     // Get the local MQTT broker's IP address and connect to it
@@ -88,8 +109,24 @@ bool CheckConnectivity::Callback() {
     mqtt_.receive();
   }
 
-  io_.setStatusLed(false);
   return true;
 }
+
+bool CheckConnectivity::HandleServer() {
+  if (!server_.IsConnected()) {
+    if (!server_.Connect()) {
+      Serial.println(F("Unable to connect to server. Restarting in 10s"));
+      ::delay(10000);
+      ESP.restart();
+    } else {
+      Serial.println(F("CheckConnectivity: Reconnected to server"));
+    }
+  }
+
+  server_.Loop();
+
+  return true;
+}
+
 }  // namespace tasks
 }  // namespace bernd_box
