@@ -8,10 +8,10 @@ namespace bernd_box {
 namespace peripheral {
 namespace capabilities {
 
-class GetValue {
+class SetValue {
  public:
   // Functions that have to be implemented to fulfill capability
-  virtual float getValue() = 0;
+  virtual void setValue(float value) = 0;
 
   // Type checking
   static bool registerType(const String& type);

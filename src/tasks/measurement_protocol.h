@@ -11,7 +11,6 @@
 #include "dallas_temperature.h"
 #include "dissolved_oxygen_sensor.h"
 #include "managers/mqtt.h"
-#include "pump.h"
 #include "TaskSchedulerDeclarations.h"
 
 namespace bernd_box {
@@ -28,7 +27,6 @@ enum class Action {
 };
 
 const std::map<Action, const char*> actionName = {
-    {Action::kPump, "pump"},
     {Action::kWaterTemperature, "measure water temperature"},
     {Action::kDissolvedOxygen, "measure dissolved oxygen"},
     {Action::kTotalDissolvedSolids, "measure total dissolved solids"},
@@ -51,7 +49,6 @@ class MeasurementProtocol : public Task {
 
   MeasurementProtocol(Scheduler* scheduler, Mqtt& mqtt, Io& io,
                       std::vector<bernd_box::tasks::ReportItem>& report_list,
-                      Pump& pump_task,
                       DallasTemperature& dallas_temperature_task,
                       DissolvedOxygenSensor& dissolved_oxygen_sensor_taks,
                       AciditySensor& acidity_sensor_task);
@@ -83,7 +80,6 @@ class MeasurementProtocol : public Task {
   std::chrono::milliseconds start_time_;
 
   // Known tasks
-  Pump& pump_task_;
   DallasTemperature& dallas_temperature_task_;
   DissolvedOxygenSensor& dissolved_oxygen_sensor_task_;
   AciditySensor& acidity_sensor_task_;

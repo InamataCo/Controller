@@ -5,7 +5,7 @@ namespace tasks {
 
 MeasurementProtocol::MeasurementProtocol(
     Scheduler* scheduler, Mqtt& mqtt, Io& io,
-    std::vector<bernd_box::tasks::ReportItem>& report_list, Pump& pump_task,
+    std::vector<bernd_box::tasks::ReportItem>& report_list,
     DallasTemperature& dallas_temperature_task,
     DissolvedOxygenSensor& dissolved_oxygen_sensor_task,
     AciditySensor& acidity_sensor_task)
@@ -13,7 +13,6 @@ MeasurementProtocol::MeasurementProtocol(
       mqtt_(mqtt),
       io_(io),
       report_list_(report_list),
-      pump_task_(pump_task),
       dallas_temperature_task_(dallas_temperature_task),
       dissolved_oxygen_sensor_task_(dissolved_oxygen_sensor_task),
       acidity_sensor_task_(acidity_sensor_task) {
@@ -52,15 +51,9 @@ bool MeasurementProtocol::Callback() {
     switch (report_list_[report_index_].action) {
       case Action::kPump: {
         if (!is_report_item_enabled) {
-          pump_task_.setDuration(report_list_[report_index_].duration);
-          pump_task_.enable();
           is_report_item_enabled = true;
         }
 
-        if (!pump_task_.isEnabled()) {
-          report_index_++;
-          is_report_item_enabled = false;
-        }
       } break;
       case Action::kWaterTemperature: {
         if (!is_report_item_enabled) {
@@ -82,7 +75,6 @@ bool MeasurementProtocol::Callback() {
       } break;
       case Action::kDissolvedOxygen: {
         if (!is_report_item_enabled) {
-          pump_task_.enable();
           dissolved_oxygen_sensor_task_.setInterval(1000);
           dissolved_oxygen_sensor_task_.enable();
           is_report_item_enabled = true;
@@ -98,8 +90,6 @@ bool MeasurementProtocol::Callback() {
           Serial.printf("Dissolved oxygen is %fmg/L\n",
                         dissolved_oxygen_percent);
           mqtt_.send("dissolved_oxygen_mg_L", dissolved_oxygen_percent);
-
-          pump_task_.disable();
 
           report_index_++;
           is_report_item_enabled = false;

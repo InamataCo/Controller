@@ -23,26 +23,26 @@ class WebSocket : public Server, private WebSocketsClient {
   WebSocket(std::function<std::vector<String>()> get_factory_names,
             Callback object_callback, Callback task_callback);
 
-  bool IsConnected() final;
-  bool Connect() final;
+  bool isConnected() final;
+  bool connect() final;
 
-  void Loop() final;
+  void handle() final;
 
-  void Send(const String& name, double value) final;
-  void Send(const String& name, int value) final;
-  void Send(const String& name, bool value) final;
-  void Send(const String& name, DynamicJsonDocument& doc) final;
-  void Send(const String& name, const char* value, size_t length) final;
+  void send(const String& name, double value) final;
+  void send(const String& name, int value) final;
+  void send(const String& name, bool value) final;
+  void send(const String& name, DynamicJsonDocument& doc) final;
+  void send(const String& name, const char* value, size_t length) final;
 
-  void SendRegister() final;
-  void SendError(const String& who, const String& message) final;
-  void AddAction(const String& name, Callback callback) final;
-  void RemoveAction(const String& topic) final;
-  const CallbackMap& GetCallbackMap() final;
+  void sendRegister() final;
+  void sendError(const String& who, const String& message) final;
+  void addAction(const String& name, Callback callback) final;
+  void removeAction(const String& topic) final;
+  const CallbackMap& getCallbackMap() final;
 
  private:
-  void HandleEvent(WStype_t type, uint8_t* payload, size_t length);
-  void Hexdump(const void* mem, uint32_t len, uint8_t cols = 16);
+  void handleEvent(WStype_t type, uint8_t* payload, size_t length);
+  void hexdump(const void* mem, uint32_t len, uint8_t cols = 16);
 
   bool is_setup_ = false;
 

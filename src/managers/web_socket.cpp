@@ -10,47 +10,47 @@ WebSocket::WebSocket(
       object_callback_(object_callback),
       task_callback_(task_callback) {}
 
-bool WebSocket::IsConnected() { return isConnected(); }
+bool WebSocket::isConnected() { return WebSocketsClient::isConnected(); }
 
-bool WebSocket::Connect() {
+bool WebSocket::connect() {
   if (!is_setup_) {
 
     beginSslWithCA("echo.websocket.org", 443, "/", dst_ca_);
-    onEvent(std::bind(&WebSocket::HandleEvent, this, _1, _2, _3));
+    onEvent(std::bind(&WebSocket::handleEvent, this, _1, _2, _3));
     setReconnectInterval(5000);
 
-    while (!IsConnected()) {
+    while (!isConnected()) {
       loop();
     }
 
     is_setup_ = true;
   }
 
-  return IsConnected();
+  return isConnected();
 }
 
-void WebSocket::Loop() { loop(); }
+void WebSocket::handle() { loop(); }
 
-void WebSocket::Send(const String& name, double value) {
+void WebSocket::send(const String& name, double value) {
   Serial.print(F("Unimplemented Function: "));
   Serial.println(F(__PRETTY_FUNCTION__));
   delay(10000);
   ESP.restart();
 }
-void WebSocket::Send(const String& name, int value) {
+void WebSocket::send(const String& name, int value) {
   Serial.print(F("Unimplemented Function: "));
   Serial.println(F(__PRETTY_FUNCTION__));
   delay(10000);
   ESP.restart();
 }
-void WebSocket::Send(const String& name, bool value) {
+void WebSocket::send(const String& name, bool value) {
   Serial.print(F("Unimplemented Function: "));
   Serial.println(F(__PRETTY_FUNCTION__));
   delay(10000);
   ESP.restart();
 }
 
-void WebSocket::Send(const String& name, DynamicJsonDocument& doc) {
+void WebSocket::send(const String& name, DynamicJsonDocument& doc) {
   doc["type"] = "tel";
   doc["name"] = name;
 
@@ -63,44 +63,44 @@ void WebSocket::Send(const String& name, DynamicJsonDocument& doc) {
   sendTXT(register_buf.data(), n);
 }
 
-void WebSocket::Send(const String& name, const char* value, size_t length) {
+void WebSocket::send(const String& name, const char* value, size_t length) {
   Serial.print(F("Unimplemented Function: "));
   Serial.println(F(__PRETTY_FUNCTION__));
   delay(10000);
   ESP.restart();
 }
-void WebSocket::SendRegister() {
+void WebSocket::sendRegister() {
   Serial.print(F("Unimplemented Function: "));
   Serial.println(F(__PRETTY_FUNCTION__));
   delay(10000);
   ESP.restart();
 }
-void WebSocket::SendError(const String& who, const String& message) {
+void WebSocket::sendError(const String& who, const String& message) {
   Serial.print(F("Unimplemented Function: "));
   Serial.println(F(__PRETTY_FUNCTION__));
   delay(10000);
   ESP.restart();
 }
-void WebSocket::AddAction(const String& name, Callback callback) {
+void WebSocket::addAction(const String& name, Callback callback) {
   Serial.print(F("Unimplemented Function: "));
   Serial.println(F(__PRETTY_FUNCTION__));
   delay(10000);
   ESP.restart();
 }
-void WebSocket::RemoveAction(const String& topic) {
+void WebSocket::removeAction(const String& topic) {
   Serial.print(F("Unimplemented Function: "));
   Serial.println(F(__PRETTY_FUNCTION__));
   delay(10000);
   ESP.restart();
 }
-const WebSocket::CallbackMap& WebSocket::GetCallbackMap() {
+const WebSocket::CallbackMap& WebSocket::getCallbackMap() {
   Serial.print(F("Unimplemented Function: "));
   Serial.println(F(__PRETTY_FUNCTION__));
   delay(10000);
   ESP.restart();
 }
 
-void WebSocket::HandleEvent(WStype_t type, uint8_t* payload, size_t length) {
+void WebSocket::handleEvent(WStype_t type, uint8_t* payload, size_t length) {
   switch (type) {
     case WStype_DISCONNECTED:
       Serial.printf("WebSocket::HandleEvent: Disconnected!\n");
@@ -119,7 +119,7 @@ void WebSocket::HandleEvent(WStype_t type, uint8_t* payload, size_t length) {
       break;
     case WStype_BIN:
       Serial.printf("WebSocket::HandleEvent: get binary length: %u\n", length);
-      Hexdump(payload, length);
+      hexdump(payload, length);
 
       // send data to server
       // webSocket.sendBIN(payload, length);
@@ -135,7 +135,7 @@ void WebSocket::HandleEvent(WStype_t type, uint8_t* payload, size_t length) {
   }
 }
 
-void WebSocket::Hexdump(const void* mem, uint32_t len, uint8_t cols) {
+void WebSocket::hexdump(const void* mem, uint32_t len, uint8_t cols) {
   const uint8_t* src = (const uint8_t*)mem;
   Serial.printf("\nWebSocket::Hexdump: Address: 0x%08X len: 0x%X (%d)",
                 (ptrdiff_t)src, len, len);

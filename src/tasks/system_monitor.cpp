@@ -50,7 +50,7 @@ bool SystemMonitor::Callback() {
   // Productive work (not idle, not scheduling) --> time in task callbacks
   doc["productive_percent"] = 100 - ((cpuIdle + cpuCycles) / cpuTotal * 100.0);
 
-  server_.Send(name_, doc);
+  server_.send(name_, doc);
   return true;
 }
 

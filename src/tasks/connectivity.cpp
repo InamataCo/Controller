@@ -30,16 +30,16 @@ bool CheckConnectivity::OnEnable() {
 bool CheckConnectivity::Callback() {
   io_.setStatusLed(true);
 
-  CheckNetwork();
+  checkNetwork();
   CheckInternetTime();
   // CheckMqtt();
-  HandleServer();
+  handleServer();
 
   io_.setStatusLed(false);
   return true;
 }
 
-bool CheckConnectivity::CheckNetwork() {
+bool CheckConnectivity::checkNetwork() {
   if (!network_.isConnected()) {
     if (network_.connect(wifi_connect_timeout_) == false) {
       Serial.println(
@@ -63,7 +63,7 @@ bool CheckConnectivity::CheckNetwork() {
   return true;
 }
 
-bool CheckConnectivity::CheckInternetTime() {
+bool CheckConnectivity::checkInternetTime() {
   if (millis() - last_time_check_ms > time_check_duration_ms) {
     last_time_check_ms = millis();
 
@@ -80,7 +80,7 @@ bool CheckConnectivity::CheckInternetTime() {
   return true;
 }
 
-bool CheckConnectivity::CheckMqtt() {
+bool CheckConnectivity::checkMqtt() {
   // If not connected to an MQTT broker, attempt to reconnect. Else reboot
   if (!mqtt_.isConnected()) {
     // Get the local MQTT broker's IP address and connect to it
@@ -112,9 +112,9 @@ bool CheckConnectivity::CheckMqtt() {
   return true;
 }
 
-bool CheckConnectivity::HandleServer() {
-  if (!server_.IsConnected()) {
-    if (!server_.Connect()) {
+bool CheckConnectivity::handleServer() {
+  if (!server_.isConnected()) {
+    if (!server_.connect()) {
       Serial.println(F("Unable to connect to server. Restarting in 10s"));
       ::delay(10000);
       ESP.restart();
@@ -123,7 +123,7 @@ bool CheckConnectivity::HandleServer() {
     }
   }
 
-  server_.Loop();
+  server_.handle();
 
   return true;
 }

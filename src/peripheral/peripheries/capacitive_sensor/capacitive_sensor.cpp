@@ -6,17 +6,15 @@ namespace peripheries {
 namespace capacative_sensor {
 
 CapacitiveSensor::CapacitiveSensor(const JsonObjectConst& parameter) {
-  const __FlashStringHelper* who = F(__PRETTY_FUNCTION__);
-
   JsonVariantConst sense_pin = parameter[sense_pin_name_];
   if (!sense_pin.is<unsigned int>()) {
-    Services::getMqtt().sendError(who, String(F("Missing property: ")) +
-                                           sense_pin_name_ +
-                                           F(" (unsigned int)"));
+    Services::getServer().sendError(type(), String(F("Missing property: ")) +
+                                                sense_pin_name_ +
+                                                F(" (unsigned int)"));
     setInvalid();
     return;
   }
-  
+
   sense_pin_ = sense_pin;
 }
 

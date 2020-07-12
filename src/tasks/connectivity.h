@@ -25,10 +25,10 @@ class CheckConnectivity : public Task {
   bool OnEnable() final;
   bool Callback() final;
 
-  bool CheckNetwork();
-  bool CheckInternetTime();
-  bool HandleServer();
-  bool CheckMqtt();
+  bool checkNetwork();
+  bool checkInternetTime();
+  bool handleServer();
+  bool checkMqtt();
 
   Network& network_;
   Mqtt& mqtt_;
