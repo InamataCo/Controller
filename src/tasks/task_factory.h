@@ -51,6 +51,8 @@ class TaskFactory {
    */
   BaseTask* createTask(const JsonObjectConst& parameters);
 
+  const std::vector<String> getTaskNames();
+
  private:
 
   /// Callback map of the sub-factories to create new task objects

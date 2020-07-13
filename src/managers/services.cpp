@@ -16,6 +16,7 @@ WebSocket Services::web_socket_{
               &periphery_factory_),
     std::bind(&peripheral::PeripheralController::handleCallback, &library_, _1,
               _2, _3),
+    std::bind(&tasks::TaskFactory::getTaskNames, &task_factory_),
     std::bind(&tasks::TaskController::mqttCallback, &task_controller_, _1, _2,
               _3)};
 

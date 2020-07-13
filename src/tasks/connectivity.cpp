@@ -4,14 +4,13 @@ namespace bernd_box {
 namespace tasks {
 
 CheckConnectivity::CheckConnectivity(
-    Scheduler* scheduler, Network& network, Io& io,
+    Scheduler* scheduler, Network& network,
     const std::chrono::seconds wifi_connect_timeout,
     const uint mqtt_connection_attempts)
     : Task(scheduler),
       network_(network),
       mqtt_(Services::getMqtt()),
       server_(Services::getServer()),
-      io_(io),
       wifi_connect_timeout_(wifi_connect_timeout),
       mqtt_connection_attempts_(mqtt_connection_attempts),
       is_setup_(false) {
@@ -28,14 +27,11 @@ bool CheckConnectivity::OnEnable() {
 }
 
 bool CheckConnectivity::Callback() {
-  io_.setStatusLed(true);
-
   checkNetwork();
-  CheckInternetTime();
-  // CheckMqtt();
+  checkInternetTime();
+  // checkMqtt();
   handleServer();
 
-  io_.setStatusLed(false);
   return true;
 }
 

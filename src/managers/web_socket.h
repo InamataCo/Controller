@@ -6,6 +6,7 @@
 
 #include <map>
 
+#include "config.h"
 #include "server.h"
 
 namespace bernd_box {
@@ -20,8 +21,10 @@ class WebSocket : public Server, private WebSocketsClient {
    * This enables bi-directional communication between the controller and the
    * server while removing the intermediate such as the Coordinator over MQTT.
    */
-  WebSocket(std::function<std::vector<String>()> get_factory_names,
-            Callback object_callback, Callback task_callback);
+  WebSocket(std::function<std::vector<String>()> get_peripheral_names,
+            Callback peripheral_controller_callback,
+            std::function<std::vector<String>()> get_task_names,
+            Callback task_controller_callback);
 
   bool isConnected() final;
   bool connect() final;
@@ -46,9 +49,10 @@ class WebSocket : public Server, private WebSocketsClient {
 
   bool is_setup_ = false;
 
-  std::function<std::vector<String>()> get_factory_names_;
-  Callback object_callback_;
-  Callback task_callback_;
+  std::function<std::vector<String>()> get_peripheral_names_;
+  Callback peripheral_controller_callback_;
+  std::function<std::vector<String>()> get_task_names_;
+  Callback task_controller_callback_;
 
   static const char* dst_ca_;
 };

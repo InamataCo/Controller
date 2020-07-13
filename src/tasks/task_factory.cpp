@@ -31,6 +31,15 @@ BaseTask* TaskFactory::createTask(const JsonObjectConst& parameters) {
   return nullptr;
 }
 
+const std::vector<String> TaskFactory::getTaskNames() {
+  std::vector<String> names;
+  for(const auto& factory : factories_) {
+    names.push_back(factory.first);
+  }
+  return names;
+}
+
+
 std::map<String, TaskFactory::Factory> TaskFactory::factories_;
 
 }  // namespace tasks
