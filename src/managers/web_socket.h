@@ -13,6 +13,13 @@ namespace bernd_box {
 
 using namespace std::placeholders;
 
+/**
+ * Connection to the server via WebSockets
+ *
+ * This class creates a bi-direactional connection with the server to create
+ * peripheral and tasks on the controller, and return their output to the
+ * server.
+ */
 class WebSocket : public Server, private WebSocketsClient {
  public:
   /**

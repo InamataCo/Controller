@@ -1,7 +1,6 @@
 #pragma once
 
-#include <ArduinoJson.h>
-#include <list>
+#include <Arduino.h>
 
 namespace bernd_box {
 namespace peripheral {

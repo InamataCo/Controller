@@ -10,12 +10,23 @@ namespace bernd_box {
 namespace peripheral {
 namespace capabilities {
 
+/**
+ * A capability that allows a LED strip to be controlled
+ */
 class LedStrip {
  public:
   virtual ~LedStrip() = default;
 
-  // Functions that have to be implemented to fulfill capability
+  /**
+   * Interface to turn the complete LED strip on to a specific color
+   * 
+   * \param color Color to turn the LED strip on to
+   */
   virtual void turnOn(utils::Color color) = 0;
+
+  /**
+   * Interface to turn the LED strip off
+   */
   virtual void turnOff() = 0;
 
   // Type checking

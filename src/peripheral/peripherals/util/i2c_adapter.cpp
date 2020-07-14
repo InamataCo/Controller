@@ -2,7 +2,7 @@
 
 namespace bernd_box {
 namespace peripheral {
-namespace peripheries {
+namespace peripherals {
 namespace util {
 
 bool I2CAdapter::wire_taken = false;
@@ -60,6 +60,6 @@ std::shared_ptr<Peripheral> I2CAdapter::factory(
 }
 
 }  // namespace util
-}  // namespace peripheries
+}  // namespace peripherals
 }  // namespace peripheral
 }  // namespace bernd_box

@@ -1,12 +1,12 @@
-#include "i2c_abstract_periphery.h"
+#include "i2c_abstract_peripheral.h"
 
 #include "managers/services.h"
 
 namespace bernd_box {
 namespace peripheral {
-namespace peripheries {
+namespace peripherals {
 
-I2CAbstractPeriphery::I2CAbstractPeriphery(const JsonObjectConst& parameter) {
+I2CAbstractPeripheral::I2CAbstractPeripheral(const JsonObjectConst& parameter) {
   const __FlashStringHelper* who = F(__PRETTY_FUNCTION__);
 
   JsonVariantConst i2c_adapter_name =
@@ -20,22 +20,22 @@ I2CAbstractPeriphery::I2CAbstractPeriphery(const JsonObjectConst& parameter) {
   }
 
   const String name = i2c_adapter_name.as<String>();
-  std::shared_ptr<Peripheral> periphery =
-      Services::getLibrary().getPeriphery(name);
+  std::shared_ptr<Peripheral> peripheral =
+      Services::getLibrary().getPeripheral(name);
 
   // Since the name is specified externally (MQTT message), check type
-  if (periphery->getType() == I2CAdapter::type() && periphery->isValid()) {
-    i2c_adapter_ = std::static_pointer_cast<I2CAdapter>(periphery);
+  if (peripheral->getType() == peripherals::util::I2CAdapter::type() && peripheral->isValid()) {
+    i2c_adapter_ = std::static_pointer_cast<peripherals::util::I2CAdapter>(peripheral);
   } else {
     Services::getMqtt().sendError(
-        who, name + F(" is not a valid ") + I2CAdapter::type());
+        who, name + F(" is not a valid ") + peripherals::util::I2CAdapter::type());
     setInvalid();
     return;
   }
 }
 
-TwoWire* I2CAbstractPeriphery::getWire() { return i2c_adapter_->getWire(); }
+TwoWire* I2CAbstractPeripheral::getWire() { return i2c_adapter_->getWire(); }
 
-}  // namespace peripheries
+}  // namespace peripherals
 }  // namespace peripheral
 }  // namespace bernd_box

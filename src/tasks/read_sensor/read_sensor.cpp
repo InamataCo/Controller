@@ -20,8 +20,8 @@ bool ReadSensor::Callback() {
   DynamicJsonDocument result_doc(BB_MQTT_JSON_PAYLOAD_SIZE);
   JsonObject result_object = result_doc.to<JsonObject>();
 
-  result_object[F("value")] = getPeriphery()->getValue();
-  result_object[F("periphery_name")] = getPeripheryName().c_str();
+  result_object[F("value")] = getPeripheral()->getValue();
+  result_object[F("peripheral_name")] = getPeripheralName().c_str();
 
   Services::getMqtt().send(type(), result_doc);
 

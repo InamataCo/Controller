@@ -2,7 +2,7 @@
 
 namespace bernd_box {
 namespace peripheral {
-namespace peripheries {
+namespace peripherals {
 namespace capacative_sensor {
 
 CapacitiveSensor::CapacitiveSensor(const JsonObjectConst& parameter) {
@@ -41,6 +41,6 @@ bool CapacitiveSensor::capability_get_value_ =
     capabilities::GetValue::registerType(type());
 
 }  // namespace capacative_sensor
-}  // namespace peripheries
+}  // namespace peripherals
 }  // namespace peripheral
 }  // namespace bernd_box

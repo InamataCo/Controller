@@ -5,18 +5,22 @@
 
 #include "managers/services.h"
 #include "peripheral/peripheral.h"
-#include "peripheral/periphery_factory.h"
+#include "peripheral/peripheral_factory.h"
 #include "tasks/base_task.h"
 
 namespace bernd_box {
 namespace peripheral {
-namespace peripheries {
+namespace peripherals {
 namespace dummy {
 
-class DummyPeriphery : public Peripheral {
+/**
+ * A peripheral without a purpose
+ */
+class DummyPeripheral : public Peripheral {
  public:
-  DummyPeriphery();
-  virtual ~DummyPeriphery() = default;
+  DummyPeripheral();
+  virtual ~DummyPeripheral() = default;
+
   const String& getType() final;
   static const String& type();
 
@@ -26,7 +30,7 @@ class DummyPeriphery : public Peripheral {
   static bool registered_;
 };
 }  // namespace dummy
-}  // namespace peripheries
+}  // namespace peripherals
 }  // namespace peripheral
 
 namespace tasks {

@@ -2,7 +2,7 @@
 
 namespace bernd_box {
 namespace peripheral {
-namespace peripheries {
+namespace peripherals {
 namespace pump {
 
 PumpActuator::PumpActuator(const JsonObjectConst& parameter) {
@@ -42,6 +42,6 @@ void PumpActuator::setValue(float value) {
 }
 
 }  // namespace pump
-}  // namespace peripheries
+}  // namespace peripherals
 }  // namespace peripheral
 }  // namespace bernd_box

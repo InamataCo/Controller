@@ -7,6 +7,13 @@
 #include <map>
 
 namespace bernd_box {
+
+/**
+ * Interface class for connections to the server
+ *
+ * Defines the functions that are used to connect to, send data to and handle
+ * messages coming from the server.
+ */
 class Server {
  public:
   using Callback = std::function<void(char*, uint8_t*, unsigned int)>;

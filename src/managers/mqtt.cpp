@@ -1,4 +1,4 @@
-#include "managers/mqtt.h"
+#include "mqtt.h"
 
 namespace bernd_box {
 
@@ -223,17 +223,17 @@ void Mqtt::sendRegister() {
   }
   doc["actions"] = actions_array;
 
-  // Create a list of all registered periphery factories
+  // Create a list of all registered peripheral factories
   std::vector<String> factories = get_factory_names_();
   DynamicJsonDocument factories_doc(JSON_ARRAY_SIZE(factories.size()));
   JsonArray factories_array = factories_doc.to<JsonArray>();
-  Serial.println(F("\tPeriphery types:"));
+  Serial.println(F("\tPeripheral types:"));
 
   for (const auto& factory : factories) {
     factories_array.add(factory.c_str());
     Serial.println("\t\t" + factory);
   }
-  doc["periphery_types"] = factories_array;
+  doc["peripheral_types"] = factories_array;
 
   // Calculate the size of the resultant serialized JSON, create a buffer of
   // that size and serialize the JSON into that buffer.

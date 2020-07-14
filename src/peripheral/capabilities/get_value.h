@@ -8,9 +8,16 @@ namespace bernd_box {
 namespace peripheral {
 namespace capabilities {
 
+/**
+ * A capability that allows a value to be returned
+ */
 class GetValue {
  public:
-  // Functions that have to be implemented to fulfill capability
+  /**
+   * Returns a unitless float value
+   * 
+   * \return The unitless value
+   */
   virtual float getValue() = 0;
 
   // Type checking

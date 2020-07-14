@@ -10,20 +10,27 @@
 
 namespace bernd_box {
 namespace peripheral {
-namespace peripheries {
+namespace peripherals {
 namespace capacative_sensor {
 
+/**
+ * Peripheral to read capacitive sensors
+ */
 class CapacitiveSensor : public Peripheral,
                          public capabilities::GetValue {
  public:
   CapacitiveSensor(const JsonObjectConst& parameters);
   virtual ~CapacitiveSensor() = default;
 
-  // Type registration in the periphery factory / library
+  // Type registration in the peripheral factory
   const String& getType() final;
   static const String& type();
 
-  // Capability: GetValue
+  /**
+   * Read touch pad (values close to 0 mean touch detected)
+   * 
+   * \return Value of the touch pad sensor
+   */
   float getValue() final;
 
   /// Name of parameter for the pin # to measure capacitance
@@ -38,6 +45,6 @@ class CapacitiveSensor : public Peripheral,
 };
 
 }  // namespace capacative_sensor
-}  // namespace peripheries
+}  // namespace peripherals
 }  // namespace peripheral
 }  // namespace bernd_box

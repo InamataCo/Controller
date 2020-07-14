@@ -2,7 +2,7 @@
 
 namespace bernd_box {
 namespace peripheral {
-namespace peripheries {
+namespace peripherals {
 namespace neo_pixel {
 
 NeoPixel::NeoPixel(const JsonObjectConst& parameters) {
@@ -135,6 +135,6 @@ bool NeoPixel::cleanColorEncoding(String& color_encoding) {
 }
 
 }  // namespace neo_pixel
-}  // namespace peripheries
+}  // namespace peripherals
 }  // namespace peripheral
 }  // namespace bernd_box

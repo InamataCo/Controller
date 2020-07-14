@@ -1,28 +1,28 @@
-#include "dummy_periphery.h"
+#include "dummy_peripheral.h"
 
 namespace bernd_box {
 namespace peripheral {
-namespace peripheries {
+namespace peripherals {
 namespace dummy {
 
-DummyPeriphery::DummyPeriphery() {}
+DummyPeripheral::DummyPeripheral() {}
 
-const String& DummyPeriphery::getType() { return type(); }
+const String& DummyPeripheral::getType() { return type(); }
 
-const String& DummyPeriphery::type() {
-  static const String name{"DummyPeriphery"};
+const String& DummyPeripheral::type() {
+  static const String name{"DummyPeripheral"};
   return name;
 }
 
-std::shared_ptr<Peripheral> DummyPeriphery::factory(const JsonObjectConst&) {
-  return std::make_shared<DummyPeriphery>();
+std::shared_ptr<Peripheral> DummyPeripheral::factory(const JsonObjectConst&) {
+  return std::make_shared<DummyPeripheral>();
 }
 
-bool DummyPeriphery::registered_ =
+bool DummyPeripheral::registered_ =
     PeripheralFactory::registerFactory(type(), factory);
 
 }  // namespace dummy
-}  // namespace peripheries
+}  // namespace peripherals
 }  // namespace peripheral
 
 namespace tasks {

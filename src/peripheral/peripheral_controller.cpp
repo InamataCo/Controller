@@ -1,12 +1,10 @@
 #include "peripheral_controller.h"
 
-#include "managers/services.h"
-
 namespace bernd_box {
 namespace peripheral {
 
-PeripheralController::PeripheralController(Mqtt& mqtt, peripheral::PeripheralFactory& periphery_factory)
-    : mqtt_(mqtt), periphery_factory_(periphery_factory) {}
+PeripheralController::PeripheralController(Mqtt& mqtt, peripheral::PeripheralFactory& peripheral_factory)
+    : mqtt_(mqtt), peripheral_factory_(peripheral_factory) {}
 
 Result PeripheralController::add(const JsonObjectConst& doc) {
   const __FlashStringHelper* who = F(__PRETTY_FUNCTION__);
@@ -18,19 +16,19 @@ Result PeripheralController::add(const JsonObjectConst& doc) {
   }
 
   // Check if element is present
-  if (peripheries_.count(name) > 0) {
+  if (peripherals_.count(name) > 0) {
     mqtt_.sendError(who, F("This name has already been added."));
     return Result::kFailure;
   }
 
   // Not present, so create new
-  std::shared_ptr<peripheral::Peripheral> periphery(
-      periphery_factory_.createPeriphery(doc));
-  if (periphery->isValid() == false) {
+  std::shared_ptr<peripheral::Peripheral> peripheral(
+      peripheral_factory_.createPeripheral(doc));
+  if (peripheral->isValid() == false) {
     return Result::kFailure;
   }
 
-  peripheries_.emplace(name.as<String>(), periphery);
+  peripherals_.emplace(name.as<String>(), peripheral);
 
   return Result::kSuccess;
 }
@@ -44,15 +42,15 @@ Result PeripheralController::remove(const JsonObjectConst& doc) {
     return Result::kFailure;
   }
 
-  auto iterator = peripheries_.find(name.as<String>());
-  if (iterator != peripheries_.end()) {
+  auto iterator = peripherals_.find(name.as<String>());
+  if (iterator != peripherals_.end()) {
     if (iterator->second.use_count() > 1) {
       mqtt_.sendError(
           who, String(F("Object is still in use. Try again later for ")) +
                    name.as<String>());
       return Result::kFailure;
     }
-    peripheries_.erase(iterator);
+    peripherals_.erase(iterator);
   }
 
   return Result::kSuccess;
@@ -68,8 +66,8 @@ Result PeripheralController::remove(const JsonObjectConst& doc) {
     return Result::kFailure;
   }
 
-  auto iterator = peripheries_.find(name.as<String>());
-  if (iterator == peripheries_.end()) {
+  auto iterator = peripherals_.find(name.as<String>());
+  if (iterator == peripherals_.end()) {
     mqtt_.sendError(
         who, String(F("No object found with name ")) + name.as<String>());
     return Result::kFailure;
@@ -84,27 +82,27 @@ Result PeripheralController::remove(const JsonObjectConst& doc) {
     return Result::kFailure;
   }
 
-  peripheral::PeripheryTask& peripheryTask =
+  peripheral::PeripheralTask& peripheralTask =
       task_factory.createTask(iterator->second, parameter);
-  Services::getScheduler().addTask(peripheryTask);
-  peripheryTask.enable();
+  Services::getScheduler().addTask(peripheralTask);
+  peripheralTask.enable();
 
   JsonVariantConst response_code = doc[F(PERIPHERY_TASK_RESPONSE_CODE_NODE)];
   if (!response_code.isNull() && response_code.is<char*>()) {
     DynamicJsonDocument resultDoc(BB_MQTT_JSON_PAYLOAD_SIZE);
     resultDoc[PERIPHERY_TASK_RESPONSE_CODE_NODE] = response_code.as<String>();
-    resultDoc[PERIPHERY_TASK_TASK_ID_NODE] = peripheryTask.getId();
+    resultDoc[PERIPHERY_TASK_TASK_ID_NODE] = peripheralTask.getId();
     mqtt_.send(who, resultDoc);
   }
 
   return Result::kSuccess;
 } */
 
-std::shared_ptr<peripheral::Peripheral> PeripheralController::getPeriphery(
+std::shared_ptr<peripheral::Peripheral> PeripheralController::getPeripheral(
     const String& name) {
-  auto periphery = peripheries_.find(name);
-  if (periphery != peripheries_.end()) {
-    return periphery->second;
+  auto peripheral = peripherals_.find(name);
+  if (peripheral != peripherals_.end()) {
+    return peripheral->second;
   } else {
     return std::shared_ptr<peripheral::Peripheral>();
   }

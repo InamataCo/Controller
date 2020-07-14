@@ -13,9 +13,12 @@
 
 namespace bernd_box {
 namespace peripheral {
-namespace peripheries {
+namespace peripherals {
 namespace util {
 
+/**
+ * The driver for an I2C interface that supports both hardware I2C controllers
+ */
 class I2CAdapter : public Peripheral {
  public:
   I2CAdapter(const JsonObjectConst& parameter);
@@ -39,7 +42,7 @@ class I2CAdapter : public Peripheral {
 };
 
 }  // namespace util
-}  // namespace peripheries
+}  // namespace peripherals
 }  // namespace peripheral
 }  // namespace bernd_box
 

@@ -4,29 +4,29 @@
 
 ### Add: `objects/<uuid>/add`
 
-The add command creates a new periphery. It has to be called before the execute command can be sent to a created periphery. Each add command has to have the following JSON parameters in addition to peripheral specific parameters.
+The add command creates a new peripheral. It has to be called before the execute command can be sent to a created peripheral. Each add command has to have the following JSON parameters in addition to peripheral specific parameters.
 
 | parameter | content                       |
 | --------- | ----------------------------- |
 | name      | unique name of the peripheral |
 | type      | type of the peripheral        |
 
-#### Dummy Periphery
+#### Dummy Peripheral
 
 No extra parameters required
 
-#### I2C Adapter Periphery
+#### I2C Adapter Peripheral
 
 | parameter | content          |
 | --------- | ---------------- |
 | scl       | clock signal pin |
 | sda       | data signal pin  |
 
-#### BH1750 Periphery
+#### BH1750 Peripheral
 
 | parameter   | content                           |
 | ----------- | --------------------------------- |
-| i2c_adapter | name of the I2C adapter periphery |
+| i2c_adapter | name of the I2C adapter peripheral |
 | address     | address of the BH1750 sensor      |
 
 Note: The I2C adapter has to have been added
@@ -46,13 +46,13 @@ The start command starts a new task. Each start command has to have the followin
 | type       | type of the peripheral        |
 | peripheral | unique name of the peripheral |
 
-On successful creation of the task, the following JSON is returned. In order to stop a long running task, its ID has to be stored on creation and then sent when it is to be stopped. The _type_ corresponds to the task's type while the _periphery_ equals the name of the periphery being used by the task. This may also be null.
+On successful creation of the task, the following JSON is returned. In order to stop a long running task, its ID has to be stored on creation and then sent when it is to be stopped. The _type_ corresponds to the task's type while the _peripheral_ equals the name of the peripheral being used by the task. This may also be null.
 
 | parameter | content                          |
 | --------- | -------------------------------- |
 | id        | unique ID of the task            |
 | type      | type of the task                 |
-| periphery | name of the periphery being used |
+| peripheral | name of the peripheral being used |
 
 ### Stop: `tasks/<uuid>/stop`
 

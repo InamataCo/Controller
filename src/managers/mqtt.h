@@ -1,6 +1,4 @@
-
-#ifndef ESP_MONITOR_MQTT
-#define ESP_MONITOR_MQTT
+#pragma once
 
 #include <PubSubClient.h>
 #include <WiFi.h>
@@ -20,6 +18,12 @@ using namespace std::placeholders;
 using callback_map =
     std::map<String, std::function<void(char*, uint8_t*, unsigned int)>>;
 
+/**
+ * MQTT related functionality
+ *
+ * Connects to MQTT broker, send MQTT messages and handles incoming ones by
+ * delegating them the the appropriate controller (peripheral / task)
+ */
 class Mqtt {
  public:
   /**
@@ -198,5 +202,3 @@ class Mqtt {
 };  // namespace bernd_box
 
 }  // namespace bernd_box
-
-#endif

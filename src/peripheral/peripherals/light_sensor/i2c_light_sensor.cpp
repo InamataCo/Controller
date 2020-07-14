@@ -2,13 +2,13 @@
 
 namespace bernd_box {
 namespace peripheral {
-namespace peripheries {
+namespace peripherals {
 namespace light_sensor {
 
 I2CLightSensor::I2CLightSensor(const JsonObjectConst& parameter)
-    : I2CAbstractPeriphery(parameter) {}
+    : I2CAbstractPeripheral(parameter) {}
 
 }  // namespace light_sensor
-}  // namespace peripheries
+}  // namespace peripherals
 }  // namespace peripheral
 }  // namespace bernd_box

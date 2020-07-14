@@ -5,27 +5,28 @@
 
 #include <Wire.h>
 #include "peripheral/peripheral.h"
-#include "peripheral/peripheries/util/i2c_adapter.h"
+#include "peripheral/peripherals/util/i2c_adapter.h"
 
 namespace bernd_box {
 namespace peripheral {
-namespace peripheries {
+namespace peripherals {
 
-using namespace util;
-
-class I2CAbstractPeriphery : public Peripheral {
+/**
+ * Interface for sensors to access peripherals over the I2C bus
+ */
+class I2CAbstractPeripheral : public Peripheral {
  public:
-  I2CAbstractPeriphery(const JsonObjectConst& parameter);
-  virtual ~I2CAbstractPeriphery() = default;
+  I2CAbstractPeripheral(const JsonObjectConst& parameter);
+  virtual ~I2CAbstractPeripheral() = default;
 
  protected:
   TwoWire* getWire();
 
  private:
-  std::shared_ptr<I2CAdapter> i2c_adapter_;
+  std::shared_ptr<peripherals::util::I2CAdapter> i2c_adapter_;
 };
 
-}  // namespace peripheries
+}  // namespace peripherals
 }  // namespace peripheral
 }  // namespace bernd_box
 

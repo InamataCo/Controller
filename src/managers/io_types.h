@@ -1,5 +1,4 @@
-#ifndef BERND_BOX_SENSOR_TYPES_H
-#define BERND_BOX_SENSOR_TYPES_H
+#pragma once
 
 #include <BH1750.h>
 #include <DallasTemperature.h>
@@ -92,5 +91,3 @@ struct L293dMotor {
   uint8_t pin_enable;   // Pin to enable and control the motor's speed
 };
 }  // namespace bernd_box
-
-#endif

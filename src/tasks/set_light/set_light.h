@@ -29,8 +29,8 @@ class SetLight : public BaseTask {
   static BaseTask* factory(const JsonObjectConst& parameters,
                                            Scheduler& scheduler);
 
-  std::shared_ptr<peripheral::capabilities::LedStrip> periphery_;
-  String periphery_name_;
+  std::shared_ptr<peripheral::capabilities::LedStrip> peripheral_;
+  String peripheral_name_;
 
   utils::Color color_;
 };

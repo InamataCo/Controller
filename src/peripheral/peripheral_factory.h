@@ -5,9 +5,11 @@
 
 #include <memory>
 #include <vector>
+#include <map>
 
 #include "managers/mqtt.h"
-#include "peripheral.h"
+#include "peripheral/peripheral.h"
+#include "peripheral/invalid_peripheral.h"
 
 namespace bernd_box {
 namespace peripheral {
@@ -22,13 +24,14 @@ class PeripheralFactory {
 
   static bool registerFactory(const String& name, Callback factory);
 
-  std::shared_ptr<Peripheral> createPeriphery(const JsonObjectConst& parameter);
+  std::shared_ptr<Peripheral> createPeripheral(const JsonObjectConst& parameter);
 
   std::vector<String> getFactoryNames();
 
  private:
+  static std::map<const String, Callback>& getFactories();
+
   Mqtt& mqtt_;
-  static std::map<const String, Callback> factories_;
 };
 
 }  // namespace peripheral

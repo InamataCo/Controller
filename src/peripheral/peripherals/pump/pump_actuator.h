@@ -9,19 +9,26 @@
 
 namespace bernd_box {
 namespace peripheral {
-namespace peripheries {
+namespace peripherals {
 namespace pump {
 
+/**
+ * Peripheral to control a pump
+ */
 class PumpActuator : public Peripheral, public capabilities::SetValue {
  public:
   PumpActuator(const JsonObjectConst& parameters);
   virtual ~PumpActuator() = default;
 
-  // Type registration in the periphery factory / library
+  // Type registration in the peripheral factory
   const String& getType() final;
   static const String& type();
 
-  // Capability: SetValue
+  /**
+   * Turns a pump on or off
+   * 
+   * \param value 1 turns the pump on, 0 turns it off
+   */
   void setValue(float value) final;
 
   /// Name of the parameter for the pump to control a pump
@@ -36,7 +43,7 @@ class PumpActuator : public Peripheral, public capabilities::SetValue {
 };
 
 }  // namespace pump
-}  // namespace peripheries
+}  // namespace peripherals
 }  // namespace peripheral
 }  // namespace bernd_box
 

@@ -63,7 +63,7 @@ const __FlashStringHelper* AlertSensor::type() { return F("AlertSensor"); }
 bool AlertSensor::OnEnable() { return true; }
 
 bool AlertSensor::Callback() {
-  float value = getPeriphery()->getValue();
+  float value = getPeripheral()->getValue();
 
   if (isRisingThreshold(value)) {
     if (trigger_type_ == TriggerType::kRising ||
@@ -111,7 +111,7 @@ bool AlertSensor::sendAlert(TriggerType trigger_type) {
       return false;
     }
 
-    doc[F("periphery_name")] = getPeripheryName().c_str();
+    doc[F("peripheral_name")] = getPeripheralName().c_str();
 
     Services::getMqtt().send(type(), doc);
     return true;

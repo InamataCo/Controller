@@ -1,21 +1,21 @@
 #pragma once
 
-#include "periphery_factory.h"
 #include "peripheral/peripheral.h"
+#include "peripheral/peripheral_factory.h"
 
 namespace bernd_box {
 namespace peripheral {
 
-class InvalidPeriphery : public Peripheral {
+class InvalidPeripheral : public Peripheral {
  public:
-  virtual ~InvalidPeriphery() = default;
+  virtual ~InvalidPeripheral() = default;
 
   const String& getType() final;
   static const String& type();
 
  private:
   static std::shared_ptr<Peripheral> factory(const JsonObjectConst&);
-  
+
   static bool registered_;
 };
 

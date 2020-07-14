@@ -12,19 +12,31 @@
 
 namespace bernd_box {
 namespace peripheral {
-namespace peripheries {
+namespace peripherals {
 namespace neo_pixel {
 
+/**
+ * A peripheral to control NeoPixels
+ */
 class NeoPixel : public Peripheral, public capabilities::LedStrip {
  public:
   NeoPixel(const JsonObjectConst& parameters);
   virtual ~NeoPixel() = default;
 
-  // Type registration in the periphery factory / library
+  // Type registration in the peripheral factory
   const String& getType() final;
   static const String& type();
 
+  /**
+   * Turns on all LEDs in a strip to a specific color
+   * 
+   * \param color Color of the LEDs
+   */
   void turnOn(utils::Color color) final;
+
+  /**
+   * Turn off all LEDs
+   */
   void turnOff() final;
 
  private:
@@ -51,6 +63,6 @@ class NeoPixel : public Peripheral, public capabilities::LedStrip {
 };
 
 }  // namespace neo_pixel
-}  // namespace peripheries
+}  // namespace peripherals
 }  // namespace peripheral
 }  // namespace bernd_box

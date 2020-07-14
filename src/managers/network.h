@@ -1,15 +1,4 @@
-/**
- * Wifi related functionality
- *
- * Functionality includes conencting to wifi
- *
- * \author Moritz Ulmer <moritz.ulmer@posteo.de>
- * \date 2018
- * \copyright Apache License 2.0
- */
-
-#ifndef BERND_BOX_NETWORK_H
-#define BERND_BOX_NETWORK_H
+#pragma once
 
 #include <Arduino.h>
 #include <ArduinoJson.h>
@@ -23,6 +12,12 @@
 #include "utils/setupNode.h"
 
 namespace bernd_box {
+
+/**
+ * Wifi related functionality
+ *
+ * Functionality includes conencting to wifi
+ */
 class Network {
  public:
   /**
@@ -123,5 +118,3 @@ class Network {
 };
 
 }  // namespace bernd_box
-
-#endif
