@@ -1,5 +1,4 @@
-#ifndef BERND_BOX_PERIPHERY_PERIPHERIES_LIGHTSENSOR_I2CLIGHTSENSOR_H
-#define BERND_BOX_PERIPHERY_PERIPHERIES_LIGHTSENSOR_I2CLIGHTSENSOR_H
+#pragma once
 
 #include "peripheral/peripherals/i2c_abstract_peripheral.h"
 
@@ -18,5 +17,3 @@ class I2CLightSensor : public peripherals::I2CAbstractPeripheral {
 }  // namespace peripherals
 }  // namespace peripheral
 }  // namespace bernd_box
-
-#endif

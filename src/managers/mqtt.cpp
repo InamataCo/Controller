@@ -4,10 +4,10 @@ namespace bernd_box {
 
 Mqtt::Mqtt(WiFiClient& wifi_client,
            std::function<std::vector<String>()> get_factory_names,
-           std::function<void(char*, uint8_t*, unsigned int)> object_callback,
-           std::function<void(char*, uint8_t*, unsigned int)> task_callback)
+           Server::Callback peripheral_callback,
+           Server::Callback task_callback)
     : client_(wifi_client),
-      object_callback_(object_callback),
+      peripheral_callback_(peripheral_callback),
       task_callback_(task_callback),
       get_factory_names_(get_factory_names) {
   // Callback from the PubSubClient MQTT library
@@ -70,17 +70,6 @@ int Mqtt::subscribe() {
   const __FlashStringHelper* who = F(__PRETTY_FUNCTION__);
   const __FlashStringHelper* error_prefix = F("Failed to subscribe to: ");
   const __FlashStringHelper* success_prefix = F("Subscribed to: ");
-
-  const String action_topic = String(action_prefix_) + client_id_ + F("/+");
-  const bool action_success = client_.subscribe(action_topic.c_str(), 1);
-  if (action_success) {
-    Serial.print("\t");
-    Serial.print(success_prefix);
-    Serial.println(action_topic);
-  } else {
-    sendError(who, String(error_prefix) + action_topic);
-    return 1;
-  }
 
   const String object_topic = String(object_prefix_) + client_id_ + F("/+");
   const bool object_success = client_.subscribe(object_topic.c_str(), 1);
@@ -204,24 +193,13 @@ void Mqtt::sendRegister() {
   Serial.println(
       F("Mqtt::sendRegister: Registering UUID and actions with coordinator"));
 
-  DynamicJsonDocument doc(BB_MQTT_JSON_PAYLOAD_SIZE);
+  DynamicJsonDocument doc(BB_JSON_PAYLOAD_SIZE);
 
   // Add the UUID entry
   doc["uuid"] = ESPRandom::uuidToString(getUuid());
 
   // Add the system MAC address
   doc["mac_address"] = getMacString();
-
-  // Create a list of all registered actions
-  DynamicJsonDocument actions_doc(JSON_ARRAY_SIZE(action_callbacks_.size()));
-  JsonArray actions_array = actions_doc.to<JsonArray>();
-  Serial.println(F("\tActions:"));
-
-  for (const auto& action : action_callbacks_) {
-    actions_array.add(action.first.c_str());
-    Serial.println("\t\t" + action.first);
-  }
-  doc["actions"] = actions_array;
 
   // Create a list of all registered peripheral factories
   std::vector<String> factories = get_factory_names_();
@@ -263,46 +241,21 @@ void Mqtt::sendError(const String& who, const String& message,
   }
 }
 
-void Mqtt::addAction(
-    const String& name,
-    std::function<void(char*, uint8_t*, unsigned int)> callback) {
-  action_callbacks_[name] = callback;
-}
-
-void Mqtt::removeAction(const String& name) {
-  action_callbacks_.erase(name.c_str());
-}
-
 void Mqtt::handleCallback(char* topic, uint8_t* message, unsigned int length) {
   const __FlashStringHelper* who = F(__PRETTY_FUNCTION__);
-  String topic_str(topic);
-
-  // Handle action messages
-  if (topic_str.startsWith(action_prefix_)) {
-    // Extract the name from the topic and increment once to skip the last
-    // slash: action/a48b109f-975f-42e2-9962-a6fb752a1b6e/pump -> pump
-    char* action = strrchr(topic, '/');
-    action++;
-    auto it = action_callbacks_.find(action);
-
-    if (it != action_callbacks_.end()) {
-      it->second(topic, message, length);
-    } else {
-      sendError(who, String(F("No registered callback for action: ")) + action);
-    }
-    return;
-  } else if (topic_str.startsWith(object_prefix_)) {
-    object_callback_(topic, message, length);
-    return;
-  } else if (topic_str.startsWith(task_prefix_)) {
-    task_callback_(topic, message, length);
+  
+  // Deserialize the JSON object into allocated memory
+  DynamicJsonDocument doc(BB_JSON_PAYLOAD_SIZE);
+  const DeserializationError error = deserializeJson(doc, message, length);
+  if (error) {
+    sendError(who, String(F("Deserialize failed: ")) + error.c_str());
     return;
   }
 
-  sendError(who, String(F("No registered callback for topic: ")) + topic);
+  // Pass the message to the peripheral and task handlers
+  peripheral_callback_(doc.as<JsonObjectConst>());
+  task_callback_(doc.as<JsonObjectConst>());
 }
-
-const callback_map& Mqtt::getCallbackMap() { return action_callbacks_; }
 
 const String Mqtt::getMacString() {
   std::array<uint8_t, 6> mac_address_int;

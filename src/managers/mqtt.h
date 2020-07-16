@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ArduinoJson.h>
 #include <PubSubClient.h>
 #include <WiFi.h>
 
@@ -7,16 +8,12 @@
 #include <map>
 #include <vector>
 
-#include "Arduino.h"
-#include "ArduinoJson.h"
-#include "config.h"
+#include "managers/server.h"
 #include "utils/setupNode.h"
 
 namespace bernd_box {
 
 using namespace std::placeholders;
-using callback_map =
-    std::map<String, std::function<void(char*, uint8_t*, unsigned int)>>;
 
 /**
  * MQTT related functionality
@@ -33,8 +30,7 @@ class Mqtt {
    */
   Mqtt(WiFiClient& wifi_client,
        std::function<std::vector<String>()> get_factory_names,
-       std::function<void(char*, uint8_t*, unsigned int)> library_callback,
-       std::function<void(char*, uint8_t*, unsigned int)> task_callback);
+       Server::Callback library_callback, Server::Callback task_callback);
 
   /**
    * Loop until connected to MQTT server or tries exceeded
@@ -135,33 +131,6 @@ class Mqtt {
    */
   void sendError(const String& who, const String& message,
                  const bool additional_serial_log = true);
-  /**
-   * Add an action that can be performed
-   *
-   * Actions are commands formatted as JSON objects and can contain arbitrary
-   * parameters
-   *
-   * \param name The name of the action to subscribe to
-   * \param callback The function to call when a message for the action arrives
-   */
-  void addAction(const String& name,
-                 std::function<void(char*, uint8_t*, unsigned int)> callback);
-
-  /**
-   * Removes an action
-   *
-   * If it can not be found, the callbacks_ map is in the desired state
-   *
-   * \param name Name of the subscribed action
-   */
-  void removeAction(const String& topic);
-
-  /**
-   * Returns a const reference to the MQTT callback map
-   *
-   * \return The callback map
-   */
-  const callback_map& getCallbackMap();
 
  private:
   /**
@@ -181,20 +150,15 @@ class Mqtt {
   String server_ip_address_;
   const uint server_port_ = 1883;
 
-  /// Action prefix for MQTT messages. Includes trailing slash delimiter
-  const __FlashStringHelper* action_prefix_ = F("action/");
-  /// Functions to be called when receiving an action message
-  callback_map action_callbacks_;
-
   /// Object prefix for MQTT messages. Includes trailing slash delimiter
   const __FlashStringHelper* object_prefix_ = F("object/");
   /// Function to handle object messages
-  std::function<void(char*, uint8_t*, unsigned int)> object_callback_;
+  Server::Callback peripheral_callback_;
 
   /// Task prefix for MQTT messages. Includes trailing slash delimiter
   const __FlashStringHelper* task_prefix_ = F("task/");
   /// Function to handle task messages
-  std::function<void(char*, uint8_t*, unsigned int)> task_callback_;
+  Server::Callback task_callback_;
 
   std::function<std::vector<String>()> get_factory_names_;
 

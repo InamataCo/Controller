@@ -3,8 +3,8 @@
 namespace bernd_box {
 namespace tasks {
 
-TaskFactory::TaskFactory(Mqtt& mqtt, Scheduler& scheduler)
-    : mqtt_(mqtt), scheduler_(scheduler) {}
+TaskFactory::TaskFactory(Server& server, Scheduler& scheduler)
+    : server_(server), scheduler_(scheduler) {}
 
 bool TaskFactory::registerTask(const String& type, Factory factory) {
   return factories_.insert({type, factory}).second;
@@ -15,7 +15,7 @@ BaseTask* TaskFactory::createTask(const JsonObjectConst& parameters) {
 
   JsonVariantConst type = parameters[F("type")];
   if (type.isNull() || !type.is<char*>()) {
-    mqtt_.sendError(who, "Missing property: type (string)");
+    server_.sendError(who, "Missing property: type (string)");
     return nullptr;
   }
 
@@ -26,12 +26,12 @@ BaseTask* TaskFactory::createTask(const JsonObjectConst& parameters) {
     return factory->second(parameters, scheduler_);
   }
 
-  mqtt_.sendError(
+  server_.sendError(
       who, String(F("Could not find the factory type: ")) + type.as<String>());
   return nullptr;
 }
 
-const std::vector<String> TaskFactory::getTaskNames() {
+const std::vector<String> TaskFactory::getFactoryNames() {
   std::vector<String> names;
   for(const auto& factory : factories_) {
     names.push_back(factory.first);

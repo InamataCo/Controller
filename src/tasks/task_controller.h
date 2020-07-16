@@ -4,7 +4,7 @@
 #include <TaskSchedulerDeclarations.h>
 
 #include "base_task.h"
-#include "managers/mqtt.h"
+#include "managers/server.h"
 #include "task_factory.h"
 
 namespace bernd_box {
@@ -17,17 +17,17 @@ namespace tasks {
  */
 class TaskController {
  public:
-  TaskController(Scheduler& scheduler, TaskFactory& factory, Mqtt& mqtt);
+  TaskController(Scheduler& scheduler, TaskFactory& factory, Server& server);
   virtual ~TaskController() = default;
+
+  const String& type();
 
   /**
    * Callback for incoming MQTT messages for the TaskFactory
    *
-   * @param topic MQTT topic of the message
-   * @param payload The message in bytes
-   * @param length Length of the message in bytes
+   * @param message The message as a JSON doc
    */
-  void mqttCallback(char* topic, uint8_t* payload, unsigned int length);
+  void handleCallback(const JsonObjectConst& message);
 
   /**
    * Create a new task
@@ -35,7 +35,7 @@ class TaskController {
    * @param parameters JSON object with the parameters to create a task
    * @return True on success
    */
-  bool createTask(const JsonObjectConst& parameters);
+  ErrorResult createTask(const JsonObjectConst& parameters);
 
   /**
    * Command a task to end
@@ -43,22 +43,21 @@ class TaskController {
    * @param parameters JSON object with the parameters to create a task
    * @return True on success
    */
-  bool stopTask(const JsonObjectConst& parameters);
+  ErrorResult stopTask(const JsonObjectConst& parameters);
 
   /**
    * Sends the current status of the task factory
    *
    */
-  void sendStatus(const JsonObjectConst& parameers);
+  void sendStatus();
 
-  /// Name of the command to create a task (last subtopic of MQTT message)
-  const __FlashStringHelper* mqtt_add_suffix_ = F("add");
-  /// Name of the command to stop a task (last subtopic of MQTT message)
-  const __FlashStringHelper* mqtt_remove_suffix_ = F("remove");
-  /// Name of the command to return the status (last subtopic of MQTT message)
-  const __FlashStringHelper* mqtt_status_suffix = F("status");
-  /// Name of the command to return the status (last subtopic of MQTT message)
-  const __FlashStringHelper* task_type_system_task = F("SystemTask");
+  const __FlashStringHelper* task_command_name_ = F("task");
+  const __FlashStringHelper* trace_id_name_ = F("id");
+  const __FlashStringHelper* create_command_name_ = F("create");
+  const __FlashStringHelper* stop_command_name_ = F("stop");
+  const __FlashStringHelper* status_command_name_ = F("status");
+
+  const __FlashStringHelper* task_type_system_task_ = F("SystemTask");
 
  private:
   Task* findTask(unsigned int id);
@@ -66,7 +65,7 @@ class TaskController {
 
   Scheduler& scheduler_;
   TaskFactory& factory_;
-  Mqtt& mqtt_;
+  Server& server_;
 };
 }  // namespace tasks
 }  // namespace bernd_box

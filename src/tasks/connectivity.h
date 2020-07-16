@@ -1,5 +1,4 @@
-#ifndef BERND_BOX_TASKS_CONNECTIVITY_H
-#define BERND_BOX_TASKS_CONNECTIVITY_H
+#pragma once
 
 #include "TaskSchedulerDeclarations.h"
 #include "managers/io.h"
@@ -46,5 +45,3 @@ class CheckConnectivity : public Task {
 
 }  // namespace tasks
 }  // namespace bernd_box
-
-#endif

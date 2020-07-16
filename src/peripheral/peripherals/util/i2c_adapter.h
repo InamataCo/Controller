@@ -1,10 +1,4 @@
-#ifndef BERND_BOX_PERIPHERY_PERIPHERIES_UTIL_I2CADAPTER_H
-#define BERND_BOX_PERIPHERY_PERIPHERIES_UTIL_I2CADAPTER_H
-
-#define PARAM_I2CADAPTER_CLOCK "scl"
-#define PARAM_I2CADAPTER_DATA "sda"
-
-#define TASK_LIST_I2C_DEVICES "listDevices"
+#pragma once
 
 #include <Wire.h>
 
@@ -45,5 +39,3 @@ class I2CAdapter : public Peripheral {
 }  // namespace peripherals
 }  // namespace peripheral
 }  // namespace bernd_box
-
-#endif

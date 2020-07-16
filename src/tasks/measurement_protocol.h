@@ -1,5 +1,4 @@
-#ifndef BERND_BOX_TASK_MEASUREMENT_PROTOCOL_H
-#define BERND_BOX_TASK_MEASUREMENT_PROTOCOL_H
+#pragma once
 
 #include <Arduino.h>
 
@@ -89,5 +88,3 @@ class MeasurementProtocol : public Task {
 
 }  // namespace tasks
 }  // namespace bernd_box
-
-#endif  // BERND_BOX_TASK_MEASUREMENT_PROTOCOL_H

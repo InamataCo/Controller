@@ -1,5 +1,4 @@
-#ifndef BERND_BOX_TASKS_PUMP_H
-#define BERND_BOX_TASKS_PUMP_H
+#pragma once
 
 #include <ArduinoJson.h>
 
@@ -46,5 +45,3 @@ class PumpActuator : public Peripheral, public capabilities::SetValue {
 }  // namespace peripherals
 }  // namespace peripheral
 }  // namespace bernd_box
-
-#endif

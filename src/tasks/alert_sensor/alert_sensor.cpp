@@ -101,7 +101,7 @@ AlertSensor::TriggerType AlertSensor::getTriggerType() { return trigger_type_; }
 bool AlertSensor::sendAlert(TriggerType trigger_type) {
   if (trigger_type == TriggerType::kRising ||
       trigger_type == TriggerType::kFalling) {
-    DynamicJsonDocument doc(BB_MQTT_JSON_PAYLOAD_SIZE);
+    DynamicJsonDocument doc(BB_JSON_PAYLOAD_SIZE);
     doc[F("threshold")] = threshold_;
 
     auto trigger_type_string = trigger_type_strings_.find(trigger_type);

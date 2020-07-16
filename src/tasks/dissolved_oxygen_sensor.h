@@ -1,5 +1,4 @@
-#ifndef BERND_BOX_TASKS_DISSOLVED_OXYGEN_SENSOR_H
-#define BERND_BOX_TASKS_DISSOLVED_OXYGEN_SENSOR_H
+#pragma once
 
 #include "TaskSchedulerDeclarations.h"
 
@@ -95,5 +94,3 @@ class DissolvedOxygenSensor : public Task {
 
 }  // namespace tasks
 }  // namespace bernd_box
-
-#endif

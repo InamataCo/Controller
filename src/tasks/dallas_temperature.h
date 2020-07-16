@@ -1,5 +1,4 @@
-#ifndef BERND_BOX_TASKS_DALLAS_TEMPERATURE_H
-#define BERND_BOX_TASKS_DALLAS_TEMPERATURE_H
+#pragma once
 
 #include <array>
 
@@ -59,5 +58,3 @@ class DallasTemperature : public Task {
 
 }  // namespace tasks
 }  // namespace bernd_box
-
-#endif

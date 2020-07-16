@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ArduinoJson.h>
 #include <BH1750.h>
 #include <DallasTemperature.h>
 #include <Max44009.h>
@@ -9,6 +10,17 @@
 #include <string>
 
 namespace bernd_box {
+
+class ErrorResult {
+ public:
+  ErrorResult() {}
+  ErrorResult(String who, String detail) : who_(who), detail_(detail) {}
+
+  bool is_error() { return !who_.isEmpty() && !detail_.isEmpty(); }
+
+  String who_;
+  String detail_;
+};
 
 enum class Result {
   kSuccess = 0,             // Operation completed successfully

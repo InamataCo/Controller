@@ -17,7 +17,7 @@ const __FlashStringHelper* ReadSensor::type() { return F("ReadSensor"); }
 bool ReadSensor::OnEnable() { return true; }
 
 bool ReadSensor::Callback() {
-  DynamicJsonDocument result_doc(BB_MQTT_JSON_PAYLOAD_SIZE);
+  DynamicJsonDocument result_doc(BB_JSON_PAYLOAD_SIZE);
   JsonObject result_object = result_doc.to<JsonObject>();
 
   result_object[F("value")] = getPeripheral()->getValue();

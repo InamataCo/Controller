@@ -8,7 +8,6 @@
 
 #include <chrono>
 
-#include "config.h"
 #include "utils/setupNode.h"
 
 namespace bernd_box {

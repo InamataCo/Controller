@@ -5,8 +5,6 @@ namespace bernd_box {
 Io::Io(Mqtt& mqtt)
     : mqtt_(mqtt), one_wire_(one_wire_pin_), dallas_(&one_wire_) {
   pwm_channels_.fill(-1);
-  mqtt_.addAction(F("i2c_interface"),
-                  std::bind(&Io::i2cMqttCallback, this, _1, _2, _3));
 }
 
 Io::~Io() {}
@@ -469,7 +467,7 @@ void Io::i2cMqttCallback(char* topic, uint8_t* payload, unsigned int length) {
   const char* who = __PRETTY_FUNCTION__;
 
   // Try to deserialize the message
-  DynamicJsonDocument doc(BB_MQTT_JSON_PAYLOAD_SIZE);
+  DynamicJsonDocument doc(BB_JSON_PAYLOAD_SIZE);
   const DeserializationError error = deserializeJson(doc, payload, length);
   if (error) {
     mqtt_.sendError(who, String(F("Deserialize failed: ")) + error.c_str());

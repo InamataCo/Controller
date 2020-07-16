@@ -1,3 +1,36 @@
+# Server API Documentation
+
+```
+{
+  id: <uuid>,
+  type: "tel",
+  peripheral: {
+    add: [
+      ...
+    ],
+    remove: [
+      ...
+    ]
+  },
+  task: {
+    create: [
+      ...
+    ],
+    stop: [
+
+    ],
+    status: True
+  }
+}
+```
+
+## Peripheral Controller
+
+
+
+## Task Controller
+
+
 # MQTT API Documentation
 
 ## Objects Interface

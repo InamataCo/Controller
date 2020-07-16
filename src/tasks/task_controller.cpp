@@ -4,68 +4,69 @@ namespace bernd_box {
 namespace tasks {
 
 TaskController::TaskController(Scheduler& scheduler, TaskFactory& factory,
-                               Mqtt& mqtt)
-    : scheduler_(scheduler), factory_(factory), mqtt_(mqtt){};
+                               Server& server)
+    : scheduler_(scheduler), factory_(factory), server_(server){};
 
-void TaskController::mqttCallback(char* topic, uint8_t* payload,
-                                  unsigned int length) {
-  const __FlashStringHelper* who = F(__PRETTY_FUNCTION__);
+const String& TaskController::type() {
+  static const String name{"TaskController"};
+  return name;
+}
 
-  // Extract the last part of the topic (with a reverse search)
-  char* command = strrchr(topic, '/');
-  command++;
-  String command_str(command);
+void TaskController::handleCallback(const JsonObjectConst& message) {
+  JsonVariantConst task_commands = message[task_command_name_];
 
-  DynamicJsonDocument doc(BB_MQTT_JSON_PAYLOAD_SIZE);
-  const DeserializationError error = deserializeJson(doc, payload, length);
-  if (error) {
-    mqtt_.sendError(who, String(F("Deserialize failed: ")) + error.c_str());
-    return;
+  // Handle all create commands
+  for (JsonVariantConst create_command :
+       task_commands[create_command_name_].as<JsonArrayConst>()) {
+    ErrorResult error = createTask(create_command);
+    if (error.is_error()) {
+      server_.sendError(error, message[trace_id_name_].as<String>());
+    }
   }
 
-  if (command_str.equals(mqtt_add_suffix_)) {
-    createTask(doc.as<JsonObjectConst>());
-  } else if (command_str.equals(mqtt_remove_suffix_)) {
-    stopTask(doc.as<JsonObjectConst>());
-  } else if (command_str.equals(mqtt_status_suffix)) {
-    sendStatus(doc.as<JsonObjectConst>());
-  } else {
-    mqtt_.sendError(
-        who, String(F("Unknown action [add, remove, status]: ")) + command);
+  for (JsonVariantConst stop_command :
+       task_commands[stop_command_name_].as<JsonArrayConst>()) {
+    ErrorResult error = createTask(stop_command);
+    if (error.is_error()) {
+      server_.sendError(error, message[trace_id_name_].as<String>());
+    }
+  }
+
+  if (!task_commands[status_command_name_].isNull()) {
+    sendStatus();
   }
 }
 
-bool TaskController::createTask(const JsonObjectConst& parameters) {
+ErrorResult TaskController::createTask(const JsonObjectConst& parameters) {
   BaseTask* task = factory_.createTask(parameters);
   if (task && task->isValid()) {
     task->enable();
-    return true;
+    return ErrorResult();
   }
-  return false;
+
+  return ErrorResult(type(), "Unable to create task");
 }
 
-bool TaskController::stopTask(const JsonObjectConst& parameters) {
-  const __FlashStringHelper* who = F(__PRETTY_FUNCTION__);
-
+ErrorResult TaskController::stopTask(const JsonObjectConst& parameters) {
   JsonVariantConst task_id = parameters[F("id")];
   if (!task_id.is<int>()) {
-    mqtt_.sendError(who, "Missing property: id (int)");
-    return false;
+    return ErrorResult(type(), "Missing property: id (int)");
   }
 
   Task* task = findTask(task_id);
   if (task) {
     task->disable();
   } else {
-    mqtt_.sendError(who, String(F("Could not find task with ID: ")) +
-                             String(task_id.as<int>()));
+    return ErrorResult(
+        type(), String(F("Could not find task with ID")) + String(task_id.as<int>()));
   }
-  return task != nullptr;
+
+  return ErrorResult();
 }
 
-void TaskController::sendStatus(const JsonObjectConst& parameters) {
+void TaskController::sendStatus() {
   const __FlashStringHelper* who = F(__PRETTY_FUNCTION__);
-  DynamicJsonDocument doc(BB_MQTT_JSON_PAYLOAD_SIZE);
+  DynamicJsonDocument doc(BB_JSON_PAYLOAD_SIZE);
   JsonObject status_object = doc.createNestedObject("status");
   JsonArray tasks_array = status_object.createNestedArray("tasks");
 
@@ -74,7 +75,7 @@ void TaskController::sendStatus(const JsonObjectConst& parameters) {
     task_object["id"] = task->getId();
     task_object["type"] = getTaskType(task);
   }
-  mqtt_.send(who, doc);
+  server_.send(who, doc);
 }
 
 Task* TaskController::findTask(unsigned int id) {
@@ -91,7 +92,7 @@ const __FlashStringHelper* TaskController::getTaskType(Task* task) {
   if (base_task) {
     return base_task->getType();
   } else {
-    return task_type_system_task;
+    return task_type_system_task_;
   }
 }
 

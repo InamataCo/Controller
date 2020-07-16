@@ -1,5 +1,4 @@
-#ifndef UTILS_SETUP_H
-#define UTILS_SETUP_H
+#pragma once
 
 #include <FS.h>
 #include <SPIFFS.h>
@@ -17,4 +16,3 @@ std::vector<uint8_t> getUuid();
 bool setupNode();
 
 }
-#endif

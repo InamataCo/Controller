@@ -6,6 +6,8 @@
 #include <functional>
 #include <map>
 
+#include "managers/io_types.h"
+
 namespace bernd_box {
 
 /**
@@ -16,8 +18,10 @@ namespace bernd_box {
  */
 class Server {
  public:
-  using Callback = std::function<void(char*, uint8_t*, unsigned int)>;
+  using Callback = std::function<void(const JsonObjectConst& message)>;
   using CallbackMap = std::map<String, Callback>;
+
+  virtual ~Server() = default;
 
   virtual bool connect() = 0;
   virtual bool isConnected() = 0;
@@ -32,8 +36,6 @@ class Server {
 
   virtual void sendRegister() = 0;
   virtual void sendError(const String& who, const String& message) = 0;
-  virtual void addAction(const String& name, Callback callback) = 0;
-  virtual void removeAction(const String& topic) = 0;
-  virtual const CallbackMap& getCallbackMap() = 0;
+  virtual void sendError(const ErrorResult& error, const String& trace_id = "") = 0;
 };
 }  // namespace bernd_box

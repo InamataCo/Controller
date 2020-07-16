@@ -1,5 +1,4 @@
-#ifndef BERND_BOX_PERIPHERY_PERIPHERIES_BH1750_BH1750_SENSOR_H
-#define BERND_BOX_PERIPHERY_PERIPHERIES_BH1750_BH1750_SENSOR_H
+#pragma once
 
 #include "peripheral/peripherals/light_sensor/i2c_light_sensor.h"
 
@@ -17,5 +16,3 @@ class Bh1750Sensor : public light_sensor::I2CLightSensor {
 }  // namespace peripherals
 }  // namespace peripheral
 }  // namespace bernd_box
-
-#endif

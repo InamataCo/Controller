@@ -2,12 +2,10 @@
 
 namespace bernd_box {
 
-WebSocket::WebSocket(
-    std::function<std::vector<String>()> get_peripheral_names,
-    std::function<void(char*, uint8_t*, unsigned int)>
-        peripheral_controller_callback,
-    std::function<std::vector<String>()> get_task_names,
-    std::function<void(char*, uint8_t*, unsigned int)> task_controller_callback)
+WebSocket::WebSocket(std::function<std::vector<String>()> get_peripheral_names,
+                     Server::Callback peripheral_controller_callback,
+                     std::function<std::vector<String>()> get_task_names,
+                     Server::Callback task_controller_callback)
     : get_peripheral_names_(get_peripheral_names),
       peripheral_controller_callback_(peripheral_controller_callback),
       get_task_names_(get_task_names),
@@ -77,11 +75,11 @@ void WebSocket::send(const String& name, const char* value, size_t length) {
   ESP.restart();
 }
 void WebSocket::sendRegister() {
-  DynamicJsonDocument doc(BB_MQTT_JSON_PAYLOAD_SIZE);
+  DynamicJsonDocument doc(BB_JSON_PAYLOAD_SIZE);
 
   // Use ther register message type
   doc["type"] = "reg";
-  
+
   // Collect all peripheral factory names and write them to a JSON doc
   std::vector<String> peripheral_names = get_peripheral_names_();
   DynamicJsonDocument peripherals_doc(JSON_ARRAY_SIZE(peripheral_names.size()));
@@ -120,19 +118,7 @@ void WebSocket::sendError(const String& who, const String& message) {
   delay(10000);
   ESP.restart();
 }
-void WebSocket::addAction(const String& name, Callback callback) {
-  Serial.print(F("Unimplemented Function: "));
-  Serial.println(F(__PRETTY_FUNCTION__));
-  delay(10000);
-  ESP.restart();
-}
-void WebSocket::removeAction(const String& topic) {
-  Serial.print(F("Unimplemented Function: "));
-  Serial.println(F(__PRETTY_FUNCTION__));
-  delay(10000);
-  ESP.restart();
-}
-const WebSocket::CallbackMap& WebSocket::getCallbackMap() {
+void WebSocket::sendError(const ErrorResult& error, const String& trace_id) {
   Serial.print(F("Unimplemented Function: "));
   Serial.println(F(__PRETTY_FUNCTION__));
   delay(10000);

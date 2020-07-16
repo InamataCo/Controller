@@ -18,7 +18,7 @@ SetLight::SetLight(const JsonObjectConst& parameters, Scheduler& scheduler)
 
   // Search for the peripheral for the given name
   auto periperhy =
-      Services::getLibrary().getPeripheral(peripheral_name.as<String>());
+      Services::getPeripheralController().getPeripheral(peripheral_name.as<String>());
   if (!periperhy) {
     Services::getMqtt().sendError(who, String(F("Could not find peripheral: ")) +
                                            peripheral_name.as<String>());

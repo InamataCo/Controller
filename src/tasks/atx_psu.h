@@ -1,5 +1,4 @@
-#ifndef BERND_BOX_TASKS_PUMP_H
-#define BERND_BOX_TASKS_PUMP_H
+#pragma once
 
 #include "TaskSchedulerDeclarations.h"
 
@@ -30,5 +29,3 @@ class AtxPsu : public Task {
 
 }  // namespace tasks
 }  // namespace bernd_box
-
-#endif

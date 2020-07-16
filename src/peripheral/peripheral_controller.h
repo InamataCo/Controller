@@ -6,9 +6,8 @@
 #include <map>
 #include <memory>
 
-#include "config.h"
 #include "managers/io_types.h"
-#include "managers/mqtt.h"
+#include "managers/server.h"
 #include "peripheral/invalid_peripheral.h"
 #include "peripheral/peripheral.h"
 #include "peripheral/peripheral_factory.h"
@@ -18,8 +17,10 @@ namespace peripheral {
 
 class PeripheralController {
  public:
-  PeripheralController(Mqtt& mqtt, PeripheralFactory& peripheral_factory);
-  void handleCallback(char* topic, uint8_t* payload, unsigned int length);
+  PeripheralController(Server& server, PeripheralFactory& peripheral_factory);
+  void handleCallback(const JsonObjectConst& message);
+
+  const String& type();
 
   /**
    * Returns a shared pointer to the object or a nullptr if not found
@@ -30,15 +31,17 @@ class PeripheralController {
   std::shared_ptr<Peripheral> getPeripheral(const String& name);
 
  private:
-  Result add(const JsonObjectConst& doc);
-  Result remove(const JsonObjectConst& doc);
+  ErrorResult add(const JsonObjectConst& doc);
+  ErrorResult remove(const JsonObjectConst& doc);
 
-  Mqtt& mqtt_;
+  Server& server_;
   std::map<String, std::shared_ptr<Peripheral>> peripherals_;
   PeripheralFactory& peripheral_factory_;
 
-  const __FlashStringHelper* task_add_suffix = F("add");
-  const __FlashStringHelper* task_remove_suffix = F("remove");
+  const __FlashStringHelper* peripheral_command_name_ = F("peripheral");
+  const __FlashStringHelper* trace_id_name_ = F("id");
+  const __FlashStringHelper* add_command_name_ = F("add");
+  const __FlashStringHelper* remove_command_name_ = F("remove");
 };
 
 }  // namespace peripheral

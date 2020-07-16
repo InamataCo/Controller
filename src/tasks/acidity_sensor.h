@@ -1,5 +1,4 @@
-#ifndef BERND_BOX_TASK_ACIDITY_SENSOR_H
-#define BERND_BOX_TASK_ACIDITY_SENSOR_H
+#pragma once
 
 #include "TaskSchedulerDeclarations.h"
 
@@ -87,5 +86,3 @@ class AciditySensor : public Task {
 
 }  // namespace tasks
 }  // namespace bernd_box
-
-#endif

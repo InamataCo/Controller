@@ -1,5 +1,4 @@
-#ifndef BERND_BOX_TASKS_L293D_MOTORS_H
-#define BERND_BOX_TASKS_L293D_MOTORS_H
+#pragma once
 
 #include <ArduinoJson.hpp>
 #include <array>
@@ -103,5 +102,3 @@ class L293dMotors : public Task {
 };
 }  // namespace tasks
 }  // namespace bernd_box
-
-#endif

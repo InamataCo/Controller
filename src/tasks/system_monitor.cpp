@@ -33,7 +33,7 @@ bool SystemMonitor::Callback() {
   size_t max_malloc_bytes = heap_caps_get_largest_free_block(MALLOC_CAP_8BIT);
   size_t least_free_bytes = heap_caps_get_minimum_free_size(MALLOC_CAP_8BIT);
 
-  DynamicJsonDocument doc(BB_MQTT_JSON_PAYLOAD_SIZE);
+  DynamicJsonDocument doc(BB_JSON_PAYLOAD_SIZE);
   doc["free_memory_bytes"] = free_bytes;
   doc["heap_fragmentation_percent"] =
       (float(free_bytes) - float(max_malloc_bytes)) / float(free_bytes) *

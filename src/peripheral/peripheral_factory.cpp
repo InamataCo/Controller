@@ -3,7 +3,7 @@
 namespace bernd_box {
 namespace peripheral {
 
-PeripheralFactory::PeripheralFactory(Mqtt& mqtt) : mqtt_(mqtt) {}
+PeripheralFactory::PeripheralFactory(Server& server) : server_(server) {}
 
 bool PeripheralFactory::registerFactory(const String& name, Callback factory) {
   if (getFactories().count(name) == 0) {
@@ -19,7 +19,7 @@ std::shared_ptr<Peripheral> PeripheralFactory::createPeripheral(
 
   const JsonVariantConst type = parameter[F("type")];
   if (type.isNull() || !type.is<char*>()) {
-    mqtt_.sendError(who, "Missing property: type (string)");
+    server_.sendError(who, "Missing property: type (string)");
     return std::make_shared<InvalidPeripheral>();
   }
 

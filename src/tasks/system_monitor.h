@@ -1,10 +1,8 @@
-#ifndef BERND_BOX_TASKS_SYSTEM_MONITOR_H
-#define BERND_BOX_TASKS_SYSTEM_MONITOR_H
+#pragma once
 
 #include <chrono>
 
 #include "TaskSchedulerDeclarations.h"
-#include "config.h"
 #include "managers/services.h"
 
 namespace bernd_box {
@@ -52,5 +50,3 @@ class SystemMonitor : public Task {
 
 }  // namespace tasks
 }  // namespace bernd_box
-
-#endif  // BERND_BOX_TASKS_SYSTEM_STATE_H

@@ -1,5 +1,4 @@
-#ifndef BERND_BOX_TASKS_LIGHT_SENSORS_H
-#define BERND_BOX_TASKS_LIGHT_SENSORS_H
+#pragma once
 
 #include "managers/io.h"
 #include "managers/mqtt.h"
@@ -51,5 +50,3 @@ class LightSensors : public Task {
 
 }  // namespace tasks
 }  // namespace bernd_box
-
-#endif

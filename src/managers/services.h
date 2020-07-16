@@ -24,15 +24,15 @@ class Services {
  public:
   static Mqtt& getMqtt();
   static Server& getServer();
-  static peripheral::PeripheralController& getLibrary();
+  static peripheral::PeripheralController& getPeripheralController();
   static Scheduler& getScheduler();
 
  private:
   static Mqtt mqtt_;
   static WebSocket web_socket_;
   static WiFiClient wifi_client_;
-  static peripheral::PeripheralController library_;
   static Scheduler scheduler_;
+  static peripheral::PeripheralController peripheral_controller_;
   static peripheral::PeripheralFactory peripheral_factory_;
   static tasks::TaskFactory task_factory_;
   static tasks::TaskController task_controller_;

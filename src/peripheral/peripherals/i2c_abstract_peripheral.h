@@ -1,7 +1,4 @@
-#ifndef BERND_BOX_PERIPHERY_PERIPHERIES_I2CABSTRACTPERIPHERY_H
-#define BERND_BOX_PERIPHERY_PERIPHERIES_I2CABSTRACTPERIPHERY_H
-
-#define PARAM_I2C_ABSTRACT_PERIPHERY_ADAPTER_NAME "adapter"
+#pragma once
 
 #include <Wire.h>
 #include "peripheral/peripheral.h"
@@ -29,5 +26,3 @@ class I2CAbstractPeripheral : public Peripheral {
 }  // namespace peripherals
 }  // namespace peripheral
 }  // namespace bernd_box
-
-#endif

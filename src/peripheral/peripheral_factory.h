@@ -7,7 +7,7 @@
 #include <vector>
 #include <map>
 
-#include "managers/mqtt.h"
+#include "managers/server.h"
 #include "peripheral/peripheral.h"
 #include "peripheral/invalid_peripheral.h"
 
@@ -19,7 +19,7 @@ class PeripheralFactory {
   using Callback =
       std::shared_ptr<Peripheral> (*)(const JsonObjectConst& parameter);
 
-  PeripheralFactory(Mqtt& mqtt);
+  PeripheralFactory(Server& server);
   virtual ~PeripheralFactory() = default;
 
   static bool registerFactory(const String& name, Callback factory);
@@ -31,7 +31,7 @@ class PeripheralFactory {
  private:
   static std::map<const String, Callback>& getFactories();
 
-  Mqtt& mqtt_;
+  Server& server_;
 };
 
 }  // namespace peripheral

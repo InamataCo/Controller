@@ -1,5 +1,4 @@
-#ifndef BERND_BOX_TASKS_AIR_SENSORS_H
-#define BERND_BOX_TASKS_AIR_SENSORS_H
+#pragma once
 
 #include "TaskSchedulerDeclarations.h"
 
@@ -31,5 +30,3 @@ class AirSensors : public Task {
 
 }  // namespace tasks
 }  // namespace bernd_box
-
-#endif

@@ -6,7 +6,6 @@
 
 #include <map>
 
-#include "config.h"
 #include "server.h"
 
 namespace bernd_box {
@@ -29,9 +28,10 @@ class WebSocket : public Server, private WebSocketsClient {
    * server while removing the intermediate such as the Coordinator over MQTT.
    */
   WebSocket(std::function<std::vector<String>()> get_peripheral_names,
-            Callback peripheral_controller_callback,
+            Server::Callback peripheral_controller_callback,
             std::function<std::vector<String>()> get_task_names,
-            Callback task_controller_callback);
+            Server::Callback task_controller_callback);
+  virtual ~WebSocket() = default;
 
   bool isConnected() final;
   bool connect() final;
@@ -46,10 +46,9 @@ class WebSocket : public Server, private WebSocketsClient {
 
   void sendRegister() final;
   void sendError(const String& who, const String& message) final;
-  void addAction(const String& name, Callback callback) final;
-  void removeAction(const String& topic) final;
-  const CallbackMap& getCallbackMap() final;
+  void sendError(const ErrorResult& error, const String& trace_id = "") final;
 
+  
  private:
   void handleEvent(WStype_t type, uint8_t* payload, size_t length);
   void hexdump(const void* mem, uint32_t len, uint8_t cols = 16);

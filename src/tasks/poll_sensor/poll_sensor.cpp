@@ -41,7 +41,7 @@ const __FlashStringHelper* PollSensor::type() { return F("PollSensor"); }
 bool PollSensor::OnEnable() { return true; }
 
 bool PollSensor::Callback() {
-  DynamicJsonDocument result_doc(BB_MQTT_JSON_PAYLOAD_SIZE);
+  DynamicJsonDocument result_doc(BB_JSON_PAYLOAD_SIZE);
   JsonObject result_object = result_doc.to<JsonObject>();
 
   result_object[F("value")] = getPeripheral()->getValue();

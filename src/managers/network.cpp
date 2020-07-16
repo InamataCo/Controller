@@ -103,7 +103,7 @@ String Network::getCoordinatorLocalIpAddress() {
 
   // Expect JSON response {"coordinator_local_ip_address":"XXX.XXX.XXX.XXX"}
   String response = httpClient_.getString();
-  DynamicJsonDocument json(BB_MQTT_JSON_PAYLOAD_SIZE);
+  DynamicJsonDocument json(BB_JSON_PAYLOAD_SIZE);
   DeserializationError error = deserializeJson(json, response);
 
   if (error) {

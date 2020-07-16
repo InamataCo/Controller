@@ -11,18 +11,16 @@ bool I2CAdapter::wire1_taken = false;
 I2CAdapter::I2CAdapter(const JsonObjectConst& parameter) {
   const char* who = __PRETTY_FUNCTION__;
 
-  JsonVariantConst clock_pin = parameter[F(PARAM_I2CADAPTER_CLOCK)];
+  JsonVariantConst clock_pin = parameter[F("scl")];
   if (!clock_pin.is<int>()) {
-    Services::getMqtt().sendError(
-        who, F("Missing property: " PARAM_I2CADAPTER_CLOCK " (int)"));
+    Services::getMqtt().sendError(who, F("Missing property: scl (int)"));
     setInvalid();
     return;
   }
 
-  JsonVariantConst data_pin = parameter[F(PARAM_I2CADAPTER_DATA)];
+  JsonVariantConst data_pin = parameter[F("sda")];
   if (!data_pin.is<int>()) {
-    Services::getMqtt().sendError(
-        who, F("Missing property: " PARAM_I2CADAPTER_DATA " (int)"));
+    Services::getMqtt().sendError(who, F("Missing property: sda (int)"));
     setInvalid();
     return;
   }

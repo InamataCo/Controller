@@ -8,8 +8,7 @@
  * \copyright Apache License 2.0
  */
 
-#ifndef BERND_BOX_CONFIGURATION_H
-#define BERND_BOX_CONFIGURATION_H
+#pragma once
 
 #include <chrono>
 
@@ -27,5 +26,3 @@ const char* client_id = "bernd_box_1";
 const uint mqtt_connection_attempts = 3;  // Maximum attempts before aborting
 
 }  // namespace bernd_box
-
-#endif

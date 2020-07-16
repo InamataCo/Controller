@@ -6,8 +6,7 @@
  * \copyright Apache License 2.0
  */
 
-#ifndef BERND_BOX_IO_H
-#define BERND_BOX_IO_H
+#pragma once
 
 #include <Arduino.h>
 #include <ArduinoJson.h>
@@ -306,5 +305,3 @@ class Io {
 };
 
 }  // namespace bernd_box
-
-#endif

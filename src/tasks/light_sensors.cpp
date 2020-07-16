@@ -59,7 +59,7 @@ void LightSensors::mqttCallback(char* topic, uint8_t* payload,
   const char* who = __PRETTY_FUNCTION__;
 
   // Try to deserialize the message
-  DynamicJsonDocument doc(BB_MQTT_JSON_PAYLOAD_SIZE);
+  DynamicJsonDocument doc(BB_JSON_PAYLOAD_SIZE);
   const DeserializationError error = deserializeJson(doc, payload, length);
   if (error) {
     mqtt_.sendError(who, String(F("Deserialize failed: ")) + error.c_str());
@@ -88,7 +88,7 @@ void LightSensors::mqttCallback(char* topic, uint8_t* payload,
 Result LightSensors::findSensors(const JsonObjectConst& doc) {
   const char* who = __PRETTY_FUNCTION__;
 
-  DynamicJsonDocument sensors_doc(BB_MQTT_JSON_PAYLOAD_SIZE);
+  DynamicJsonDocument sensors_doc(BB_JSON_PAYLOAD_SIZE);
   const JsonArray& sensors = sensors_doc.createNestedArray(F("result"));
 
   // Check all I2C interfaces if a device
@@ -203,6 +203,8 @@ Result LightSensors::addSensor(const JsonObjectConst& doc) {
       mqtt_.sendError(who, F("Cannot find "));
     }
   }
+
+  return Result::kSuccess;
   // MAX44009 library has to be updated to support setting the TwoWire interface
   //  else if (type == sensor_types_.max44009) {
   //   io_.max44009s_[id];

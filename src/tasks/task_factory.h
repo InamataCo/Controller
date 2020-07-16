@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "base_task.h"
-#include "managers/mqtt.h"
+#include "managers/server.h"
 
 namespace bernd_box {
 namespace tasks {
@@ -29,9 +29,9 @@ class TaskFactory {
    * In order to delete tasks after they have ended, the task factory acts as
    * a task itself to delete the task object after it has been disabled.
    *
-   * @param mqtt MQTT object to send success and error notifications
+   * @param server Server object to send success and error notifications
    */
-  TaskFactory(Mqtt& mqtt, Scheduler& scheduler);
+  TaskFactory(Server& server, Scheduler& scheduler);
   virtual ~TaskFactory() = default;
 
   /**
@@ -51,15 +51,15 @@ class TaskFactory {
    */
   BaseTask* createTask(const JsonObjectConst& parameters);
 
-  const std::vector<String> getTaskNames();
+  const std::vector<String> getFactoryNames();
 
  private:
 
   /// Callback map of the sub-factories to create new task objects
   static std::map<String, Factory> factories_;
 
-  /// Reference to the MQTT interface
-  Mqtt& mqtt_;
+  /// Reference to the Server interface
+  Server& server_;
   /// Refernce to the Scheduler
   Scheduler& scheduler_;
 };
