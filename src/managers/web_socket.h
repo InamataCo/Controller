@@ -30,8 +30,13 @@ class WebSocket : public Server, private WebSocketsClient {
   WebSocket(std::function<std::vector<String>()> get_peripheral_names,
             Server::Callback peripheral_controller_callback,
             std::function<std::vector<String>()> get_task_names,
-            Server::Callback task_controller_callback);
+            Server::Callback task_controller_callback,
+            const char* core_domain,
+            const char* ws_token,
+            const char* root_cas);
   virtual ~WebSocket() = default;
+
+  const String& type();
 
   bool isConnected() final;
   bool connect() final;
@@ -51,6 +56,7 @@ class WebSocket : public Server, private WebSocketsClient {
   
  private:
   void handleEvent(WStype_t type, uint8_t* payload, size_t length);
+  void handleData(const uint8_t* payload, size_t length);
   void hexdump(const void* mem, uint32_t len, uint8_t cols = 16);
 
   bool is_setup_ = false;
@@ -60,7 +66,10 @@ class WebSocket : public Server, private WebSocketsClient {
   std::function<std::vector<String>()> get_task_names_;
   Callback task_controller_callback_;
 
-  static const char* dst_ca_;
+  const char* core_domain_;
+  const char* controller_path_ = "/ws-api/v1/farms/controllers/";
+  const char* ws_token_;
+  const char* root_cas_;
 };
 
 }  // namespace bernd_box

@@ -19,7 +19,7 @@ namespace dummy {
 class DummyPeripheral : public Peripheral {
  public:
   DummyPeripheral();
-  virtual ~DummyPeripheral() = default;
+  virtual ~DummyPeripheral();
 
   const String& getType() final;
   static const String& type();

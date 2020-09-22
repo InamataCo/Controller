@@ -2,6 +2,8 @@
 
 namespace bernd_box {
 
+Network& Services::getNetwork() { return network_; }
+
 peripheral::PeripheralController& Services::getPeripheralController() {
   return peripheral_controller_;
 }
@@ -11,6 +13,8 @@ Mqtt& Services::getMqtt() { return mqtt_; }
 Server& Services::getServer() { return web_socket_; }
 
 Scheduler& Services::getScheduler() { return scheduler_; }
+
+Network Services::network_{bernd_box::access_points, bernd_box::core_domain, bernd_box::root_cas};
 
 Mqtt Services::mqtt_{
     wifi_client_,
@@ -26,7 +30,10 @@ WebSocket Services::web_socket_{
     std::bind(&peripheral::PeripheralController::handleCallback,
               &peripheral_controller_, _1),
     std::bind(&tasks::TaskFactory::getFactoryNames, &task_factory_),
-    std::bind(&tasks::TaskController::handleCallback, &task_controller_, _1)};
+    std::bind(&tasks::TaskController::handleCallback, &task_controller_, _1),
+    bernd_box::core_domain,
+    bernd_box::ws_token,
+    bernd_box::root_cas};
 
 WiFiClient Services::wifi_client_;
 

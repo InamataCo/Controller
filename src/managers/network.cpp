@@ -2,43 +2,39 @@
 
 namespace bernd_box {
 
-Network::Network(const char* ssid, const char* password)
-    : ssid_(ssid),
-      password_(password),
-      connect_wait_duration_(std::chrono::milliseconds(500)) {
-  wiFiMulti_.addAP(ssid_, password_);
+Network::Network(std::initializer_list<AccessPoint>& access_points,
+                 const char* core_domain, const char* root_cas)
+    : access_points_(access_points),
+      connect_wait_duration_(std::chrono::milliseconds(500)),
+      core_domain_(core_domain),
+      root_cas_(root_cas) {
+  for (const AccessPoint& access_point : access_points_) {
+    wiFiMulti_.addAP(String(access_point.ssid).c_str(),
+                     String(access_point.password).c_str());
+  }
+  if(root_cas_ != nullptr) {
+    ping_url_ = String("https://") + core_domain_ + ping_path_;
+  } else {
+    ping_url_ = String("http://") + core_domain_ + ping_path_;
+  }
 }
 
 bool Network::connect(std::chrono::duration<int> timeout) {
-  Serial.print(F("Network::connect: Connecting to "));
-  Serial.println(ssid_);
+  Serial.println(F("Network::connect: Searching for the following networks:"));
+  for (const AccessPoint& access_point : access_points_) {
+    Serial.printf("\t%s\n", String(access_point.ssid).c_str());
+  }
 
+  const std::chrono::milliseconds wifi_connect_start(millis());
   while (wiFiMulti_.run() != WL_CONNECTED) {
-    delay(100);
-    Serial.print(".");
-  }
-  Serial.println();
-
-  std::chrono::milliseconds total_wait_time(0);
-
-  // Attempt to connect until timeout is reached
-  Serial.print("\t");
-  while (WiFi.status() != WL_CONNECTED && total_wait_time < timeout) {
-    delay(std::chrono::duration_cast<std::chrono::milliseconds>(
-              connect_wait_duration_)
-              .count());
-    total_wait_time += connect_wait_duration_;
-    Serial.print(".");
-  }
-  Serial.println();
-
-  bool connected = isConnected();
-  if (connected) {
-    Serial.print("\tConnected! IP address is ");
-    Serial.println(WiFi.localIP());
+    if (std::chrono::milliseconds(millis()) - wifi_connect_start > timeout) {
+      return false;
+    }
   }
 
-  return connected;
+  Serial.print("\tConnected! IP address is ");
+  Serial.println(WiFi.localIP());
+  return true;
 }
 
 String Network::pingSdgServer() {
@@ -59,7 +55,11 @@ String Network::pingSdgServer() {
   serializeJson(ping_json, ping_buf.data(), ping_buf.size());
 
   // Connect to the SDG server with the certificate of the root CA
-  httpClient_.begin(ping_url_, root_ca_);
+  if(root_cas_) {
+    httpClient_.begin(ping_url_, root_cas_);
+  } else {
+    httpClient_.begin(core_domain_, 8000, ping_path_);
+  }
   httpClient_.addHeader(F("Content-Type"), F("application/json"));
 
   // Tell the server our UUID and MAC address. With the request our external
@@ -85,7 +85,11 @@ String Network::pingSdgServer() {
 
 String Network::getCoordinatorLocalIpAddress() {
   // Connect to the SDG server with the certificate of the root CA
-  httpClient_.begin(ping_url_, root_ca_);
+  if(root_cas_) {
+    httpClient_.begin(ping_url_, root_cas_);
+  } else {
+    httpClient_.begin(ping_url_);
+  }
   httpClient_.addHeader(F("Content-Type"), F("application/json"));
 
   // Send a GET request to the server to get the coordinator's IP address

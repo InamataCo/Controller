@@ -15,7 +15,7 @@ class CheckConnectivity : public Task {
   const std::chrono::milliseconds default_period_{200};
 
  public:
-  CheckConnectivity(Scheduler* scheduler, Network& network,
+  CheckConnectivity(Scheduler* scheduler,
                     const std::chrono::seconds wifi_connect_timeout,
                     const uint mqtt_connection_attempts);
   virtual ~CheckConnectivity();

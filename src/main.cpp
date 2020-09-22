@@ -34,7 +34,6 @@
 Scheduler& scheduler = bernd_box::Services::getScheduler();
 
 // bernd_box::Io io(bernd_box::Services::getMqtt());
-bernd_box::Network network(bernd_box::ssid, bernd_box::password);
 
 //----------------------------------------------------------------------------
 // TaskScheduler tasks and report list
@@ -48,7 +47,7 @@ bernd_box::Network network(bernd_box::ssid, bernd_box::password);
 };*/
 
 bernd_box::tasks::CheckConnectivity checkConnectivity(
-    &scheduler, network, bernd_box::wifi_connect_timeout,
+    &scheduler, bernd_box::wifi_connect_timeout,
     bernd_box::mqtt_connection_attempts);
 /*bernd_box::tasks::DallasTemperature dallasTemperatureTask(
     &scheduler, io, bernd_box::Services::getMqtt());
@@ -80,13 +79,6 @@ void setup() {
 
   checkConnectivity.enable();
   systemMonitorTask.enable();
-
-  // Try to configure the IO devices, else restart
-  // if (io.init() != bernd_box::Result::kSuccess) {
-  //   Serial.println(F("IO: Initialization failed. Restarting"));
-  //   delay(1000);
-  //   ESP.restart();
-  // }
 
   // const std::set<String>& get_value_types =
   //     bernd_box::peripheral::capabilities::GetValue::getTypes();

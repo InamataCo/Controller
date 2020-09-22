@@ -4,7 +4,9 @@
 #include <WiFiClient.h>
 #include <WiFiClientSecure.h>
 
+#include "configuration.h"
 #include "managers/mqtt.h"
+#include "managers/network.h"
 #include "managers/server.h"
 #include "managers/web_socket.h"
 #include "peripheral/peripheral_controller.h"
@@ -22,12 +24,14 @@ namespace bernd_box {
  */
 class Services {
  public:
+  static Network& getNetwork();
   static Mqtt& getMqtt();
   static Server& getServer();
   static peripheral::PeripheralController& getPeripheralController();
   static Scheduler& getScheduler();
 
  private:
+  static Network network_;
   static Mqtt mqtt_;
   static WebSocket web_socket_;
   static WiFiClient wifi_client_;

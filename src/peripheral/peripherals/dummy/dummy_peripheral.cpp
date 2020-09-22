@@ -5,7 +5,9 @@ namespace peripheral {
 namespace peripherals {
 namespace dummy {
 
-DummyPeripheral::DummyPeripheral() {}
+DummyPeripheral::DummyPeripheral() { Serial.println("Creating DummyPeripheral"); }
+
+DummyPeripheral::~DummyPeripheral() { Serial.println("Deleting DummyPeripheral"); }
 
 const String& DummyPeripheral::getType() { return type(); }
 

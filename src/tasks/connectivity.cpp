@@ -4,11 +4,10 @@ namespace bernd_box {
 namespace tasks {
 
 CheckConnectivity::CheckConnectivity(
-    Scheduler* scheduler, Network& network,
-    const std::chrono::seconds wifi_connect_timeout,
+    Scheduler* scheduler, const std::chrono::seconds wifi_connect_timeout,
     const uint mqtt_connection_attempts)
     : Task(scheduler),
-      network_(network),
+      network_(Services::getNetwork()),
       mqtt_(Services::getMqtt()),
       server_(Services::getServer()),
       wifi_connect_timeout_(wifi_connect_timeout),
@@ -46,14 +45,14 @@ bool CheckConnectivity::checkNetwork() {
     }
 
     // Contact the server. If it fails there is something wrong. Do not proceed.
-    // String response = network_.pingSdgServer();
-    // if (response.isEmpty()) {
-    //   Serial.println(
-    //       F("CheckConnectivity::Callback: Failed to ping the server.\n"
-    //         "Restarting in 10s"));
-    //   delay(10000);
-    //   ESP.restart();
-    // }
+    String response = network_.pingSdgServer();
+    if (response.isEmpty()) {
+      Serial.println(
+          F("CheckConnectivity::Callback: Failed to ping the server.\n"
+            "Restarting in 10s"));
+      delay(10000);
+      ESP.restart();
+    }
   }
 
   return true;

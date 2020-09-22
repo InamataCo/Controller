@@ -5,17 +5,32 @@ namespace bernd_box {
 WebSocket::WebSocket(std::function<std::vector<String>()> get_peripheral_names,
                      Server::Callback peripheral_controller_callback,
                      std::function<std::vector<String>()> get_task_names,
-                     Server::Callback task_controller_callback)
+                     Server::Callback task_controller_callback,
+                     const char* core_domain,
+                     const char* ws_token,
+                     const char* root_cas)
     : get_peripheral_names_(get_peripheral_names),
       peripheral_controller_callback_(peripheral_controller_callback),
       get_task_names_(get_task_names),
-      task_controller_callback_(task_controller_callback) {}
+      task_controller_callback_(task_controller_callback),
+      core_domain_(core_domain),
+      ws_token_(ws_token),
+      root_cas_(root_cas) {}
+
+const String& WebSocket::type() {
+  static const String name{"WebSocket"};
+  return name;
+}
 
 bool WebSocket::isConnected() { return WebSocketsClient::isConnected(); }
 
 bool WebSocket::connect() {
   if (!is_setup_) {
-    beginSslWithCA("echo.websocket.org", 443, "/", dst_ca_);
+    if(root_cas_) {
+      beginSslWithCA(core_domain_, 443, controller_path_, root_cas_, ws_token_);
+    } else {
+      begin(core_domain_, 8000, controller_path_, ws_token_);
+    }
     onEvent(std::bind(&WebSocket::handleEvent, this, _1, _2, _3));
     setReconnectInterval(5000);
   }
@@ -74,6 +89,7 @@ void WebSocket::send(const String& name, const char* value, size_t length) {
   delay(10000);
   ESP.restart();
 }
+
 void WebSocket::sendRegister() {
   DynamicJsonDocument doc(BB_JSON_PAYLOAD_SIZE);
 
@@ -113,42 +129,49 @@ void WebSocket::sendRegister() {
   sendTXT(register_buf.data(), n);
 }
 void WebSocket::sendError(const String& who, const String& message) {
-  Serial.print(F("Unimplemented Function: "));
-  Serial.println(F(__PRETTY_FUNCTION__));
-  delay(10000);
-  ESP.restart();
+  Serial.println(message);
+
+  DynamicJsonDocument doc(BB_JSON_PAYLOAD_SIZE);
+
+  // Use ther error message type
+  doc["type"] = "err";
+
+  // Place the error message
+  doc["message"] = message.c_str();
+
+  std::vector<char> register_buf = std::vector<char>(measureJson(doc) + 1);
+  size_t n = serializeJson(doc, register_buf.data(), register_buf.size());
+
+  sendTXT(register_buf.data(), n);
 }
 void WebSocket::sendError(const ErrorResult& error, const String& trace_id) {
-  Serial.print(F("Unimplemented Function: "));
-  Serial.println(F(__PRETTY_FUNCTION__));
-  delay(10000);
-  ESP.restart();
+  Serial.print("who: ");
+  Serial.println(error.who_);
+  Serial.print("detail: ");
+  Serial.println(error.detail_);
+
+  sendError(error.who_, error.detail_);
 }
 
 void WebSocket::handleEvent(WStype_t type, uint8_t* payload, size_t length) {
   switch (type) {
-    case WStype_DISCONNECTED:
+    case WStype_DISCONNECTED: {
       Serial.printf("WebSocket::HandleEvent: Disconnected!\n");
-      break;
+    } break;
     case WStype_CONNECTED: {
       Serial.printf("WebSocket::HandleEvent: Connected to url: %s\n", payload);
-
-      // send message to server when Connected
-      sendTXT("WebSocket::HandleEvent: Connected");
     } break;
-    case WStype_TEXT:
+    case WStype_TEXT: {
       Serial.printf("WebSocket::HandleEvent: get text: %s\n", payload);
-
-      // send message to server
-      // webSocket.sendTXT("message here");
-      break;
-    case WStype_BIN:
+      handleData(payload, length);
+    } break;
+    case WStype_BIN: {
       Serial.printf("WebSocket::HandleEvent: get binary length: %u\n", length);
       hexdump(payload, length);
 
       // send data to server
       // webSocket.sendBIN(payload, length);
-      break;
+    } break;
     case WStype_ERROR:
     case WStype_FRAGMENT_TEXT_START:
     case WStype_FRAGMENT_BIN_START:
@@ -158,6 +181,22 @@ void WebSocket::handleEvent(WStype_t type, uint8_t* payload, size_t length) {
     case WStype_PONG:
       break;
   }
+}
+
+void WebSocket::handleData(const uint8_t* payload, size_t length) {
+  const __FlashStringHelper* who = F(__PRETTY_FUNCTION__);
+
+  // Deserialize the JSON object into allocated memory
+  DynamicJsonDocument doc(BB_JSON_PAYLOAD_SIZE);
+  const DeserializationError error = deserializeJson(doc, payload, length);
+  if (error) {
+    sendError(who, String(F("Deserialize failed: ")) + error.c_str());
+    return;
+  }
+
+  // Pass the message to the peripheral and task handlers
+  peripheral_controller_callback_(doc.as<JsonObjectConst>());
+  task_controller_callback_(doc.as<JsonObjectConst>());
 }
 
 void WebSocket::hexdump(const void* mem, uint32_t len, uint8_t cols) {
@@ -173,34 +212,5 @@ void WebSocket::hexdump(const void* mem, uint32_t len, uint8_t cols) {
   }
   Serial.printf("\n");
 }
-
-const char* WebSocket::dst_ca_ =
-    "-----BEGIN CERTIFICATE-----\n"
-    "MIIEkjCCA3qgAwIBAgIQCgFBQgAAAVOFc2oLheynCDANBgkqhkiG9w0BAQsFADA/\n"
-    "MSQwIgYDVQQKExtEaWdpdGFsIFNpZ25hdHVyZSBUcnVzdCBDby4xFzAVBgNVBAMT\n"
-    "DkRTVCBSb290IENBIFgzMB4XDTE2MDMxNzE2NDA0NloXDTIxMDMxNzE2NDA0Nlow\n"
-    "SjELMAkGA1UEBhMCVVMxFjAUBgNVBAoTDUxldCdzIEVuY3J5cHQxIzAhBgNVBAMT\n"
-    "GkxldCdzIEVuY3J5cHQgQXV0aG9yaXR5IFgzMIIBIjANBgkqhkiG9w0BAQEFAAOC\n"
-    "AQ8AMIIBCgKCAQEAnNMM8FrlLke3cl03g7NoYzDq1zUmGSXhvb418XCSL7e4S0EF\n"
-    "q6meNQhY7LEqxGiHC6PjdeTm86dicbp5gWAf15Gan/PQeGdxyGkOlZHP/uaZ6WA8\n"
-    "SMx+yk13EiSdRxta67nsHjcAHJyse6cF6s5K671B5TaYucv9bTyWaN8jKkKQDIZ0\n"
-    "Z8h/pZq4UmEUEz9l6YKHy9v6Dlb2honzhT+Xhq+w3Brvaw2VFn3EK6BlspkENnWA\n"
-    "a6xK8xuQSXgvopZPKiAlKQTGdMDQMc2PMTiVFrqoM7hD8bEfwzB/onkxEz0tNvjj\n"
-    "/PIzark5McWvxI0NHWQWM6r6hCm21AvA2H3DkwIDAQABo4IBfTCCAXkwEgYDVR0T\n"
-    "AQH/BAgwBgEB/wIBADAOBgNVHQ8BAf8EBAMCAYYwfwYIKwYBBQUHAQEEczBxMDIG\n"
-    "CCsGAQUFBzABhiZodHRwOi8vaXNyZy50cnVzdGlkLm9jc3AuaWRlbnRydXN0LmNv\n"
-    "bTA7BggrBgEFBQcwAoYvaHR0cDovL2FwcHMuaWRlbnRydXN0LmNvbS9yb290cy9k\n"
-    "c3Ryb290Y2F4My5wN2MwHwYDVR0jBBgwFoAUxKexpHsscfrb4UuQdf/EFWCFiRAw\n"
-    "VAYDVR0gBE0wSzAIBgZngQwBAgEwPwYLKwYBBAGC3xMBAQEwMDAuBggrBgEFBQcC\n"
-    "ARYiaHR0cDovL2Nwcy5yb290LXgxLmxldHNlbmNyeXB0Lm9yZzA8BgNVHR8ENTAz\n"
-    "MDGgL6AthitodHRwOi8vY3JsLmlkZW50cnVzdC5jb20vRFNUUk9PVENBWDNDUkwu\n"
-    "Y3JsMB0GA1UdDgQWBBSoSmpjBH3duubRObemRWXv86jsoTANBgkqhkiG9w0BAQsF\n"
-    "AAOCAQEA3TPXEfNjWDjdGBX7CVW+dla5cEilaUcne8IkCJLxWh9KEik3JHRRHGJo\n"
-    "uM2VcGfl96S8TihRzZvoroed6ti6WqEBmtzw3Wodatg+VyOeph4EYpr/1wXKtx8/\n"
-    "wApIvJSwtmVi4MFU5aMqrSDE6ea73Mj2tcMyo5jMd6jmeWUHK8so/joWUoHOUgwu\n"
-    "X4Po1QYz+3dszkDqMp4fklxBwXRsW10KXzPMTZ+sOPAveyxindmjkW8lGy+QsRlG\n"
-    "PfZ+G6Z6h7mjem0Y+iWlkYcV4PIWL1iwBi8saCbGS5jN2p8M+X+Q7UNKEkROb3N6\n"
-    "KOqkqm57TH2H3eDJAkSnh6/DNFu0Qg==\n"
-    "-----END CERTIFICATE-----\n";
 
 }  // namespace bernd_box

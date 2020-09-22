@@ -11,18 +11,23 @@
 #pragma once
 
 #include <chrono>
+#include <initializer_list>
+
+#include "managers/types.h"
 
 namespace bernd_box {
 
 // WiFi
-// const char* ssid = "SDGintern";
-// const char* password = "8037473183859244";
-const char* ssid = "PROTOHAUS";
-const char* password = "PH-Wlan-2016#";
-const std::chrono::seconds wifi_connect_timeout(20);
+extern std::initializer_list<AccessPoint> access_points;
+extern const std::chrono::seconds wifi_connect_timeout;
 
 // MQTT
-const char* client_id = "bernd_box_1";
-const uint mqtt_connection_attempts = 3;  // Maximum attempts before aborting
+extern const char* client_id;
+extern const uint mqtt_connection_attempts;  // Maximum attempts before aborting
+
+// Server certificate authorities TLS certificates
+extern const char* core_domain;
+extern const char* ws_token;
+extern const char* root_cas;
 
 }  // namespace bernd_box

@@ -40,7 +40,7 @@ class NeoPixel : public Peripheral, public capabilities::LedStrip {
   void turnOff() final;
 
  private:
-  static std::shared_ptr<Peripheral> factory(const JsonObjectConst& parameter);
+  static std::shared_ptr<Peripheral> factory(const JsonObjectConst& parameters);
   static bool registered_;
   static bool capability_led_strip_;
 
