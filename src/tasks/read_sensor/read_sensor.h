@@ -18,16 +18,16 @@ class ReadSensor : public GetValueTask {
   ReadSensor(const JsonObjectConst& parameters, Scheduler& scheduler);
   virtual ~ReadSensor() = default;
 
-  const __FlashStringHelper* getType() final;
-  static const __FlashStringHelper* type();
+  const String& getType() final;
+  static const String& type();
 
   bool OnEnable() final;
   bool Callback() final;
 
  private:
   static bool registered_;
-  static BaseTask* factory(
-      const JsonObjectConst& parameters, Scheduler& scheduler);
+  static BaseTask* factory(const JsonObjectConst& parameters,
+                           Scheduler& scheduler);
 };
 
 }  // namespace tasks

@@ -54,9 +54,9 @@ class TaskFactory {
   const std::vector<String> getFactoryNames();
 
  private:
-
-  /// Callback map of the sub-factories to create new task objects
-  static std::map<String, Factory> factories_;
+   
+  /// Get the callback map of the sub-factories to create new task objects
+  static std::map<String, Factory>& getFactories();
 
   /// Reference to the Server interface
   Server& server_;

@@ -18,23 +18,24 @@ GetValueTask::GetValueTask(const JsonObjectConst& parameters,
   }
 
   // Search for the peripheral for the given name
-  auto periperhy =
-      Services::getPeripheralController().getPeripheral(peripheral_name.as<String>());
-  if (!periperhy) {
-    Services::getMqtt().sendError(who, String(F("Could not find peripheral: ")) +
-                                           peripheral_name.as<String>());
+  auto periperhal = Services::getPeripheralController().getPeripheral(
+      peripheral_name.as<String>());
+  if (!periperhal) {
+    Services::getMqtt().sendError(who,
+                                  String(F("Could not find peripheral: ")) +
+                                      peripheral_name.as<String>());
     setInvalid();
     return;
   }
 
   // Check that the peripheral supports the GetValue interface capability
   peripheral_ =
-      std::dynamic_pointer_cast<peripheral::capabilities::GetValue>(periperhy);
+      std::dynamic_pointer_cast<peripheral::capabilities::GetValue>(periperhal);
   if (!peripheral_) {
     Services::getMqtt().sendError(
         who, String(F("GetValue capability not supported: ")) +
                  peripheral_name.as<String>() + String(F(" is a ")) +
-                 periperhy->getType());
+                 periperhal->getType());
     setInvalid();
     return;
   }

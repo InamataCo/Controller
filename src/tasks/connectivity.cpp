@@ -45,14 +45,14 @@ bool CheckConnectivity::checkNetwork() {
     }
 
     // Contact the server. If it fails there is something wrong. Do not proceed.
-    String response = network_.pingSdgServer();
-    if (response.isEmpty()) {
-      Serial.println(
-          F("CheckConnectivity::Callback: Failed to ping the server.\n"
-            "Restarting in 10s"));
-      delay(10000);
-      ESP.restart();
-    }
+    // String response = network_.pingSdgServer();
+    // if (response.isEmpty()) {
+    //   Serial.println(
+    //       F("CheckConnectivity::Callback: Failed to ping the server.\n"
+    //         "Restarting in 10s"));
+    //   delay(10000);
+    //   ESP.restart();
+    // }
   }
 
   return true;

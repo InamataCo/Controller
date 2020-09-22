@@ -57,11 +57,11 @@ class TaskController {
   const __FlashStringHelper* stop_command_name_ = F("stop");
   const __FlashStringHelper* status_command_name_ = F("status");
 
-  const __FlashStringHelper* task_type_system_task_ = F("SystemTask");
+  static const String task_type_system_task_;
 
  private:
   Task* findTask(unsigned int id);
-  const __FlashStringHelper* getTaskType(Task* task);
+  const String& getTaskType(Task* task);
 
   Scheduler& scheduler_;
   TaskFactory& factory_;

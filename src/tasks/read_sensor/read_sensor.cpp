@@ -10,9 +10,12 @@ ReadSensor::ReadSensor(const JsonObjectConst& parameters, Scheduler& scheduler)
   enable();
 }
 
-const __FlashStringHelper* ReadSensor::getType() { return type(); }
+const String& ReadSensor::getType() { return type(); }
 
-const __FlashStringHelper* ReadSensor::type() { return F("ReadSensor"); }
+const String& ReadSensor::type() {
+  static const String name{"ReadSensor"};
+  return name;
+}
 
 bool ReadSensor::OnEnable() { return true; }
 
@@ -30,8 +33,8 @@ bool ReadSensor::Callback() {
 
 bool ReadSensor::registered_ = TaskFactory::registerTask(type(), factory);
 
-BaseTask* ReadSensor::factory(
-    const JsonObjectConst& parameters, Scheduler& scheduler) {
+BaseTask* ReadSensor::factory(const JsonObjectConst& parameters,
+                              Scheduler& scheduler) {
   auto read_sensor = new ReadSensor(parameters, scheduler);
   if (read_sensor->isValid()) {
     return read_sensor;

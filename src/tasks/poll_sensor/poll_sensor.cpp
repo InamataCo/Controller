@@ -34,9 +34,12 @@ PollSensor::PollSensor(const JsonObjectConst& parameters, Scheduler& scheduler)
   enable();
 }
 
-const __FlashStringHelper* PollSensor::getType() { return type(); }
+const String& PollSensor::getType() { return type(); }
 
-const __FlashStringHelper* PollSensor::type() { return F("PollSensor"); }
+const String& PollSensor::type() {
+  static const String name{"PollSensor"};
+  return name;
+}
 
 bool PollSensor::OnEnable() { return true; }
 

@@ -73,7 +73,7 @@ void TaskController::sendStatus() {
   for (Task* task = scheduler_.iFirst; task; task = task->iNext) {
     JsonObject task_object = tasks_array.createNestedObject();
     task_object["id"] = task->getId();
-    task_object["type"] = getTaskType(task);
+    task_object["type"] = getTaskType(task).c_str();
   }
   server_.send(who, doc);
 }
@@ -87,7 +87,7 @@ Task* TaskController::findTask(unsigned int id) {
   return nullptr;
 }
 
-const __FlashStringHelper* TaskController::getTaskType(Task* task) {
+const String& TaskController::getTaskType(Task* task) {
   BaseTask* base_task = dynamic_cast<BaseTask*>(task);
   if (base_task) {
     return base_task->getType();
@@ -95,6 +95,8 @@ const __FlashStringHelper* TaskController::getTaskType(Task* task) {
     return task_type_system_task_;
   }
 }
+
+const String TaskController::task_type_system_task_{"SystemTask"};
 
 }  // namespace tasks
 }  // namespace bernd_box

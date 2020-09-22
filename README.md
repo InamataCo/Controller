@@ -5,21 +5,45 @@
 This is a controller's typical start up sequence ([serial output](#start-up-output)):
 
 1. Read (or generate if unavailable) the stored UUID
-2. Connect to WiFi
-3. Ping the SDG server with its UUID or MAC
-4. Get the local IP address of the local coordinator
-5. Sync the local clock from an NTP server
-6. Connect to the coordinator's MQTT broker
-7. Register itself and its actions with the coordinator
+2. Connect to one of the stored WiFi APs
+3. Sync the local clock from an NTP server
+4. Connect to the SDG server via a WebSocket
+5. Register its supported peripherals and task types with the SDG server
 
-## Registration
+## WebSocket Actions
 
-The controller sends a JSON doc to the coordinator after connecting to its MQTT broker containing its
+Commands to create an LED and turn it on:
 
-- UUID
-- Action list
+```
+{
+  "type": "cmd",
+  "peripheral": {
+    "add": [
+      {
+        "name": "led_builtin",
+        "type": "LED",
+        "pin": 2
+      }
+    ]
+  }
+}
 
-## Actions
+
+{
+  "type": "cmd",
+  "task": {
+    "create": [
+      {
+        "type": "WriteActuator",
+        "peripheral_name": "led_builtin",
+        "value": 1
+      }
+    ]
+  }
+}
+```
+
+## MQTT Actions (Depreciated, for now)
 
 Actions are commands that can be sent via MQTT for the controllers to perform. It is formatted as:
 
@@ -42,23 +66,25 @@ Temperature is 1-wire interface
 
 ### Start Up Output
 
-    a48b109f-975f-42e2-9962-a6fb752a1b6e
-    WiFi: Disconnected. Attempting to reconnect
-    WiFi: Attempting to connect to HasenbauOben
-    .
-    WiFi: Connected! IP address is 192.168.1.8
-    Send ping to: https://core.staging.openfarming.ai/api/v1/farms/controllers/ping/
-    {"uuid":"a48b109f-975f-42e2-9962-a6fb752a1b6e","wifi_mac_address":"30:AE:A4:45:C1:60"}
-    HTTP response code: 201
-    {"id": "6de4a1cb-8ff6-4d10-80e4-ba760240991c", "name": null, "wifi_mac_address": "30-AE-A4-45-C1-60", "external_ip_address": "112.134.232.78", "controller_type": "UNK"}
-
-    Waiting for NTP time sync:
-    Current time: Wed Dec 25 13:26:34 2019
-    Send ping to: https://core.staging.openfarming.ai/api/v1/farms/controllers/ping/
-    {"coordinator_local_ip_address": "192.168.1.102"}
-    Coordinator's local IP address: 192.168.1.102
-    192.168.1.102:1883
-    MQTT connecting to 192.168.1.102. Try #1
-    MQTT: Connected!
-    List of registered actions:
-            pump
+    eae5aaf9-bf92-414e-8fe8-78a893ee05f7
+    Network::connect: Searching for the following networks:
+            SDGintern
+            PROTOHAUS
+            Connected! IP address is 192.168.0.50
+    Network::setClock: Waiting for NTP time sync
+            .
+    Current time: Tue Sep 22 23:31:40 2020
+    WebSocket::HandleEvent: Connected to url: /ws-api/v1/farms/controllers/
+    Peripheral types:
+            CapacitiveSensor
+            DummyPeripheral
+            InvalidPeripheral
+            LED
+            NeoPixel
+    Task types:
+            AlertSensor
+            DummyTask
+            ReadSensor
+            SetLight
+            WriteActuator
+    CheckConnectivity: Reconnected to server

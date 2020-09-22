@@ -5,9 +5,13 @@ namespace peripheral {
 namespace peripherals {
 namespace dummy {
 
-DummyPeripheral::DummyPeripheral() { Serial.println("Creating DummyPeripheral"); }
+DummyPeripheral::DummyPeripheral() {
+  Serial.println("Creating DummyPeripheral");
+}
 
-DummyPeripheral::~DummyPeripheral() { Serial.println("Deleting DummyPeripheral"); }
+DummyPeripheral::~DummyPeripheral() {
+  Serial.println("Deleting DummyPeripheral");
+}
 
 const String& DummyPeripheral::getType() { return type(); }
 
@@ -55,8 +59,12 @@ BaseTask* DummyTask::factory(const JsonObjectConst& parameters,
   return task;
 }
 
-const __FlashStringHelper* DummyTask::type() { return F("DummyTask"); }
-const __FlashStringHelper* DummyTask::getType() { return type(); }
+const String& DummyTask::type() {
+  static const String name{"DummyTask"};
+  return name;
+}
+
+const String& DummyTask::getType() { return type(); }
 
 }  // namespace tasks
-}
+}  // namespace bernd_box

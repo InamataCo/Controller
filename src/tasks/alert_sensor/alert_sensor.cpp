@@ -56,9 +56,12 @@ AlertSensor::AlertSensor(const JsonObjectConst& parameters,
   enable();
 }
 
-const __FlashStringHelper* AlertSensor::getType() { return type(); }
+const String& AlertSensor::getType() { return type(); }
 
-const __FlashStringHelper* AlertSensor::type() { return F("AlertSensor"); }
+const String& AlertSensor::type() {
+  static const String name{"AlertSensor"};
+  return name;
+}
 
 bool AlertSensor::OnEnable() { return true; }
 
@@ -130,8 +133,8 @@ bool AlertSensor::isFallingThreshold(const float value) {
 
 bool AlertSensor::registered_ = TaskFactory::registerTask(type(), factory);
 
-BaseTask* AlertSensor::factory(
-    const JsonObjectConst& parameters, Scheduler& scheduler) {
+BaseTask* AlertSensor::factory(const JsonObjectConst& parameters,
+                               Scheduler& scheduler) {
   auto alert_sensor = new AlertSensor(parameters, scheduler);
   if (alert_sensor->isValid()) {
     return alert_sensor;

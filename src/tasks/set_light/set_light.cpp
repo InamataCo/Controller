@@ -17,11 +17,12 @@ SetLight::SetLight(const JsonObjectConst& parameters, Scheduler& scheduler)
   }
 
   // Search for the peripheral for the given name
-  auto periperhy =
-      Services::getPeripheralController().getPeripheral(peripheral_name.as<String>());
+  auto periperhy = Services::getPeripheralController().getPeripheral(
+      peripheral_name.as<String>());
   if (!periperhy) {
-    Services::getMqtt().sendError(who, String(F("Could not find peripheral: ")) +
-                                           peripheral_name.as<String>());
+    Services::getMqtt().sendError(who,
+                                  String(F("Could not find peripheral: ")) +
+                                      peripheral_name.as<String>());
     setInvalid();
     return;
   }
@@ -102,9 +103,12 @@ SetLight::SetLight(const JsonObjectConst& parameters, Scheduler& scheduler)
   setIterations(1);
 }
 
-const __FlashStringHelper* SetLight::getType() { return type(); }
+const String& SetLight::getType() { return type(); }
 
-const __FlashStringHelper* SetLight::type() { return F("SetLight"); }
+const String& SetLight::type() {
+  static const String name{"SetLight"};
+  return name;
+}
 
 bool SetLight::OnEnable() {
   if (!peripheral_) {
@@ -124,7 +128,7 @@ bool SetLight::Callback() { return true; }
 bool SetLight::registered_ = TaskFactory::registerTask(type(), factory);
 
 BaseTask* SetLight::factory(const JsonObjectConst& parameters,
-                                            Scheduler& scheduler) {
+                            Scheduler& scheduler) {
   auto alert_sensor = new SetLight(parameters, scheduler);
   if (alert_sensor->isValid()) {
     return alert_sensor;

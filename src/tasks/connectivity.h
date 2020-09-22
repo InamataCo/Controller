@@ -1,5 +1,7 @@
 #pragma once
 
+#include <limits>
+
 #include "TaskSchedulerDeclarations.h"
 #include "managers/io.h"
 #include "managers/mqtt.h"
@@ -38,7 +40,7 @@ class CheckConnectivity : public Task {
   /// The MQTT receive callback is only enabled after the setup is complete
   bool is_setup_;
   /// Last time the internet time was checked
-  long last_time_check_ms;
+  long last_time_check_ms = std::numeric_limits<long>::max();
   /// Check the internet time every 24 hours
   long time_check_duration_ms = 24 * 60 * 60 * 1000;
 };

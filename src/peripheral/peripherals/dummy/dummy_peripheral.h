@@ -42,8 +42,8 @@ class DummyTask : public BaseTask {
   bool Callback() final;
   void OnTaskDisable() final;
 
-  const __FlashStringHelper* getType();
-  static const __FlashStringHelper* type();
+  const String& getType();
+  static const String& type();
   static const String TYPE;
 
  private:

@@ -12,8 +12,8 @@ namespace bernd_box {
 namespace tasks {
 
 /**
- * Abstract class that implements getting a peripheral for a given name from a
- * JSON object via the MQTT interface.
+ * Abstract class that implements getting a peripheral which supports the
+ * GetValue capability for a given name.
  */
 class GetValueTask : public BaseTask {
  public:

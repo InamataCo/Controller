@@ -16,8 +16,8 @@ class AlertSensor : public GetValueTask {
   AlertSensor(const JsonObjectConst& parameters, Scheduler& scheduler);
   virtual ~AlertSensor() = default;
 
-  const __FlashStringHelper* getType() final;
-  static const __FlashStringHelper* type();
+  const String& getType() final;
+  static const String& type();
 
   bool OnEnable() final;
   bool Callback() final;
@@ -60,7 +60,7 @@ class AlertSensor : public GetValueTask {
 
   static bool registered_;
   static BaseTask* factory(const JsonObjectConst& parameters,
-                                           Scheduler& scheduler);
+                           Scheduler& scheduler);
 
   static const std::map<TriggerType, const __FlashStringHelper*>
       trigger_type_strings_;
@@ -76,7 +76,7 @@ class AlertSensor : public GetValueTask {
 
   /// Last measured sensor value
   float last_value_;
-};  // namespace tasks
+};
 
 }  // namespace tasks
 }  // namespace bernd_box

@@ -17,8 +17,8 @@ class SetLight : public BaseTask {
   SetLight(const JsonObjectConst& parameters, Scheduler& scheduler);
   virtual ~SetLight() = default;
 
-  const __FlashStringHelper* getType() final;
-  static const __FlashStringHelper* type();
+  const String& getType() final;
+  static const String& type();
 
 
   bool OnEnable() final;

@@ -14,7 +14,7 @@ class BaseTask : public Task {
   BaseTask(Scheduler& scheduler);
   virtual ~BaseTask() = default;
 
-  virtual const __FlashStringHelper* getType() = 0;
+  virtual const String& getType() = 0;
 
   void OnDisable() final;
   virtual void OnTaskDisable();

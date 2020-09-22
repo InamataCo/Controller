@@ -7,7 +7,7 @@ TaskFactory::TaskFactory(Server& server, Scheduler& scheduler)
     : server_(server), scheduler_(scheduler) {}
 
 bool TaskFactory::registerTask(const String& type, Factory factory) {
-  return factories_.insert({type, factory}).second;
+  return getFactories().insert({type, factory}).second;
 }
 
 BaseTask* TaskFactory::createTask(const JsonObjectConst& parameters) {
@@ -20,8 +20,8 @@ BaseTask* TaskFactory::createTask(const JsonObjectConst& parameters) {
   }
 
   // Check if a factory for the type exists. Then try to create such a task
-  const auto& factory = factories_.find(type);
-  if (factory != factories_.end()) {
+  const auto& factory = getFactories().find(type);
+  if (factory != getFactories().end()) {
     // Create a task via the respective task factory
     return factory->second(parameters, scheduler_);
   }
@@ -33,14 +33,16 @@ BaseTask* TaskFactory::createTask(const JsonObjectConst& parameters) {
 
 const std::vector<String> TaskFactory::getFactoryNames() {
   std::vector<String> names;
-  for(const auto& factory : factories_) {
+  for(const auto& factory : getFactories()) {
     names.push_back(factory.first);
   }
   return names;
 }
 
-
-std::map<String, TaskFactory::Factory> TaskFactory::factories_;
+std::map<String, TaskFactory::Factory>& TaskFactory::getFactories() {
+  static std::map<String, Factory> factories;
+  return factories;
+}
 
 }  // namespace tasks
 }  // namespace bernd_box
