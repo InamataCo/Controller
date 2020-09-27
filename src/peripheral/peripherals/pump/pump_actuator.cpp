@@ -28,18 +28,27 @@ const String& PumpActuator::type() {
   return name;
 }
 
-void PumpActuator::setValue(float value) {
-  int state = std::lround(value);
+void PumpActuator::setValue(capabilities::ValueUnit value_unit) {
+  if (value_unit.unit != String(set_value_unit_)) {
+    Services::getServer().sendError(
+        type(), "Mismatching unit. Got: " + value_unit.unit + " instead of " +
+                    set_value_unit_);
+    return;
+  }
+
+  int state = std::lround(value_unit.value);
 
   if (state == 1) {
     pinMode(pump_pin_, HIGH);
   } else if (state == 0) {
     pinMode(pump_pin_, LOW);
   } else {
-    Services::getServer().sendError(type(),
-                                    String(F("Set invalid value: ")) + value);
+    Services::getServer().sendError(
+        type(), String(F("Set invalid value: ")) + value_unit.value);
   }
 }
+
+const __FlashStringHelper* PumpActuator::set_value_unit_ = F("bool");
 
 }  // namespace pump
 }  // namespace peripherals

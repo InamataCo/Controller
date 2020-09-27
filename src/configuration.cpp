@@ -14,7 +14,8 @@ namespace bernd_box {
 
 // WiFi
 std::initializer_list<AccessPoint> access_points = {
-    {F("ssid"), F("password")}};
+    {F("SDGintern"), F("8037473183859244")},
+    {F("PROTOHAUS"), F("PH-Wlan-2016#")}};
 const std::chrono::seconds wifi_connect_timeout(20);
 
 // MQTT
@@ -22,9 +23,8 @@ const char* client_id = "bernd_box_1";
 const uint mqtt_connection_attempts = 3;  // Maximum attempts before aborting
 
 // Server certificate authorities TLS certificates
-const char* core_domain = "192.168.0.2"; // Use domain name for core service
-const char* ws_token = "token_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
-// Nullptr for non-encrypted HTTP connections
+const char* core_domain = "192.168.0.69";
+const char* ws_token = "token_0b8eb0f583b264bbe9dda31d003140b79e740577";
 const char* root_cas = nullptr;
     // "-----BEGIN CERTIFICATE-----\n"
     // "MIIFazCCA1OgAwIBAgIRAIIQz7DSQONZRGPgu2OCiwAwDQYJKoZIhvcNAQELBQAw\n"

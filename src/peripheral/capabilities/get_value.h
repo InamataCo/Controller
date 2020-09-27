@@ -4,6 +4,8 @@
 
 #include <set>
 
+#include "types.h"
+
 namespace bernd_box {
 namespace peripheral {
 namespace capabilities {
@@ -18,7 +20,7 @@ class GetValue {
    * 
    * \return The unitless value
    */
-  virtual float getValue() = 0;
+  virtual ValueUnit getValue() = 0;
 
   // Type checking
   static bool registerType(const String& type);

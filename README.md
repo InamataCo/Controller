@@ -36,7 +36,8 @@ Commands to create an LED and turn it on:
       {
         "type": "WriteActuator",
         "peripheral_name": "led_builtin",
-        "value": 1
+        "value": 1,
+        "unit": "%"
       }
     ]
   }

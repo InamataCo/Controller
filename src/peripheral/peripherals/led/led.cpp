@@ -34,16 +34,23 @@ const String& Led::type() {
   return name;
 }
 
-void Led::setValue(float value) {
+void Led::setValue(capabilities::ValueUnit value_unit) {
+  if (value_unit.unit != String(set_value_unit_)) {
+    Services::getServer().sendError(
+        type(), "Mismatching unit. Got: " + value_unit.unit + " instead of " +
+                    set_value_unit_);
+    return;
+  }
+
   // Bound value as a percentage between 0 and 1
-  if (value < 0) {
-    value = 0;
-  } else if (value > 1) {
-    value = 1;
+  if (value_unit.value < 0) {
+    value_unit.value = 0;
+  } else if (value_unit.value > 1) {
+    value_unit.value = 1;
   }
 
   const uint max_value = (2 << resolution_) - 1;
-  ledcWrite(led_channel_, value * max_value);
+  ledcWrite(led_channel_, value_unit.value * max_value);
 }
 
 const __FlashStringHelper* Led::led_pin_key_ = F("pin");
@@ -97,10 +104,11 @@ std::shared_ptr<Peripheral> Led::factory(const JsonObjectConst& parameters) {
 
 bool Led::registered_ = PeripheralFactory::registerFactory(type(), factory);
 
-bool Led::capability_set_value_ =
-    capabilities::SetValue::registerType(type());
+bool Led::capability_set_value_ = capabilities::SetValue::registerType(type());
 
 std::bitset<16> Led::busy_led_channels_;
+
+const __FlashStringHelper* Led::set_value_unit_ = F("%");
 
 }  // namespace led
 }  // namespace peripherals

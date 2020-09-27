@@ -28,7 +28,7 @@ class Led : public Peripheral, public capabilities::SetValue {
    * 
    * \param value A value between 0 and 1 sets the percentage brightness
    */
-  void setValue(float value);
+  void setValue(capabilities::ValueUnit value_unit);
 
   /// Name of the parameter to which the pin the LED is connected
   static const __FlashStringHelper* led_pin_key_;
@@ -52,6 +52,7 @@ class Led : public Peripheral, public capabilities::SetValue {
   static std::shared_ptr<Peripheral> factory(const JsonObjectConst& parameters);
   static bool registered_;
   static bool capability_set_value_;
+  static const __FlashStringHelper* set_value_unit_;
 
   /// Marks which LED channels are currently in use
   static std::bitset<16> busy_led_channels_;

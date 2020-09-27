@@ -66,21 +66,21 @@ const String& AlertSensor::type() {
 bool AlertSensor::OnEnable() { return true; }
 
 bool AlertSensor::Callback() {
-  float value = getPeripheral()->getValue();
+  peripheral::capabilities::ValueUnit value_unit = getPeripheral()->getValue();
 
-  if (isRisingThreshold(value)) {
+  if (isRisingThreshold(value_unit.value)) {
     if (trigger_type_ == TriggerType::kRising ||
         trigger_type_ == TriggerType::kEither) {
       sendAlert(TriggerType::kRising);
     }
-  } else if (isFallingThreshold(value)) {
+  } else if (isFallingThreshold(value_unit.value)) {
     if (trigger_type_ == TriggerType::kFalling ||
         trigger_type_ == TriggerType::kEither) {
       sendAlert(TriggerType::kFalling);
     }
   }
 
-  last_value_ = value;
+  last_value_ = value_unit.value;
   return true;
 }
 

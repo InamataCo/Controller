@@ -4,6 +4,8 @@
 
 #include <set>
 
+#include "types.h"
+
 namespace bernd_box {
 namespace peripheral {
 namespace capabilities {
@@ -19,7 +21,7 @@ class SetValue {
    * 
    * \param value The value of the unitless value
    */
-  virtual void setValue(float value) = 0;
+  virtual void setValue(ValueUnit value_unit) = 0;
 
   // Type checking
   static bool registerType(const String& type);

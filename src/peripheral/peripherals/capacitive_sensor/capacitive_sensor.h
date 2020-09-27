@@ -31,7 +31,7 @@ class CapacitiveSensor : public Peripheral,
    * 
    * \return Value of the touch pad sensor
    */
-  float getValue() final;
+  capabilities::ValueUnit getValue() final;
 
   /// Name of parameter for the pin # to measure capacitance
   static const __FlashStringHelper* sense_pin_name_;

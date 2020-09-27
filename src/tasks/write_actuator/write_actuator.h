@@ -29,11 +29,12 @@ class WriteActuator : public BaseTask {
 
   std::shared_ptr<peripheral::capabilities::SetValue> peripheral_;
 
-  float value_;
+  peripheral::capabilities::ValueUnit value_unit_;
 
   // Constructor parameter keys
   const __FlashStringHelper* peripheral_name_key_ = F("peripheral_name");
   const __FlashStringHelper* value_key_ = F("value");
+  const __FlashStringHelper* unit_key_ = F("unit");
 };
 
 }  // namespace tasks

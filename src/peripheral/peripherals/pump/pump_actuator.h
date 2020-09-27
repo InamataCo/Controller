@@ -28,7 +28,7 @@ class PumpActuator : public Peripheral, public capabilities::SetValue {
    * 
    * \param value 1 turns the pump on, 0 turns it off
    */
-  void setValue(float value) final;
+  void setValue(capabilities::ValueUnit value_unit) final;
 
   /// Name of the parameter for the pump to control a pump
   static const __FlashStringHelper* pump_pin_name_;
@@ -37,8 +37,10 @@ class PumpActuator : public Peripheral, public capabilities::SetValue {
   static std::shared_ptr<Peripheral> factory(const JsonObjectConst& parameter);
   static bool registered_;
   static bool capability_set_value_;
+  static const __FlashStringHelper* set_value_unit_;
 
   unsigned int pump_pin_;
+
 };
 
 }  // namespace pump
