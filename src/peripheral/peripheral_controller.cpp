@@ -64,23 +64,23 @@ std::shared_ptr<peripheral::Peripheral> PeripheralController::getPeripheral(
 }
 
 void PeripheralController::handleCallback(const JsonObjectConst& message) {
-  JsonVariantConst peripheral_commands = message[peripheral_command_name_];
+  JsonVariantConst peripheral_commands = message[peripheral_command_key_];
 
   // Handle all add commands
   for (JsonVariantConst add_command :
-       peripheral_commands[add_command_name_].as<JsonArrayConst>()) {
+       peripheral_commands[add_command_key_].as<JsonArrayConst>()) {
     ErrorResult error = add(add_command);
     if (error.is_error()) {
-      server_.sendError(error, message[trace_id_name_].as<String>());
+      server_.sendError(error, message[request_id_key_].as<String>());
     }
   }
 
   // Handle all remove commands
   for (JsonVariantConst remove_command :
-       peripheral_commands[remove_command_name_].as<JsonArrayConst>()) {
+       peripheral_commands[remove_command_key_].as<JsonArrayConst>()) {
     ErrorResult error = remove(remove_command);
     if (error.is_error()) {
-      server_.sendError(error, message[trace_id_name_].as<String>());
+      server_.sendError(error, message[request_id_key_].as<String>());
     }
   }
 }

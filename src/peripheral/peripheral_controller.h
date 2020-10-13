@@ -38,10 +38,10 @@ class PeripheralController {
   std::map<String, std::shared_ptr<Peripheral>> peripherals_;
   PeripheralFactory& peripheral_factory_;
 
-  const __FlashStringHelper* peripheral_command_name_ = F("peripheral");
-  const __FlashStringHelper* trace_id_name_ = F("id");
-  const __FlashStringHelper* add_command_name_ = F("add");
-  const __FlashStringHelper* remove_command_name_ = F("remove");
+  const __FlashStringHelper* peripheral_command_key_ = F("peripheral");
+  const __FlashStringHelper* request_id_key_ = F("request_id");
+  const __FlashStringHelper* add_command_key_ = F("add");
+  const __FlashStringHelper* remove_command_key_ = F("remove");
 };
 
 }  // namespace peripheral

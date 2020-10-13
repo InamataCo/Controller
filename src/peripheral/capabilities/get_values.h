@@ -2,6 +2,7 @@
 
 #include <Arduino.h>
 
+#include <memory>
 #include <set>
 
 #include "types.h"
@@ -10,17 +11,9 @@ namespace bernd_box {
 namespace peripheral {
 namespace capabilities {
 
-/**
- * A capability that allows a value to be returned
- */
-class GetValue {
+class GetValues {
  public:
-  /**
-   * Returns a float value with a unit
-   * 
-   * \return The value and its unit
-   */
-  virtual ValueUnit getValue() = 0;
+  virtual std::vector<ValueUnit> getValues() = 0;
 
   // Type checking
   static bool registerType(const String& type);

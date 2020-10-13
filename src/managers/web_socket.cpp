@@ -6,8 +6,7 @@ WebSocket::WebSocket(std::function<std::vector<String>()> get_peripheral_names,
                      Server::Callback peripheral_controller_callback,
                      std::function<std::vector<String>()> get_task_names,
                      Server::Callback task_controller_callback,
-                     const char* core_domain,
-                     const char* ws_token,
+                     const char* core_domain, const char* ws_token,
                      const char* root_cas)
     : get_peripheral_names_(get_peripheral_names),
       peripheral_controller_callback_(peripheral_controller_callback),
@@ -26,7 +25,7 @@ bool WebSocket::isConnected() { return WebSocketsClient::isConnected(); }
 
 bool WebSocket::connect() {
   if (!is_setup_) {
-    if(root_cas_) {
+    if (root_cas_) {
       beginSslWithCA(core_domain_, 443, controller_path_, root_cas_, ws_token_);
     } else {
       begin(core_domain_, 8000, controller_path_, ws_token_);
@@ -128,6 +127,7 @@ void WebSocket::sendRegister() {
 
   sendTXT(register_buf.data(), n);
 }
+
 void WebSocket::sendError(const String& who, const String& message) {
   Serial.println(message);
 
@@ -144,18 +144,35 @@ void WebSocket::sendError(const String& who, const String& message) {
 
   sendTXT(register_buf.data(), n);
 }
-void WebSocket::sendError(const ErrorResult& error, const String& trace_id) {
-  Serial.print("who: ");
-  Serial.println(error.who_);
-  Serial.print("detail: ");
-  Serial.println(error.detail_);
 
-  sendError(error.who_, error.detail_);
+void WebSocket::sendError(const ErrorResult& error, const String& request_id) {
+  Serial.printf("origin: %s message: %s request_id: %s\n", error.who_.c_str(),
+                error.detail_.c_str(), request_id.c_str());
+
+  DynamicJsonDocument doc(BB_JSON_PAYLOAD_SIZE);
+
+  // Use ther error message type
+  doc["type"] = "err";
+
+  // Where the message originated from
+  doc["context"] = error.who_.c_str();
+
+  // The error itself
+  doc["message"] = error.detail_.c_str();
+
+  // The request ID to enable tracing
+  doc["request_id"] = request_id.c_str();
+
+  std::vector<char> register_buf = std::vector<char>(measureJson(doc) + 1);
+  size_t n = serializeJson(doc, register_buf.data(), register_buf.size());
+
+  sendTXT(register_buf.data(), n);
 }
 
 void WebSocket::handleEvent(WStype_t type, uint8_t* payload, size_t length) {
   switch (type) {
     case WStype_DISCONNECTED: {
+      _lastConnectionFail = millis();
       Serial.printf("WebSocket::HandleEvent: Disconnected!\n");
     } break;
     case WStype_CONNECTED: {

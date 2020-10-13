@@ -51,7 +51,7 @@ class WebSocket : public Server, private WebSocketsClient {
 
   void sendRegister() final;
   void sendError(const String& who, const String& message) final;
-  void sendError(const ErrorResult& error, const String& trace_id = "") final;
+  void sendError(const ErrorResult& error, const String& request_id = "") final;
 
   
  private:

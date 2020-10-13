@@ -9,18 +9,16 @@ bool I2CAdapter::wire_taken = false;
 bool I2CAdapter::wire1_taken = false;
 
 I2CAdapter::I2CAdapter(const JsonObjectConst& parameter) {
-  const char* who = __PRETTY_FUNCTION__;
-
   JsonVariantConst clock_pin = parameter[F("scl")];
   if (!clock_pin.is<int>()) {
-    Services::getMqtt().sendError(who, F("Missing property: scl (int)"));
+    Services::getServer().sendError(type(), F("Missing property: scl (int)"));
     setInvalid();
     return;
   }
 
   JsonVariantConst data_pin = parameter[F("sda")];
   if (!data_pin.is<int>()) {
-    Services::getMqtt().sendError(who, F("Missing property: sda (int)"));
+    Services::getServer().sendError(type(), F("Missing property: sda (int)"));
     setInvalid();
     return;
   }
@@ -32,7 +30,7 @@ I2CAdapter::I2CAdapter(const JsonObjectConst& parameter) {
     taken_variable = &wire1_taken;
     wire_ = &Wire1;
   } else {
-    Services::getMqtt().sendError(who, F("Both wires already taken :("));
+    Services::getServer().sendError(type(), F("Both wires already taken :("));
     setInvalid();
     return;
   }
@@ -56,6 +54,8 @@ std::shared_ptr<Peripheral> I2CAdapter::factory(
     const JsonObjectConst& parameter) {
   return std::make_shared<I2CAdapter>(parameter);
 }
+
+bool I2CAdapter::registered_ = PeripheralFactory::registerFactory(type(), factory);
 
 }  // namespace util
 }  // namespace peripherals

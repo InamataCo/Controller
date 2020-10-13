@@ -1,11 +1,10 @@
 #include "i2c_abstract_peripheral.h"
 
-#include "managers/services.h"
-
 namespace bernd_box {
 namespace peripheral {
 namespace peripherals {
-
+namespace i2c_adapter {
+  
 I2CAbstractPeripheral::I2CAbstractPeripheral(const JsonObjectConst& parameter) {
   const __FlashStringHelper* who = F(__PRETTY_FUNCTION__);
 
@@ -36,6 +35,13 @@ I2CAbstractPeripheral::I2CAbstractPeripheral(const JsonObjectConst& parameter) {
 
 TwoWire* I2CAbstractPeripheral::getWire() { return i2c_adapter_->getWire(); }
 
+bool I2CAbstractPeripheral::isDeviceConnected(uint16_t i2c_address) {
+  getWire()->beginTransmission(i2c_address);
+	byte error = Wire.endTransmission();
+	return error == 0;
+}
+
+}  // namespace i2c_adapter
 }  // namespace peripherals
 }  // namespace peripheral
 }  // namespace bernd_box

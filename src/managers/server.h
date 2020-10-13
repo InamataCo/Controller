@@ -36,6 +36,6 @@ class Server {
 
   virtual void sendRegister() = 0;
   virtual void sendError(const String& who, const String& message) = 0;
-  virtual void sendError(const ErrorResult& error, const String& trace_id = "") = 0;
+  virtual void sendError(const ErrorResult& error, const String& request_id = "") = 0;
 };
 }  // namespace bernd_box
