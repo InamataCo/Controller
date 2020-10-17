@@ -6,19 +6,16 @@ namespace peripherals {
 namespace capacative_sensor {
 
 CapacitiveSensor::CapacitiveSensor(const JsonObjectConst& parameter) {
-  JsonVariantConst sense_pin = parameter[sense_pin_name_];
+  JsonVariantConst sense_pin = parameter[sense_pin_key_];
   if (!sense_pin.is<unsigned int>()) {
-    Services::getServer().sendError(type(), String(F("Missing property: ")) +
-                                                sense_pin_name_ +
-                                                F(" (unsigned int)"));
-    setInvalid();
+    setInvalid(sense_pin_key_error_);
     return;
   }
 
   sense_pin_ = sense_pin;
 }
 
-const String& CapacitiveSensor::getType() { return type(); }
+const String& CapacitiveSensor::getType() const { return type(); }
 
 const String& CapacitiveSensor::type() {
   static const String name{"CapacitiveSensor"};
@@ -30,7 +27,9 @@ capabilities::ValueUnit CapacitiveSensor::getValue() {
                                  "raw"};
 }
 
-const __FlashStringHelper* CapacitiveSensor::sense_pin_name_ = F("sense_pin");
+const __FlashStringHelper* CapacitiveSensor::sense_pin_key_ = F("sense_pin");
+const __FlashStringHelper* CapacitiveSensor::sense_pin_key_error_ =
+    F("Missing property: sense_pin (unsigned int)");
 
 std::shared_ptr<Peripheral> CapacitiveSensor::factory(
     const JsonObjectConst& parameter) {

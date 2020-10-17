@@ -5,43 +5,35 @@ namespace tasks {
 
 PollSensor::PollSensor(const JsonObjectConst& parameters, Scheduler& scheduler)
     : GetValueTask(parameters, scheduler) {
-  const __FlashStringHelper* who = F(__PRETTY_FUNCTION__);
-
   // Get the interval with which to poll the sensor
-  JsonVariantConst interval_ms = parameters[F("interval_ms")];
+  JsonVariantConst interval_ms = parameters[interval_ms_key_];
   if (!interval_ms.is<unsigned int>()) {
-    Services::getMqtt().sendError(
-        who, F("Missing property: interval_ms (unsigned int)"));
-    setInvalid();
+    setInvalid(interval_ms_key_error_);
     return;
   }
 
   setInterval(interval_ms);
 
   // Optionally get the duration for which to poll the sensor [default: forever]
-  JsonVariantConst duration_ms = parameters[F("duration_ms")];
+  JsonVariantConst duration_ms = parameters[duration_ms_key_];
   if (duration_ms.isNull()) {
     setIterations(TASK_FOREVER);
   } else if (duration_ms.is<unsigned int>()) {
     setIterations(duration_ms.as<unsigned int>() / getInterval());
   } else {
-    Services::getMqtt().sendError(
-        who, F("Wrong type for optional property: duration_ms (unsigned int)"));
-    setInvalid();
+    setInvalid(duration_ms_key_error_);
     return;
   }
 
   enable();
 }
 
-const String& PollSensor::getType() { return type(); }
+const String& PollSensor::getType() const { return type(); }
 
 const String& PollSensor::type() {
   static const String name{"PollSensor"};
   return name;
 }
-
-bool PollSensor::OnEnable() { return true; }
 
 bool PollSensor::Callback() {
   DynamicJsonDocument result_doc(BB_JSON_PAYLOAD_SIZE);
@@ -49,9 +41,9 @@ bool PollSensor::Callback() {
 
   const peripheral::capabilities::ValueUnit value_unit =
       getPeripheral()->getValue();
-  result_object[F("value")] = value_unit.value;
-  result_object[F("unit")] = value_unit.unit.c_str();
-  result_object[F("peripheral_name")] = getPeripheralName().c_str();
+  result_object[value_unit.value_key] = value_unit.value;
+  result_object[value_unit.unit_key] = value_unit.unit.c_str();
+  result_object[peripheral_uuid_key_] = getPeripheralUUID().toString();
 
   Services::getMqtt().send(type(), result_doc);
 

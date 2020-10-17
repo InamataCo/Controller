@@ -5,9 +5,9 @@
 
 #include <memory>
 
-#include "managers/services.h"
-#include "peripheral/peripheral.h"
 #include "peripheral/capabilities/led_strip.h"
+#include "peripheral/peripheral.h"
+#include "peripheral/peripheral_factory.h"
 #include "utils/color.h"
 
 namespace bernd_box {
@@ -24,12 +24,12 @@ class NeoPixel : public Peripheral, public capabilities::LedStrip {
   virtual ~NeoPixel() = default;
 
   // Type registration in the peripheral factory
-  const String& getType() final;
+  const String& getType() const final;
   static const String& type();
 
   /**
    * Turns on all LEDs in a strip to a specific color
-   * 
+   *
    * \param color Color of the LEDs
    */
   void turnOn(utils::Color color) final;
@@ -40,6 +40,8 @@ class NeoPixel : public Peripheral, public capabilities::LedStrip {
   void turnOff() final;
 
  private:
+  static String invalidColorEncodingError(const String& color_encoding);
+
   static std::shared_ptr<Peripheral> factory(const JsonObjectConst& parameters);
   static bool registered_;
   static bool capability_led_strip_;
@@ -49,11 +51,12 @@ class NeoPixel : public Peripheral, public capabilities::LedStrip {
   static const uint8_t red_offset_{4};
   static const uint8_t white_offset_{6};
 
-  static struct Keys {
-    const __FlashStringHelper* color_encoding = F("color_encoding");
-    const __FlashStringHelper* led_pin = F("led_pin");
-    const __FlashStringHelper* led_count = F("led_count");
-  } keys_;
+  static const __FlashStringHelper* color_encoding_key_;
+  static const __FlashStringHelper* color_encoding_key_error_;
+  static const __FlashStringHelper* led_pin_key_;
+  static const __FlashStringHelper* led_pin_key_error_;
+  static const __FlashStringHelper* led_count_key_;
+  static const __FlashStringHelper* led_count_key_error_;
 
   uint8_t getColorEncoding(String color_encoding);
   bool cleanColorEncoding(String& color_encoding);

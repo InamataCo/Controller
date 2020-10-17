@@ -7,12 +7,9 @@ namespace pump {
 
 PumpActuator::PumpActuator(const JsonObjectConst& parameter) {
   // Get the pin # for the pump and validate data. Invalidate on error
-  JsonVariantConst pump_pin = parameter[pump_pin_name_];
+  JsonVariantConst pump_pin = parameter[pump_pin_key_];
   if (!pump_pin.is<unsigned int>()) {
-    Services::getServer().sendError(type(), String(F("Missing property: ")) +
-                                                pump_pin_name_ +
-                                                F(" (unsigned int)"));
-    setInvalid();
+    setInvalid(pump_pin_key_error_);
     return;
   }
   pump_pin_ = pump_pin;
@@ -21,7 +18,7 @@ PumpActuator::PumpActuator(const JsonObjectConst& parameter) {
   pinMode(pump_pin_, OUTPUT);
 }
 
-const String& PumpActuator::getType() { return type(); }
+const String& PumpActuator::getType() const { return type(); }
 
 const String& PumpActuator::type() {
   static const String name{"PumpActuator"};
@@ -31,24 +28,25 @@ const String& PumpActuator::type() {
 void PumpActuator::setValue(capabilities::ValueUnit value_unit) {
   if (value_unit.unit != String(set_value_unit_)) {
     Services::getServer().sendError(
-        type(), "Mismatching unit. Got: " + value_unit.unit + " instead of " +
-                    set_value_unit_);
+        type(), value_unit.sourceUnitError(set_value_unit_));
     return;
   }
 
-  int state = std::lround(value_unit.value);
+  float limited_value = std::fmax(0, std::fmin(value_unit.value, 1));
+  int state = std::lround(limited_value);
 
   if (state == 1) {
     pinMode(pump_pin_, HIGH);
   } else if (state == 0) {
     pinMode(pump_pin_, LOW);
-  } else {
-    Services::getServer().sendError(
-        type(), String(F("Set invalid value: ")) + value_unit.value);
   }
 }
 
 const __FlashStringHelper* PumpActuator::set_value_unit_ = F("bool");
+
+const __FlashStringHelper* PumpActuator::pump_pin_key_ = F("pump_pin");
+const __FlashStringHelper* PumpActuator::pump_pin_key_error_ =
+    F("Missing property: pump_pin (unsigned int)");
 
 }  // namespace pump
 }  // namespace peripherals

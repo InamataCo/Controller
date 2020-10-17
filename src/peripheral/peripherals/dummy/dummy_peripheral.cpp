@@ -13,7 +13,7 @@ DummyPeripheral::~DummyPeripheral() {
   Serial.println("Deleting DummyPeripheral");
 }
 
-const String& DummyPeripheral::getType() { return type(); }
+const String& DummyPeripheral::getType() const { return type(); }
 
 const String& DummyPeripheral::type() {
   static const String name{"DummyPeripheral"};
@@ -33,14 +33,10 @@ bool DummyPeripheral::registered_ =
 
 namespace tasks {
 
-const String DummyTask::TYPE = "beStupid";
-
 DummyTask::~DummyTask() { Serial.println("Deleting DummyTask"); }
 
 bool DummyTask::Callback() {
-  const char* who = __PRETTY_FUNCTION__;
   Serial.println("Too dummy");
-  Services::getMqtt().send(who, "I'm too dummy");
   return true;
 }
 
@@ -64,7 +60,7 @@ const String& DummyTask::type() {
   return name;
 }
 
-const String& DummyTask::getType() { return type(); }
+const String& DummyTask::getType() const { return type(); }
 
 }  // namespace tasks
 }  // namespace bernd_box

@@ -6,64 +6,53 @@ namespace tasks {
 AlertSensor::AlertSensor(const JsonObjectConst& parameters,
                          Scheduler& scheduler)
     : GetValueTask(parameters, scheduler) {
-  const __FlashStringHelper* who = F(__PRETTY_FUNCTION__);
-
   // Get the type of trigger [rising, falling, either]
-  JsonVariantConst trigger_type = parameters[F("trigger_type")];
+  JsonVariantConst trigger_type = parameters[trigger_type_key_];
   if (trigger_type.isNull() || !trigger_type.is<char*>()) {
-    Services::getMqtt().sendError(who,
-                                  F("Missing property: trigger_type (string)"));
-    setInvalid();
+    setInvalid(trigger_type_key_error_);
     return;
   }
   setTriggerType(trigger_type.as<String>());
 
   // Get the trigger threshold
-  JsonVariantConst threshold = parameters[F("threshold")];
+  JsonVariantConst threshold = parameters[threshold_key_];
   if (!trigger_type.is<int>()) {
-    Services::getMqtt().sendError(who, F("Missing property: threshold (int)"));
-    setInvalid();
+    setInvalid(threshold_key_error_);
     return;
   }
   threshold_ = threshold;
 
   // Optionally get the interval with which to poll the sensor [default: 100ms]
-  JsonVariantConst interval_ms = parameters[F("interval_ms")];
+  JsonVariantConst interval_ms = parameters[interval_ms_key_];
   if (interval_ms.isNull()) {
     setInterval(std::chrono::milliseconds(default_interval_).count());
   } else if (interval_ms.is<unsigned int>()) {
     setInterval(interval_ms);
   } else {
-    Services::getMqtt().sendError(
-        who, F("Wrong type for optional property: interval_ms (unsigned int)"));
-    setInvalid();
+    setInvalid(interval_ms_key_error_);
     return;
   }
 
   // Optionally get the duration for which to poll the sensor [default: forever]
-  JsonVariantConst duration_ms = parameters[F("duration_ms")];
+  JsonVariantConst duration_ms = parameters[duration_ms_key_];
   if (duration_ms.isNull()) {
     setIterations(TASK_FOREVER);
   } else if (duration_ms.is<unsigned int>()) {
     setIterations(duration_ms.as<unsigned int>() / getInterval());
   } else {
-    Services::getMqtt().sendError(
-        who, F("Wrong type for optional property: duration_ms (unsigned int)"));
-    setInvalid();
+    setInvalid(duration_ms_key_error_);
     return;
   }
 
   enable();
 }
 
-const String& AlertSensor::getType() { return type(); }
+const String& AlertSensor::getType() const { return type(); }
 
 const String& AlertSensor::type() {
   static const String name{"AlertSensor"};
   return name;
 }
-
-bool AlertSensor::OnEnable() { return true; }
 
 bool AlertSensor::Callback() {
   peripheral::capabilities::ValueUnit value_unit = getPeripheral()->getValue();
@@ -105,18 +94,18 @@ bool AlertSensor::sendAlert(TriggerType trigger_type) {
   if (trigger_type == TriggerType::kRising ||
       trigger_type == TriggerType::kFalling) {
     DynamicJsonDocument doc(BB_JSON_PAYLOAD_SIZE);
-    doc[F("threshold")] = threshold_;
+    doc[threshold_key_] = threshold_;
 
     auto trigger_type_string = trigger_type_strings_.find(trigger_type);
     if (trigger_type_string != trigger_type_strings_.end()) {
-      doc[F("trigger_type")] = trigger_type_string->second;
+      doc[trigger_type_key_] = trigger_type_string->second;
     } else {
       return false;
     }
 
-    doc[F("peripheral_name")] = getPeripheralName().c_str();
+    doc[peripheral_uuid_key_] = getPeripheralUUID().toString();
 
-    Services::getMqtt().send(type(), doc);
+    Services::getServer().send(type(), doc);
     return true;
   }
 
@@ -135,12 +124,7 @@ bool AlertSensor::registered_ = TaskFactory::registerTask(type(), factory);
 
 BaseTask* AlertSensor::factory(const JsonObjectConst& parameters,
                                Scheduler& scheduler) {
-  auto alert_sensor = new AlertSensor(parameters, scheduler);
-  if (alert_sensor->isValid()) {
-    return alert_sensor;
-  } else {
-    return nullptr;
-  }
+  return new AlertSensor(parameters, scheduler);
 }
 
 const std::map<AlertSensor::TriggerType, const __FlashStringHelper*>

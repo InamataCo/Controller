@@ -4,9 +4,9 @@
 
 #include <memory>
 
-#include "managers/services.h"
-#include "peripheral/peripheral.h"
 #include "peripheral/capabilities/get_value.h"
+#include "peripheral/peripheral.h"
+#include "peripheral/peripheral_factory.h"
 
 namespace bernd_box {
 namespace peripheral {
@@ -16,25 +16,21 @@ namespace capacative_sensor {
 /**
  * Peripheral to read capacitive sensors
  */
-class CapacitiveSensor : public Peripheral,
-                         public capabilities::GetValue {
+class CapacitiveSensor : public Peripheral, public capabilities::GetValue {
  public:
   CapacitiveSensor(const JsonObjectConst& parameters);
   virtual ~CapacitiveSensor() = default;
 
   // Type registration in the peripheral factory
-  const String& getType() final;
+  const String& getType() const final;
   static const String& type();
 
   /**
    * Read touch pad (values close to 0 mean touch detected)
-   * 
+   *
    * \return Value of the touch pad sensor
    */
   capabilities::ValueUnit getValue() final;
-
-  /// Name of parameter for the pin # to measure capacitance
-  static const __FlashStringHelper* sense_pin_name_;
 
  private:
   static std::shared_ptr<Peripheral> factory(const JsonObjectConst& parameter);
@@ -42,6 +38,10 @@ class CapacitiveSensor : public Peripheral,
   static bool capability_get_value_;
 
   unsigned int sense_pin_;
+
+  /// Name of parameter for the pin # to measure capacitance
+  static const __FlashStringHelper* sense_pin_key_;
+  static const __FlashStringHelper* sense_pin_key_error_;
 };
 
 }  // namespace capacative_sensor

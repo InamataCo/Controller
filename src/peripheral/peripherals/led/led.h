@@ -20,7 +20,7 @@ class Led : public Peripheral, public capabilities::SetValue {
   virtual ~Led();
 
   // Type registration in the peripheral factory
-  const String& getType() final;
+  const String& getType() const final;
   static const String& type();
 
   /**
@@ -29,9 +29,6 @@ class Led : public Peripheral, public capabilities::SetValue {
    * \param value A value between 0 and 1 sets the percentage brightness
    */
   void setValue(capabilities::ValueUnit value_unit);
-
-  /// Name of the parameter to which the pin the LED is connected
-  static const __FlashStringHelper* led_pin_key_;
 
  private:
   /**
@@ -53,6 +50,11 @@ class Led : public Peripheral, public capabilities::SetValue {
   static bool registered_;
   static bool capability_set_value_;
   static const __FlashStringHelper* set_value_unit_;
+
+  /// Name of the parameter to which the pin the LED is connected
+  static const __FlashStringHelper* led_pin_key_;
+  static const __FlashStringHelper* led_pin_key_error_;
+  static const __FlashStringHelper* no_channels_available_error_;
 
   /// Marks which LED channels are currently in use
   static std::bitset<16> busy_led_channels_;

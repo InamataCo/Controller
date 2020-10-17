@@ -15,19 +15,17 @@ bool PeripheralFactory::registerFactory(const String& name, Callback factory) {
 
 std::shared_ptr<Peripheral> PeripheralFactory::createPeripheral(
     const JsonObjectConst& parameter) {
-  const __FlashStringHelper* who = F(__PRETTY_FUNCTION__);
-
-  const JsonVariantConst type = parameter[F("type")];
+  const JsonVariantConst type = parameter[type_key_];
   if (type.isNull() || !type.is<char*>()) {
-    server_.sendError(who, "Missing property: type (string)");
-    return std::make_shared<InvalidPeripheral>();
+    return std::make_shared<InvalidPeripheral>(type_key_error_);
   }
 
   auto factory = getFactories().find(type);
   if (factory != getFactories().end()) {
     return factory->second(parameter);
   } else {
-    return std::make_shared<InvalidPeripheral>();
+    return std::make_shared<InvalidPeripheral>(
+        unknownTypeError(type.as<char*>()));
   }
 }
 
@@ -44,6 +42,16 @@ PeripheralFactory::getFactories() {
   static std::map<const String, Callback> factories;
   return factories;
 }
+
+String PeripheralFactory::unknownTypeError(const String& type) {
+  String error(F("Unknown peripheral type: "));
+  error += type;
+  return error;
+}
+
+const __FlashStringHelper* PeripheralFactory::type_key_ = F("type");
+const __FlashStringHelper* PeripheralFactory::type_key_error_ =
+    F("Missing property: type (string)");
 
 }  // namespace peripheral
 }  // namespace bernd_box

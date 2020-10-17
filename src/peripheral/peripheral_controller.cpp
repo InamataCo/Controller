@@ -13,39 +13,42 @@ const String& PeripheralController::type() {
 }
 
 ErrorResult PeripheralController::add(const JsonObjectConst& doc) {
-  JsonVariantConst name = doc[F("name")];
-  if (name.isNull() || !name.is<char*>()) {
-    return ErrorResult(type(), F("Missing property: name (string)"));
+  UUID uuid(doc[uuid_key_]);
+  if (!uuid.isValid()) {
+    return ErrorResult(type(), uuid_key_error_);
   }
 
   // Check if element is present
-  if (peripherals_.count(name) > 0) {
-    return ErrorResult(type(), F("This name has already been added"));
+  if (peripherals_.count(uuid) > 0) {
+    return ErrorResult(type(), F("This peripheral has already been added"));
   }
 
   // Not present, so try to create a new instance
   std::shared_ptr<peripheral::Peripheral> peripheral(
       peripheral_factory_.createPeripheral(doc));
-  if (peripheral->isValid() == false) {
-    return ErrorResult(type(), F("Failed creating peripheral"));
+  if (peripheral) {
+    if (!peripheral->isValid()) {
+      return peripheral->getError();
+    }
+  } else {
+    return ErrorResult(type(), F("Error calling peripheral factory"));
   }
 
-  peripherals_.emplace(name.as<String>(), peripheral);
+  peripherals_.emplace(uuid, peripheral);
 
   return ErrorResult();
 }
 
 ErrorResult PeripheralController::remove(const JsonObjectConst& doc) {
-  JsonVariantConst name = doc[F("name")];
-  if (name.isNull() || !name.is<char*>()) {
-    return ErrorResult(type(), F("Missing property: name (string)"));
+  UUID uuid(doc[uuid_key_]);
+  if (!uuid.isValid()) {
+    return ErrorResult(type(), uuid_key_error_);
   }
 
-  auto iterator = peripherals_.find(name.as<String>());
+  auto iterator = peripherals_.find(uuid);
   if (iterator != peripherals_.end()) {
     if (iterator->second.use_count() > 1) {
-      return ErrorResult(type(), String(F("Object is still in use. Try again later for ")) +
-                      name.as<String>());
+      return ErrorResult(type(), String(F("Peripheral still in use")));
     }
     peripherals_.erase(iterator);
   }
@@ -54,8 +57,8 @@ ErrorResult PeripheralController::remove(const JsonObjectConst& doc) {
 }
 
 std::shared_ptr<peripheral::Peripheral> PeripheralController::getPeripheral(
-    const String& name) {
-  auto peripheral = peripherals_.find(name);
+    const UUID& uuid) {
+  auto peripheral = peripherals_.find(uuid);
   if (peripheral != peripherals_.end()) {
     return peripheral->second;
   } else {

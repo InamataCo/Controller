@@ -8,9 +8,11 @@ namespace peripheral {
 
 class InvalidPeripheral : public Peripheral {
  public:
+  InvalidPeripheral();
+  InvalidPeripheral(const String& error);
   virtual ~InvalidPeripheral() = default;
 
-  const String& getType() final;
+  const String& getType() const final;
   static const String& type();
 
  private:

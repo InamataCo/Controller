@@ -18,7 +18,7 @@ class I2CAdapter : public Peripheral {
   I2CAdapter(const JsonObjectConst& parameter);
   virtual ~I2CAdapter();
 
-  const String& getType() final;
+  const String& getType() const final;
   static const String& type();
 
   TwoWire* getWire();

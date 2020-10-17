@@ -16,7 +16,7 @@ class ErrorResult {
   ErrorResult() {}
   ErrorResult(String who, String detail) : who_(who), detail_(detail) {}
 
-  bool is_error() { return !who_.isEmpty() && !detail_.isEmpty(); }
+  bool is_error() { return !who_.isEmpty() || !detail_.isEmpty(); }
 
   String who_;
   String detail_;

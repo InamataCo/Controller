@@ -41,7 +41,7 @@ I2CAdapter::I2CAdapter(const JsonObjectConst& parameter) {
 
 I2CAdapter::~I2CAdapter() { *taken_variable = false; }
 
-const String& I2CAdapter::getType() { return type(); }
+const String& I2CAdapter::getType() const { return type(); }
 
 const String& I2CAdapter::type() {
   static const String name{"I2CAdapter"};

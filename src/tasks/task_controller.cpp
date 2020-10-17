@@ -39,12 +39,12 @@ void TaskController::handleCallback(const JsonObjectConst& message) {
 
 ErrorResult TaskController::createTask(const JsonObjectConst& parameters) {
   BaseTask* task = factory_.createTask(parameters);
-  if (task && task->isValid()) {
+  if(task) {
     task->enable();
-    return ErrorResult();
+    return task->getError();
+  } else {
+    return ErrorResult(type(), "Unable to create task");
   }
-
-  return ErrorResult(type(), "Unable to create task");
 }
 
 ErrorResult TaskController::stopTask(const JsonObjectConst& parameters) {

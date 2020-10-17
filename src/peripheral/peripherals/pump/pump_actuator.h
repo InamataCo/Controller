@@ -20,7 +20,7 @@ class PumpActuator : public Peripheral, public capabilities::SetValue {
   virtual ~PumpActuator() = default;
 
   // Type registration in the peripheral factory
-  const String& getType() final;
+  const String& getType() const final;
   static const String& type();
 
   /**
@@ -30,17 +30,17 @@ class PumpActuator : public Peripheral, public capabilities::SetValue {
    */
   void setValue(capabilities::ValueUnit value_unit) final;
 
-  /// Name of the parameter for the pump to control a pump
-  static const __FlashStringHelper* pump_pin_name_;
-
  private:
   static std::shared_ptr<Peripheral> factory(const JsonObjectConst& parameter);
   static bool registered_;
   static bool capability_set_value_;
   static const __FlashStringHelper* set_value_unit_;
 
-  unsigned int pump_pin_;
+  /// Name of the parameter for the pump to control a pump
+  static const __FlashStringHelper* pump_pin_key_;
+  static const __FlashStringHelper* pump_pin_key_error_;
 
+  unsigned int pump_pin_;
 };
 
 }  // namespace pump

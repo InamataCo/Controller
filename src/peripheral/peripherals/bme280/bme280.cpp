@@ -9,37 +9,24 @@ BME280::BME280(const JsonObjectConst& parameters)
     : I2CAbstractPeripheral(parameters) {
   JsonVariantConst i2c_address = parameters[i2c_address_key_];
   if (!i2c_address.is<uint16_t>()) {
-    Services::getServer().sendError(
-        type(),
-        String(F("Missing property: ")) + i2c_address_key_ + F(" (uint16_t)"));
-    setInvalid();
+    setInvalid(i2c_address_key_error_);
     return;
   }
 
   if (!isDeviceConnected(i2c_address)) {
-    Services::getServer().sendError(
-        type(), String(F("Cannot find device with I2C address: ")) +
-                    i2c_address.as<int>());
-    setInvalid();
+    setInvalid(missingI2CDeviceError(i2c_address.as<uint16_t>()));
     return;
   }
 
   driver_.setI2CAddress(i2c_address);
-  uint8_t chip_id = driver_.beginI2C();
-
-  if (chip_id == 0x58) {
-    chip_type_ = ChipType::BMP280;
-  } else if (chip_id == 0x60) {
-    chip_type_ = ChipType::BME280;
-  } else {
-    Services::getServer().sendError(
-        type(), String(F("Invalid BME/P280 chip ID: ")) + chip_id);
-    setInvalid();
+  bool setup_success = driver_.beginI2C(*getWire());
+  if (!setup_success) {
+    setInvalid(failed_setup_error_);
     return;
   }
 }
 
-const String& BME280::getType() { return type(); }
+const String& BME280::getType() const { return type(); }
 
 const String& BME280::type() {
   static const String name{"BME280"};
@@ -59,8 +46,6 @@ std::vector<capabilities::ValueUnit> BME280::getValues() {
   return values;
 }
 
-const __FlashStringHelper* BME280::i2c_address_key_ = F("i2c_address");
-
 std::shared_ptr<Peripheral> BME280::factory(const JsonObjectConst& parameters) {
   return std::make_shared<BME280>(parameters);
 }
@@ -69,6 +54,9 @@ bool BME280::registered_ = PeripheralFactory::registerFactory(type(), factory);
 
 bool BME280::capability_get_values_ =
     capabilities::GetValues::registerType(type());
+
+const __FlashStringHelper* BME280::failed_setup_error_ =
+    F("Failed BME/P280 setup");
 
 }  // namespace bme280
 }  // namespace peripherals

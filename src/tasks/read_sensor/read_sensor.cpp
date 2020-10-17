@@ -10,14 +10,12 @@ ReadSensor::ReadSensor(const JsonObjectConst& parameters, Scheduler& scheduler)
   enable();
 }
 
-const String& ReadSensor::getType() { return type(); }
+const String& ReadSensor::getType() const { return type(); }
 
 const String& ReadSensor::type() {
   static const String name{"ReadSensor"};
   return name;
 }
-
-bool ReadSensor::OnEnable() { return true; }
 
 bool ReadSensor::Callback() {
   DynamicJsonDocument result_doc(BB_JSON_PAYLOAD_SIZE);
@@ -25,11 +23,11 @@ bool ReadSensor::Callback() {
 
   const peripheral::capabilities::ValueUnit value_unit =
       getPeripheral()->getValue();
-  result_object[F("value")] = value_unit.value;
-  result_object[F("unit")] = value_unit.unit.c_str();
-  result_object[F("peripheral_name")] = getPeripheralName().c_str();
+  result_object[value_unit.value_key] = value_unit.value;
+  result_object[value_unit.unit_key] = value_unit.unit.c_str();
+  result_object[peripheral_uuid_key_] = getPeripheralUUID().toString();
 
-  Services::getMqtt().send(type(), result_doc);
+  Services::getServer().send(type(), result_doc);
 
   return true;
 }

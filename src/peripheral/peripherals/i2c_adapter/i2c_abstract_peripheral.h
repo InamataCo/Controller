@@ -2,7 +2,6 @@
 
 #include <Wire.h>
 
-#include "managers/services.h"
 #include "peripheral/peripheral.h"
 #include "peripheral/peripherals/i2c_adapter/i2c_adapter.h"
 
@@ -19,11 +18,23 @@ class I2CAbstractPeripheral : public Peripheral {
   I2CAbstractPeripheral(const JsonObjectConst& parameter);
   virtual ~I2CAbstractPeripheral() = default;
 
+  static const String& type();
+
  protected:
   TwoWire* getWire();
   bool isDeviceConnected(uint16_t i2c_address);
 
+  static String missingI2CDeviceError(int i2c_address);
+
+  static const __FlashStringHelper* i2c_address_key_;
+  static const __FlashStringHelper* i2c_address_key_error_;
+
  private:
+  static String invalidI2CAdapterError(const UUID& uuid, const String& type);
+
+  static const __FlashStringHelper* i2c_adapter_uuid_key_;
+  static const __FlashStringHelper* i2c_adapter_uuid_key_error_;
+
   std::shared_ptr<peripherals::util::I2CAdapter> i2c_adapter_;
 };
 

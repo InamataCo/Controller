@@ -6,6 +6,9 @@
 #include <functional>
 #include <set>
 
+#include "managers/io_types.h"
+#include "utils/uuid.h"
+
 namespace bernd_box {
 namespace tasks {
 
@@ -14,21 +17,32 @@ class BaseTask : public Task {
   BaseTask(Scheduler& scheduler);
   virtual ~BaseTask() = default;
 
-  virtual const String& getType() = 0;
+  virtual const String& getType() const = 0;
+
+  bool OnEnable() final;
+  virtual bool OnTaskEnable();
 
   void OnDisable() final;
   virtual void OnTaskDisable();
 
-  bool isValid();
+  bool isValid() const;
+  ErrorResult getError() const;
 
  protected:
   void setInvalid();
+  void setInvalid(const String& error_message);
+
+  static String peripheralNotFoundError(const UUID& uuid);
+
+  static const __FlashStringHelper* peripheral_uuid_key_;
+  static const __FlashStringHelper* peripheral_uuid_key_error_;
+  static const __FlashStringHelper* peripheral_not_found_error_;
 
  private:
   bool is_valid_ = true;
+  String error_message_;
   Scheduler& scheduler_;
 };
-
 
 class TaskRemovalTask : public Task {
  private:

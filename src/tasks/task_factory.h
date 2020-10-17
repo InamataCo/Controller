@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base_task.h"
+#include "invalid_task.h"
 #include "managers/server.h"
 
 namespace bernd_box {
@@ -34,6 +35,8 @@ class TaskFactory {
   TaskFactory(Server& server, Scheduler& scheduler);
   virtual ~TaskFactory() = default;
 
+  static const String& type();
+
   /**
    * Register a task factory as a callback to create a task
    *
@@ -51,6 +54,11 @@ class TaskFactory {
    */
   BaseTask* createTask(const JsonObjectConst& parameters);
 
+  /**
+   * Return all registered factories by name
+   * 
+   * \return A vector with all names
+   */
   const std::vector<String> getFactoryNames();
 
  private:
@@ -58,10 +66,15 @@ class TaskFactory {
   /// Get the callback map of the sub-factories to create new task objects
   static std::map<String, Factory>& getFactories();
 
+  static String invalidFactoryTypeError(const String& type);
+
   /// Reference to the Server interface
   Server& server_;
   /// Refernce to the Scheduler
   Scheduler& scheduler_;
+
+  const __FlashStringHelper* type_key_ = F("type");
+  const __FlashStringHelper* type_key_error_ = F("Missing property: type (string)");
 };
 
 }  // namespace tasks

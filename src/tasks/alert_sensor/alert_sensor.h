@@ -16,10 +16,9 @@ class AlertSensor : public GetValueTask {
   AlertSensor(const JsonObjectConst& parameters, Scheduler& scheduler);
   virtual ~AlertSensor() = default;
 
-  const String& getType() final;
+  const String& getType() const final;
   static const String& type();
 
-  bool OnEnable() final;
   bool Callback() final;
 
   /**

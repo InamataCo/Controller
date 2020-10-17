@@ -9,25 +9,20 @@ Led::Led(const JsonObjectConst& parameters) {
   JsonVariantConst led_pin = parameters[led_pin_key_];
 
   if (!led_pin.is<unsigned int>()) {
-    Services::getServer().sendError(
-        type(),
-        String(F("Missing property: ")) + led_pin_key_ + F(" (unsigned int)"));
-    setInvalid();
+    setInvalid(led_pin_key_error_);
     return;
   }
 
   bool error = setup(led_pin);
   if (error) {
-    Services::getServer().sendError(
-        type(), String(F("No remaining LED channels available")));
-    setInvalid();
+    setInvalid(no_channels_available_error_);
     return;
   }
 }
 
 Led::~Led() { freeResources(); }
 
-const String& Led::getType() { return type(); }
+const String& Led::getType() const { return type(); }
 
 const String& Led::type() {
   static const String name{"LED"};
@@ -37,8 +32,7 @@ const String& Led::type() {
 void Led::setValue(capabilities::ValueUnit value_unit) {
   if (value_unit.unit != String(set_value_unit_)) {
     Services::getServer().sendError(
-        type(), "Mismatching unit. Got: " + value_unit.unit + " instead of " +
-                    set_value_unit_);
+        type(), value_unit.sourceUnitError(set_value_unit_));
     return;
   }
 
@@ -52,8 +46,6 @@ void Led::setValue(capabilities::ValueUnit value_unit) {
   const uint max_value = (2 << resolution_) - 1;
   ledcWrite(led_channel_, value_unit.value * max_value);
 }
-
-const __FlashStringHelper* Led::led_pin_key_ = F("pin");
 
 bool Led::setup(uint pin, uint freq, uint resolution) {
   // If the LED has already been setup, free it
@@ -97,6 +89,12 @@ void Led::freeResources() {
   led_channel_ = -1;
   resolution_ = -1;
 }
+
+const __FlashStringHelper* Led::led_pin_key_ = F("pin");
+const __FlashStringHelper* Led::led_pin_key_error_ =
+    F("Missing property: pin (unsigned int)");
+const __FlashStringHelper* Led::no_channels_available_error_ =
+    F("No remaining LED channels available");
 
 std::shared_ptr<Peripheral> Led::factory(const JsonObjectConst& parameters) {
   return std::make_shared<Led>(parameters);

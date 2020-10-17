@@ -18,10 +18,9 @@ class ReadSensor : public GetValueTask {
   ReadSensor(const JsonObjectConst& parameters, Scheduler& scheduler);
   virtual ~ReadSensor() = default;
 
-  const String& getType() final;
+  const String& getType() const final;
   static const String& type();
 
-  bool OnEnable() final;
   bool Callback() final;
 
  private:

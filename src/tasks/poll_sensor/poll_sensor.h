@@ -14,10 +14,9 @@ class PollSensor : public GetValueTask {
   PollSensor(const JsonObjectConst& parameters, Scheduler& scheduler);
   virtual ~PollSensor() = default;
 
-  const String& getType() final;
+  const String& getType() const final;
   static const String& type();
 
-  bool OnEnable() final;
   bool Callback() final;
 
  private:

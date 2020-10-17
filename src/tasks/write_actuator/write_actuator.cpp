@@ -6,54 +6,40 @@ namespace tasks {
 WriteActuator::WriteActuator(const JsonObjectConst& parameters,
                              Scheduler& scheduler)
     : BaseTask(scheduler) {
-  // Get the name to later find the pointer to the peripheral object
-  JsonVariantConst peripheral_name = parameters[peripheral_name_key_];
-  if (peripheral_name.isNull() || !peripheral_name.is<char*>()) {
-    Services::getServer().sendError(type(), String("Missing property: ") +
-                                                String(peripheral_name_key_) +
-                                                " (string)");
-    setInvalid();
-    return;
+  // Get the UUID to later find the pointer to the peripheral object
+  UUID peripheral_uuid(parameters[peripheral_uuid_key_]);
+  if (!peripheral_uuid.isValid()) {
+    setInvalid(peripheral_uuid_key_error_);
   }
 
   // Search for the peripheral for the given name
-  auto periperhal = Services::getPeripheralController().getPeripheral(
-      peripheral_name.as<String>());
-  if (!periperhal) {
-    Services::getMqtt().sendError(type(),
-                                  String(F("Could not find peripheral: ")) +
-                                      peripheral_name.as<String>());
-    setInvalid();
+  auto peripheral =
+      Services::getPeripheralController().getPeripheral(peripheral_uuid);
+  if (!peripheral) {
+    setInvalid(peripheral_not_found_error_);
     return;
   }
 
   // Check that the peripheral supports the SetValue interface capability
   peripheral_ =
-      std::dynamic_pointer_cast<peripheral::capabilities::SetValue>(periperhal);
+      std::dynamic_pointer_cast<peripheral::capabilities::SetValue>(peripheral);
   if (!peripheral_) {
-    Services::getServer().sendError(
-        type(), String(F("SetValue capability not supported: ")) +
-                    peripheral_name.as<String>() + String(F(" is a ")) +
-                    periperhal->getType());
-    setInvalid();
+    setInvalid(peripheral::capabilities::SetValue::invalidTypeError(
+        peripheral_uuid, peripheral));
     return;
   }
 
   // Get the value
-  JsonVariantConst value = parameters[value_key_];
+  JsonVariantConst value = parameters[value_unit_.value_key];
   if (!value.is<float>()) {
-    Services::getServer().sendError(
-        type(), String("Missing property: ") + String(value_key_) + " (float)");
-    setInvalid();
+    setInvalid(value_unit_.value_key_error);
     return;
   }
 
   // Get the unit of the value
-  JsonVariantConst unit = parameters[unit_key_];
+  JsonVariantConst unit = parameters[value_unit_.unit_key];
   if (unit.isNull() || !unit.is<char*>()) {
-    Services::getServer().sendError(
-        type(), String("Missing property: ") + String(unit_key_) + " (String)");
-    setInvalid();
+    setInvalid(value_unit_.unit_key_error);
     return;
   }
 
@@ -65,14 +51,12 @@ WriteActuator::WriteActuator(const JsonObjectConst& parameters,
   enable();
 }
 
-const String& WriteActuator::getType() { return type(); }
+const String& WriteActuator::getType() const { return type(); }
 
 const String& WriteActuator::type() {
   static const String name{"WriteActuator"};
   return name;
 }
-
-bool WriteActuator::OnEnable() { return true; }
 
 bool WriteActuator::Callback() {
   peripheral_->setValue(value_unit_);

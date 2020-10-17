@@ -6,40 +6,27 @@ namespace peripherals {
 namespace neo_pixel {
 
 NeoPixel::NeoPixel(const JsonObjectConst& parameters) {
-  const __FlashStringHelper* who = F(__PRETTY_FUNCTION__);
-
-  JsonVariantConst color_encoding_str = parameters[keys_.color_encoding];
+  JsonVariantConst color_encoding_str = parameters[color_encoding_key_];
   if (color_encoding_str.isNull() || !color_encoding_str.is<String>()) {
-    Services::getMqtt().sendError(who, String(F("Missing property: ")) +
-                                           keys_.color_encoding +
-                                           F(" (string)"));
-    setInvalid();
+    setInvalid(color_encoding_key_error_);
     return;
   }
 
-  JsonVariantConst led_pin = parameters[keys_.led_pin];
+  JsonVariantConst led_pin = parameters[led_pin_key_];
   if (!led_pin.is<unsigned int>()) {
-    Services::getMqtt().sendError(
-        who,
-        String(F("Missing property: ")) + keys_.led_pin + F(" (unsigned int)"));
-    setInvalid();
+    setInvalid(led_pin_key_error_);
     return;
   }
 
-  JsonVariantConst led_count = parameters[keys_.led_count];
+  JsonVariantConst led_count = parameters[led_count_key_];
   if (!led_count.is<unsigned int>()) {
-    Services::getMqtt().sendError(who, String(F("Missing property: ")) +
-                                           keys_.led_count +
-                                           F(" (unsigned int)"));
-    setInvalid();
+    setInvalid(led_count_key_error_);
     return;
   }
 
   uint8_t color_encoding_int = getColorEncoding(color_encoding_str.as<char*>());
   if (color_encoding_int == 0) {
-    Services::getMqtt().sendError(
-        who, String(F("Invalid color_encoding value: ")) + color_encoding_int);
-    setInvalid();
+    setInvalid(invalidColorEncodingError(color_encoding_str.as<char*>()));
     return;
   }
 
@@ -50,7 +37,7 @@ NeoPixel::NeoPixel(const JsonObjectConst& parameters) {
   driver_.updateLength(led_count);
 }
 
-const String& NeoPixel::getType() { return type(); }
+const String& NeoPixel::getType() const { return type(); }
 
 const String& NeoPixel::type() {
   static const String name{"NeoPixel"};
@@ -71,16 +58,32 @@ void NeoPixel::turnOff() {
   driver_.show();
 }
 
-std::shared_ptr<Peripheral> NeoPixel::factory(const JsonObjectConst& parameter) {
+String NeoPixel::invalidColorEncodingError(const String& color_encoding) {
+  String error(F("Invalid color encoding value: "));
+  error += color_encoding;
+  return error;
+}
+
+std::shared_ptr<Peripheral> NeoPixel::factory(
+    const JsonObjectConst& parameter) {
   return std::make_shared<NeoPixel>(parameter);
 }
 
-bool NeoPixel::registered_ = PeripheralFactory::registerFactory(type(), factory);
+bool NeoPixel::registered_ =
+    PeripheralFactory::registerFactory(type(), factory);
 
 bool NeoPixel::capability_led_strip_ =
     capabilities::LedStrip::registerType(type());
 
-NeoPixel::Keys NeoPixel::keys_;
+const __FlashStringHelper* NeoPixel::color_encoding_key_ = F("color_encoding");
+const __FlashStringHelper* NeoPixel::color_encoding_key_error_ F(
+    "Missing property: color_encoding (string)");
+const __FlashStringHelper* NeoPixel::led_pin_key_ = F("led_pin");
+const __FlashStringHelper* NeoPixel::led_pin_key_error_ =
+    F("Missing property: led_pin (unsigned int)");
+const __FlashStringHelper* NeoPixel::led_count_key_ = F("led_count");
+const __FlashStringHelper* NeoPixel::led_count_key_error_ F(
+    "Missing property: led_count (unsigned int)");
 
 uint8_t NeoPixel::getColorEncoding(String encoding_str) {
   // Check that it is a valid rgb_encoding

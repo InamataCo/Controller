@@ -3,10 +3,10 @@
 #include <Arduino.h>
 #include <ArduinoJson.h>
 
-#include "managers/services.h"
 #include "peripheral/peripheral.h"
 #include "peripheral/peripheral_factory.h"
 #include "tasks/base_task.h"
+#include "tasks/task_factory.h"
 
 namespace bernd_box {
 namespace peripheral {
@@ -21,7 +21,7 @@ class DummyPeripheral : public Peripheral {
   DummyPeripheral();
   virtual ~DummyPeripheral();
 
-  const String& getType() final;
+  const String& getType() const final;
   static const String& type();
 
  private:
@@ -42,9 +42,8 @@ class DummyTask : public BaseTask {
   bool Callback() final;
   void OnTaskDisable() final;
 
-  const String& getType();
+  const String& getType() const final;
   static const String& type();
-  static const String TYPE;
 
  private:
   static bool registered_;

@@ -19,13 +19,10 @@ class BME280 : public peripherals::i2c_adapter::I2CAbstractPeripheral,
   virtual ~BME280() = default;
 
   // Type registration in the peripheral factory
-  const String& getType() final;
+  const String& getType() const final;
   static const String& type();
 
   std::vector<capabilities::ValueUnit> getValues() final;
-
-  /// Name of the parameter that holds the I2C address
-  static const __FlashStringHelper* i2c_address_key_;
 
  private:
   static std::shared_ptr<Peripheral> factory(const JsonObjectConst& parameters);
@@ -40,6 +37,8 @@ class BME280 : public peripherals::i2c_adapter::I2CAbstractPeripheral,
 
   ::BME280 driver_;
   ChipType chip_type_ = ChipType::Unknown;
+
+  static const __FlashStringHelper* failed_setup_error_;
 };
 
 }  // namespace bme280

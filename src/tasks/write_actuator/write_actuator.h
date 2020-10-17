@@ -16,10 +16,9 @@ class WriteActuator : public BaseTask {
   WriteActuator(const JsonObjectConst& parameters, Scheduler& scheduler);
   virtual ~WriteActuator() = default;
 
-  const String& getType() final;
+  const String& getType() const final;
   static const String& type();
 
-  bool OnEnable() final;
   bool Callback() final;
 
  private:
@@ -30,11 +29,6 @@ class WriteActuator : public BaseTask {
   std::shared_ptr<peripheral::capabilities::SetValue> peripheral_;
 
   peripheral::capabilities::ValueUnit value_unit_;
-
-  // Constructor parameter keys
-  const __FlashStringHelper* peripheral_name_key_ = F("peripheral_name");
-  const __FlashStringHelper* value_key_ = F("value");
-  const __FlashStringHelper* unit_key_ = F("unit");
 };
 
 }  // namespace tasks
