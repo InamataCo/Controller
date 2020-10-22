@@ -32,10 +32,10 @@ class BaseTask : public Task {
   void setInvalid();
   void setInvalid(const String& error_message);
 
-  static String peripheralNotFoundError(const UUID& uuid);
+  static String peripheralNotFoundError(const utils::UUID& uuid);
 
-  static const __FlashStringHelper* peripheral_uuid_key_;
-  static const __FlashStringHelper* peripheral_uuid_key_error_;
+  static const __FlashStringHelper* peripheral_key_;
+  static const __FlashStringHelper* peripheral_key_error_;
   static const __FlashStringHelper* peripheral_not_found_error_;
 
  private:

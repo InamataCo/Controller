@@ -1,13 +1,14 @@
 #pragma once
 
 #include <Arduino.h>
+#include <ArduinoJson.h>
 
 #include <array>
-#include <ArduinoJson.h>
 
 #include "managers/io_types.h"
 
 namespace bernd_box {
+namespace utils {
 
 /**
  * Holds a UUID and allows it to be used as a key in STL containers. It can be
@@ -82,4 +83,5 @@ class UUID : public Printable {
   std::array<uint8_t, 16> buffer_;
 };
 
+}  // namespace utils
 }  // namespace bernd_box

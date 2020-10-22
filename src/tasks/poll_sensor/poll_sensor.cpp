@@ -4,7 +4,7 @@ namespace bernd_box {
 namespace tasks {
 
 PollSensor::PollSensor(const JsonObjectConst& parameters, Scheduler& scheduler)
-    : GetValueTask(parameters, scheduler) {
+    : GetValuesTask(parameters, scheduler) {
   // Get the interval with which to poll the sensor
   JsonVariantConst interval_ms = parameters[interval_ms_key_];
   if (!interval_ms.is<unsigned int>()) {
@@ -36,15 +36,14 @@ const String& PollSensor::type() {
 }
 
 bool PollSensor::Callback() {
+  // Create a JSON doc on the heap
   DynamicJsonDocument result_doc(BB_JSON_PAYLOAD_SIZE);
   JsonObject result_object = result_doc.to<JsonObject>();
 
-  const peripheral::capabilities::ValueUnit value_unit =
-      getPeripheral()->getValue();
-  result_object[value_unit.value_key] = value_unit.value;
-  result_object[value_unit.unit_key] = value_unit.unit.c_str();
-  result_object[peripheral_uuid_key_] = getPeripheralUUID().toString();
+  // Read the peripheral's value units and its UUID and add them to the JSON doc
+  makeGetValuesJson(result_object);
 
+  // Send the value units and peripheral UUID to the server
   Services::getMqtt().send(type(), result_doc);
 
   return true;

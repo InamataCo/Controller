@@ -6,7 +6,11 @@ namespace peripheral {
 bool Peripheral::isValid() const { return valid_; }
 
 ErrorResult Peripheral::getError() const {
-  return ErrorResult(getType(), error_message_);
+  if(valid_) {
+    return ErrorResult();
+  } else {
+    return ErrorResult(getType(), error_message_);
+  }
 }
 
 void Peripheral::setInvalid() { valid_ = false; }

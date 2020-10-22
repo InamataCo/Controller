@@ -29,7 +29,7 @@ class SetLight : public BaseTask {
                            Scheduler& scheduler);
 
   std::shared_ptr<peripheral::capabilities::LedStrip> peripheral_;
-  UUID peripheral_uuid_;
+  utils::UUID peripheral_uuid_;
 
   static const __FlashStringHelper* color_key_;
   static const __FlashStringHelper* brightness_key_;

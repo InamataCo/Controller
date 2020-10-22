@@ -28,19 +28,22 @@ class PumpActuator : public Peripheral, public capabilities::SetValue {
    * 
    * \param value 1 turns the pump on, 0 turns it off
    */
-  void setValue(capabilities::ValueUnit value_unit) final;
+  void setValue(utils::ValueUnit value_unit) final;
 
  private:
   static std::shared_ptr<Peripheral> factory(const JsonObjectConst& parameter);
   static bool registered_;
   static bool capability_set_value_;
-  static const __FlashStringHelper* set_value_unit_;
 
   /// Name of the parameter for the pump to control a pump
+  unsigned int pump_pin_;
   static const __FlashStringHelper* pump_pin_key_;
   static const __FlashStringHelper* pump_pin_key_error_;
 
-  unsigned int pump_pin_;
+  /// Data point type for the pump states
+  utils::UUID pump_state_data_point_type_{nullptr};
+  static const __FlashStringHelper* pump_state_data_point_type_key_;
+  static const __FlashStringHelper* pump_state_data_point_type_key_error_;
 };
 
 }  // namespace pump

@@ -6,9 +6,9 @@ namespace tasks {
 SetLight::SetLight(const JsonObjectConst& parameters, Scheduler& scheduler)
     : BaseTask(scheduler) {
   // Get the UUID to later find the pointer to the peripheral object
-  peripheral_uuid_ = UUID(parameters[peripheral_uuid_key_]);
+  peripheral_uuid_ = utils::UUID(parameters[peripheral_key_]);
   if (!peripheral_uuid_.isValid()) {
-    setInvalid(peripheral_uuid_key_error_);
+    setInvalid(peripheral_key_error_);
     return;
   }
 

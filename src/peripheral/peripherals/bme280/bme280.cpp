@@ -7,21 +7,64 @@ namespace bme280 {
 
 BME280::BME280(const JsonObjectConst& parameters)
     : I2CAbstractPeripheral(parameters) {
+  // If the base class constructor failed, abort the constructor
+  if (!isValid()) {
+    return;
+  }
+
+  // Get and check the data point type for temperature readings
+  temperature_data_point_type_ =
+      utils::UUID(parameters[temperature_data_point_type_key_]);
+  if (!temperature_data_point_type_.isValid()) {
+    setInvalid(temperature_data_point_type_key_error_);
+    return;
+  }
+
+  // Get and check the data point type for pressure readings
+  pressure_data_point_type_ =
+      utils::UUID(parameters[pressure_data_point_type_key_]);
+  if (!pressure_data_point_type_.isValid()) {
+    setInvalid(pressure_data_point_type_key_error_);
+    return;
+  }
+
+  // Get and check the I2C address of the BME/P280 chip
   JsonVariantConst i2c_address = parameters[i2c_address_key_];
   if (!i2c_address.is<uint16_t>()) {
     setInvalid(i2c_address_key_error_);
     return;
   }
 
+  // Do a preliminary check to see if the device is connected to the bus
   if (!isDeviceConnected(i2c_address)) {
     setInvalid(missingI2CDeviceError(i2c_address.as<uint16_t>()));
     return;
   }
 
+  // Initialize the driver with the correct Wire (I2C) interface
   driver_.setI2CAddress(i2c_address);
   bool setup_success = driver_.beginI2C(*getWire());
   if (!setup_success) {
-    setInvalid(failed_setup_error_);
+    setInvalid(invalid_chip_type_error_);
+    return;
+  }
+
+  // Get the chip type (BME or BMP). Also checked in beginI2C but not returned
+  uint8_t chip_id = driver_.readRegister(BME280_CHIP_ID_REG);
+  if (chip_id == static_cast<uint8_t>(ChipType::BMP280)) {
+    chip_type_ = ChipType::BMP280;
+  } else if (chip_id == static_cast<uint8_t>(ChipType::BME280)) {
+    chip_type_ = ChipType::BME280;
+
+    // Only the BME280 has humidity readings
+    humidity_data_point_type_ =
+        utils::UUID(parameters[humidity_data_point_type_key_]);
+    if (!humidity_data_point_type_.isValid()) {
+      setInvalid(humidity_data_point_type_key_error_);
+      return;
+    }
+  } else {
+    setInvalid(invalid_chip_type_error_);
     return;
   }
 }
@@ -33,15 +76,18 @@ const String& BME280::type() {
   return name;
 }
 
-std::vector<capabilities::ValueUnit> BME280::getValues() {
-  std::vector<capabilities::ValueUnit> values;
+std::vector<utils::ValueUnit> BME280::getValues() {
+  std::vector<utils::ValueUnit> values;
   values.push_back(
-      capabilities::ValueUnit{.value = driver_.readTempC(), .unit = "°C"});
-  values.push_back(capabilities::ValueUnit{.value = driver_.readFloatPressure(),
-                                           .unit = "Pa"});
+      utils::ValueUnit{.value = driver_.readTempC(),
+                       .data_point_type = temperature_data_point_type_});
+  values.push_back(
+      utils::ValueUnit{.value = driver_.readFloatPressure(),
+                       .data_point_type = pressure_data_point_type_});
   if (chip_type_ == ChipType::BME280) {
-    values.push_back(capabilities::ValueUnit{
-        .value = driver_.readFloatHumidity(), .unit = "%RH"});
+    values.push_back(
+        utils::ValueUnit{.value = driver_.readFloatHumidity(),
+                         .data_point_type = humidity_data_point_type_});
   }
   return values;
 }
@@ -55,7 +101,22 @@ bool BME280::registered_ = PeripheralFactory::registerFactory(type(), factory);
 bool BME280::capability_get_values_ =
     capabilities::GetValues::registerType(type());
 
-const __FlashStringHelper* BME280::failed_setup_error_ =
+const __FlashStringHelper* BME280::temperature_data_point_type_key_ =
+    F("temperature_data_point_type");
+const __FlashStringHelper* BME280::temperature_data_point_type_key_error_ =
+    F("Missing property: temperature_data_point_type (UUID)");
+
+const __FlashStringHelper* BME280::pressure_data_point_type_key_ =
+    F("pressure_data_point_type");
+const __FlashStringHelper* BME280::pressure_data_point_type_key_error_ =
+    F("Missing property: pressure_data_point_type (UUID)");
+
+const __FlashStringHelper* BME280::humidity_data_point_type_key_ =
+    F("humidity_data_point_type");
+const __FlashStringHelper* BME280::humidity_data_point_type_key_error_ =
+    F("Missing property: humidity_data_point_type (UUID)");
+
+const __FlashStringHelper* BME280::invalid_chip_type_error_ =
     F("Failed BME/P280 setup");
 
 }  // namespace bme280

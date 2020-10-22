@@ -28,7 +28,7 @@ class Led : public Peripheral, public capabilities::SetValue {
    * 
    * \param value A value between 0 and 1 sets the percentage brightness
    */
-  void setValue(capabilities::ValueUnit value_unit);
+  void setValue(utils::ValueUnit value_unit);
 
  private:
   /**
@@ -58,6 +58,8 @@ class Led : public Peripheral, public capabilities::SetValue {
 
   /// Marks which LED channels are currently in use
   static std::bitset<16> busy_led_channels_;
+
+  utils::UUID data_point_type_{nullptr};
 
   int led_pin_ = -1;
   int led_channel_ = -1;

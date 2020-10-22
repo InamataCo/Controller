@@ -15,7 +15,7 @@ bool LedStrip::isSupported(const String& type) {
 
 const std::set<String>& LedStrip::getTypes() { return getSupportedTypes(); }
 
-String LedStrip::invalidTypeError(const UUID& uuid,
+String LedStrip::invalidTypeError(const utils::UUID& uuid,
                                   std::shared_ptr<Peripheral> peripheral) {
   String error(F("LedStrip capability not supported: "));
   error += uuid.toString();

@@ -1,6 +1,7 @@
 #include "uuid.h"
 
 namespace bernd_box {
+namespace utils {
 
 UUID::UUID() {
   for (int i = 0; i < 16; i += 4) {
@@ -13,9 +14,7 @@ UUID::UUID() {
   buffer_[8] = (buffer_[8] & 0x3F) | 0x80;
 }
 
-UUID::UUID(const char* str) {
-  fromString(str);
-}
+UUID::UUID(const char* str) { fromString(str); }
 
 UUID::UUID(const JsonVariantConst& uuid) {
   if (uuid.isNull() || !uuid.is<char*>()) {
@@ -50,7 +49,7 @@ size_t UUID::printTo(Print& p) const {
 
 String UUID::toString() const {
   String uuid_str;
-  uuid_str.reserve(36 + 1); // Include NULL / terminator byte
+  uuid_str.reserve(36 + 1);  // Include NULL / terminator byte
 
   for (int i = 0; i < 16; i++) {
     if (i == 4 || i == 6 || i == 8 || i == 10) {
@@ -63,6 +62,11 @@ String UUID::toString() const {
 }
 
 bool UUID::fromString(const char* uuid) {
+  if (!uuid || strlen(uuid) != 36) {
+    clear();
+    return false;
+  }
+
   char uuid_str[32];
   char* outc = uuid_str;
   for (int i = 0; i < 36; ++i) {
@@ -115,8 +119,9 @@ bool UUID::isValid() {
   if (hex17 != 0x8 && hex17 != 0x9 && hex17 != 0xA && hex17 != 0xB) {
     return false;
   }
-  
+
   return true;
 }
 
+}  // namespace utils
 }  // namespace bernd_box

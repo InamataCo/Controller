@@ -28,7 +28,7 @@ class WriteActuator : public BaseTask {
 
   std::shared_ptr<peripheral::capabilities::SetValue> peripheral_;
 
-  peripheral::capabilities::ValueUnit value_unit_;
+  utils::ValueUnit value_unit_;
 };
 
 }  // namespace tasks

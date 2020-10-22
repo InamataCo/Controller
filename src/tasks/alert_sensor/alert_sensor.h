@@ -3,13 +3,13 @@
 #include <memory>
 
 #include "ArduinoJson.h"
-#include "peripheral/capabilities/get_value.h"
-#include "tasks/get_value_task/get_value_task.h"
+#include "tasks/get_values_task/get_values_task.h"
+#include "utils/value_unit.h"
 
 namespace bernd_box {
 namespace tasks {
 
-class AlertSensor : public GetValueTask {
+class AlertSensor : public GetValuesTask {
  public:
   enum class TriggerType { kRising, kFalling, kEither };
 
@@ -63,6 +63,9 @@ class AlertSensor : public GetValueTask {
 
   static const std::map<TriggerType, const __FlashStringHelper*>
       trigger_type_strings_;
+
+  /// The data point type to trigger on
+  utils::UUID data_point_type_;
 
   /// Default interval to poll the sensor with
   const std::chrono::milliseconds default_interval_{100};

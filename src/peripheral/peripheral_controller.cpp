@@ -13,7 +13,7 @@ const String& PeripheralController::type() {
 }
 
 ErrorResult PeripheralController::add(const JsonObjectConst& doc) {
-  UUID uuid(doc[uuid_key_]);
+  utils::UUID uuid(doc[uuid_key_]);
   if (!uuid.isValid()) {
     return ErrorResult(type(), uuid_key_error_);
   }
@@ -40,7 +40,7 @@ ErrorResult PeripheralController::add(const JsonObjectConst& doc) {
 }
 
 ErrorResult PeripheralController::remove(const JsonObjectConst& doc) {
-  UUID uuid(doc[uuid_key_]);
+  utils::UUID uuid(doc[uuid_key_]);
   if (!uuid.isValid()) {
     return ErrorResult(type(), uuid_key_error_);
   }
@@ -57,7 +57,7 @@ ErrorResult PeripheralController::remove(const JsonObjectConst& doc) {
 }
 
 std::shared_ptr<peripheral::Peripheral> PeripheralController::getPeripheral(
-    const UUID& uuid) {
+    const utils::UUID& uuid) {
   auto peripheral = peripherals_.find(uuid);
   if (peripheral != peripherals_.end()) {
     return peripheral->second;

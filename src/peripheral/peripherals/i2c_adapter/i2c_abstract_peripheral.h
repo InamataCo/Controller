@@ -30,10 +30,11 @@ class I2CAbstractPeripheral : public Peripheral {
   static const __FlashStringHelper* i2c_address_key_error_;
 
  private:
-  static String invalidI2CAdapterError(const UUID& uuid, const String& type);
+  static String invalidI2CAdapterError(const utils::UUID& uuid,
+                                       const String& type);
 
-  static const __FlashStringHelper* i2c_adapter_uuid_key_;
-  static const __FlashStringHelper* i2c_adapter_uuid_key_error_;
+  static const __FlashStringHelper* i2c_adapter_key_;
+  static const __FlashStringHelper* i2c_adapter_key_error_;
 
   std::shared_ptr<peripherals::util::I2CAdapter> i2c_adapter_;
 };

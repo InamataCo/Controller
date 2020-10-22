@@ -5,7 +5,7 @@ namespace tasks {
 
 AlertSensor::AlertSensor(const JsonObjectConst& parameters,
                          Scheduler& scheduler)
-    : GetValueTask(parameters, scheduler) {
+    : GetValuesTask(parameters, scheduler) {
   // Get the type of trigger [rising, falling, either]
   JsonVariantConst trigger_type = parameters[trigger_type_key_];
   if (trigger_type.isNull() || !trigger_type.is<char*>()) {
@@ -44,6 +44,13 @@ AlertSensor::AlertSensor(const JsonObjectConst& parameters,
     return;
   }
 
+  data_point_type_ =
+      utils::UUID(parameters[utils::ValueUnit::data_point_type_key]);
+  if (!data_point_type_.isValid()) {
+    setInvalid(utils::ValueUnit::data_point_type_key_error);
+    return;
+  }
+
   enable();
 }
 
@@ -55,21 +62,32 @@ const String& AlertSensor::type() {
 }
 
 bool AlertSensor::Callback() {
-  peripheral::capabilities::ValueUnit value_unit = getPeripheral()->getValue();
+  std::vector<utils::ValueUnit> value_units = getPeripheral()->getValues();
 
-  if (isRisingThreshold(value_unit.value)) {
+  auto match_unit = [&](const utils::ValueUnit& value_unit) {
+    return value_unit.data_point_type == data_point_type_;
+  };
+  const auto trigger_value_unit =
+      std::find_if(value_units.cbegin(), value_units.cend(), match_unit);
+  if (trigger_value_unit == value_units.end()) {
+    setInvalid(String(F("Data point type not found: ")) +
+               data_point_type_.toString());
+    return false;
+  }
+
+  if (isRisingThreshold(trigger_value_unit->value)) {
     if (trigger_type_ == TriggerType::kRising ||
         trigger_type_ == TriggerType::kEither) {
       sendAlert(TriggerType::kRising);
     }
-  } else if (isFallingThreshold(value_unit.value)) {
+  } else if (isFallingThreshold(trigger_value_unit->value)) {
     if (trigger_type_ == TriggerType::kFalling ||
         trigger_type_ == TriggerType::kEither) {
       sendAlert(TriggerType::kFalling);
     }
   }
 
-  last_value_ = value_unit.value;
+  last_value_ = trigger_value_unit->value;
   return true;
 }
 
@@ -103,7 +121,7 @@ bool AlertSensor::sendAlert(TriggerType trigger_type) {
       return false;
     }
 
-    doc[peripheral_uuid_key_] = getPeripheralUUID().toString();
+    doc[peripheral_key_] = getPeripheralUUID().toString();
 
     Services::getServer().send(type(), doc);
     return true;

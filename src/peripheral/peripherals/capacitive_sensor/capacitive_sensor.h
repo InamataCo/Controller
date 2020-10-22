@@ -4,9 +4,10 @@
 
 #include <memory>
 
-#include "peripheral/capabilities/get_value.h"
+#include "peripheral/capabilities/get_values.h"
 #include "peripheral/peripheral.h"
 #include "peripheral/peripheral_factory.h"
+#include "utils/value_unit.h"
 
 namespace bernd_box {
 namespace peripheral {
@@ -16,7 +17,7 @@ namespace capacative_sensor {
 /**
  * Peripheral to read capacitive sensors
  */
-class CapacitiveSensor : public Peripheral, public capabilities::GetValue {
+class CapacitiveSensor : public Peripheral, public capabilities::GetValues {
  public:
   CapacitiveSensor(const JsonObjectConst& parameters);
   virtual ~CapacitiveSensor() = default;
@@ -30,14 +31,15 @@ class CapacitiveSensor : public Peripheral, public capabilities::GetValue {
    *
    * \return Value of the touch pad sensor
    */
-  capabilities::ValueUnit getValue() final;
+  std::vector<utils::ValueUnit> getValues() final;
 
  private:
-  static std::shared_ptr<Peripheral> factory(const JsonObjectConst& parameter);
+  static std::shared_ptr<Peripheral> factory(const JsonObjectConst& parameters);
   static bool registered_;
   static bool capability_get_value_;
 
   unsigned int sense_pin_;
+  utils::UUID data_point_type_;
 
   /// Name of parameter for the pin # to measure capacitance
   static const __FlashStringHelper* sense_pin_key_;

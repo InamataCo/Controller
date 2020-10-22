@@ -5,14 +5,21 @@ namespace peripheral {
 namespace peripherals {
 namespace pump {
 
-PumpActuator::PumpActuator(const JsonObjectConst& parameter) {
+PumpActuator::PumpActuator(const JsonObjectConst& parameters) {
   // Get the pin # for the pump and validate data. Invalidate on error
-  JsonVariantConst pump_pin = parameter[pump_pin_key_];
+  JsonVariantConst pump_pin = parameters[pump_pin_key_];
   if (!pump_pin.is<unsigned int>()) {
     setInvalid(pump_pin_key_error_);
     return;
   }
   pump_pin_ = pump_pin;
+
+  pump_state_data_point_type_ =
+      utils::UUID(parameters[pump_state_data_point_type_key_]);
+  if (!pump_state_data_point_type_.isValid()) {
+    setInvalid(pump_state_data_point_type_key_error_);
+    return;
+  }
 
   // Setup pin to be control the GPIO state
   pinMode(pump_pin_, OUTPUT);
@@ -25,10 +32,10 @@ const String& PumpActuator::type() {
   return name;
 }
 
-void PumpActuator::setValue(capabilities::ValueUnit value_unit) {
-  if (value_unit.unit != String(set_value_unit_)) {
+void PumpActuator::setValue(utils::ValueUnit value_unit) {
+  if (value_unit.data_point_type != pump_state_data_point_type_) {
     Services::getServer().sendError(
-        type(), value_unit.sourceUnitError(set_value_unit_));
+        type(), value_unit.sourceUnitError(pump_state_data_point_type_));
     return;
   }
 
@@ -42,11 +49,14 @@ void PumpActuator::setValue(capabilities::ValueUnit value_unit) {
   }
 }
 
-const __FlashStringHelper* PumpActuator::set_value_unit_ = F("bool");
-
 const __FlashStringHelper* PumpActuator::pump_pin_key_ = F("pump_pin");
 const __FlashStringHelper* PumpActuator::pump_pin_key_error_ =
     F("Missing property: pump_pin (unsigned int)");
+
+const __FlashStringHelper* PumpActuator::pump_state_data_point_type_key_ =
+    F("pump_state_data_point_type");
+const __FlashStringHelper* PumpActuator::pump_state_data_point_type_key_error_ =
+    F("Missing property: pump_state_data_point_type (UUID)");
 
 }  // namespace pump
 }  // namespace peripherals

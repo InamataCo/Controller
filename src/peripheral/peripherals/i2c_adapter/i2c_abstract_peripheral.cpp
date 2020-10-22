@@ -6,9 +6,9 @@ namespace peripherals {
 namespace i2c_adapter {
 
 I2CAbstractPeripheral::I2CAbstractPeripheral(const JsonObjectConst& parameter) {
-  UUID i2c_adapter_uuid(parameter[i2c_adapter_uuid_key_]);
+  utils::UUID i2c_adapter_uuid(parameter[i2c_adapter_key_]);
   if (!i2c_adapter_uuid.isValid()) {
-    setInvalid(i2c_adapter_uuid_key_error_);
+    setInvalid(i2c_adapter_key_error_);
     return;
   }
 
@@ -39,7 +39,8 @@ String I2CAbstractPeripheral::missingI2CDeviceError(int i2c_address) {
   return error;
 }
 
-String I2CAbstractPeripheral::invalidI2CAdapterError(const UUID& uuid, const String& type) {
+String I2CAbstractPeripheral::invalidI2CAdapterError(const utils::UUID& uuid,
+                                                     const String& type) {
   String error = uuid.toString();
   error += F(" is not a valid ");
   error += type;
@@ -50,10 +51,10 @@ const __FlashStringHelper* I2CAbstractPeripheral::i2c_address_key_ =
     F("i2c_address");
 const __FlashStringHelper* I2CAbstractPeripheral::i2c_address_key_error_ =
     F("Missing property: i2c_address (uint16_t)");
-const __FlashStringHelper* I2CAbstractPeripheral::i2c_adapter_uuid_key_ =
-    F("adapter");
-const __FlashStringHelper* I2CAbstractPeripheral::i2c_adapter_uuid_key_error_ =
-    F("Missing property: adapter (uuid)");
+const __FlashStringHelper* I2CAbstractPeripheral::i2c_adapter_key_ =
+    F("i2c_adapter");
+const __FlashStringHelper* I2CAbstractPeripheral::i2c_adapter_key_error_ =
+    F("Missing property: i2c_adapter (uuid)");
 
 }  // namespace i2c_adapter
 }  // namespace peripherals

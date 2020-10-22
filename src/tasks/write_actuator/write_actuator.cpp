@@ -7,9 +7,10 @@ WriteActuator::WriteActuator(const JsonObjectConst& parameters,
                              Scheduler& scheduler)
     : BaseTask(scheduler) {
   // Get the UUID to later find the pointer to the peripheral object
-  UUID peripheral_uuid(parameters[peripheral_uuid_key_]);
+  utils::UUID peripheral_uuid(parameters[peripheral_key_]);
   if (!peripheral_uuid.isValid()) {
-    setInvalid(peripheral_uuid_key_error_);
+    setInvalid(peripheral_key_error_);
+    return;
   }
 
   // Search for the peripheral for the given name
@@ -37,14 +38,15 @@ WriteActuator::WriteActuator(const JsonObjectConst& parameters,
   }
 
   // Get the unit of the value
-  JsonVariantConst unit = parameters[value_unit_.unit_key];
-  if (unit.isNull() || !unit.is<char*>()) {
-    setInvalid(value_unit_.unit_key_error);
+  utils::UUID data_point_type(parameters[value_unit_.data_point_type_key]);
+  if (!data_point_type.isValid()) {
+    setInvalid(value_unit_.data_point_type_key_error);
     return;
   }
 
   // Save the ValueUnit
-  value_unit_ = {value, unit};
+  value_unit_ =
+      utils::ValueUnit{.value = value, .data_point_type = data_point_type};
 
   // Perform one iteration, then exit
   setIterations(1);

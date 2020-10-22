@@ -15,7 +15,7 @@ bool SetValue::isSupported(const String& type) {
 
 const std::set<String>& SetValue::getTypes() { return getSupportedTypes(); }
 
-String SetValue::invalidTypeError(const UUID& uuid,
+String SetValue::invalidTypeError(const utils::UUID& uuid,
                                   std::shared_ptr<Peripheral> peripheral) {
   String error(F("SetValue capability not supported: "));
   error += uuid.toString();

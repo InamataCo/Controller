@@ -2,13 +2,12 @@
 
 #include <Arduino.h>
 
-
 #include <memory>
 #include <set>
 
-#include "types.h"
-#include "utils/uuid.h"
 #include "peripheral/peripheral.h"
+#include "utils/uuid.h"
+#include "utils/value_unit.h"
 
 namespace bernd_box {
 namespace peripheral {
@@ -19,20 +18,19 @@ namespace capabilities {
  */
 class SetValue {
  public:
-
   /**
    * Interface to set a unit-less value
-   * 
+   *
    * \param value The value of the unitless value
    */
-  virtual void setValue(ValueUnit value_unit) = 0;
+  virtual void setValue(utils::ValueUnit value_unit) = 0;
 
   // Type checking
   static bool registerType(const String& type);
   static bool isSupported(const String& type);
   static const std::set<String>& getTypes();
 
-  static String invalidTypeError(const UUID& uuid,
+  static String invalidTypeError(const utils::UUID& uuid,
                                  std::shared_ptr<Peripheral> peripheral);
 
  private:

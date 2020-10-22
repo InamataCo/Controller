@@ -16,7 +16,6 @@
 #include "utils/ota.h"
 // #include "peripherals/peripheral_factory.h"
 // #include "peripherals/peripheral_manager.h"
-#include "peripheral/capabilities/get_value.h"
 // #include "tasks/acidity_sensor.h"
 // #include "tasks/air_sensors.h"
 // #include "tasks/analog_sensors.h"

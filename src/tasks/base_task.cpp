@@ -27,7 +27,11 @@ void BaseTask::OnTaskDisable() {}
 bool BaseTask::isValid() const { return is_valid_; }
 
 ErrorResult BaseTask::getError() const {
-  return ErrorResult(getType(), error_message_);
+  if (is_valid_) {
+    return ErrorResult();
+  } else {
+    return ErrorResult(getType(), error_message_);
+  }
 }
 
 void BaseTask::setInvalid() { is_valid_ = false; }
@@ -37,16 +41,15 @@ void BaseTask::setInvalid(const String& error_message) {
   error_message_ = error_message_;
 }
 
-String BaseTask::peripheralNotFoundError(const UUID& uuid) {
+String BaseTask::peripheralNotFoundError(const utils::UUID& uuid) {
   String error(peripheral_not_found_error_);
   error += uuid.toString();
   return error;
 }
 
-const __FlashStringHelper* BaseTask::peripheral_uuid_key_ =
-    F("peripheral_uuid");
-const __FlashStringHelper* BaseTask::peripheral_uuid_key_error_ =
-    F("Missing property: peripheral_uuid (uuid)");
+const __FlashStringHelper* BaseTask::peripheral_key_ = F("peripheral");
+const __FlashStringHelper* BaseTask::peripheral_key_error_ =
+    F("Missing property: peripheral (uuid)");
 const __FlashStringHelper* BaseTask::peripheral_not_found_error_ =
     F("Could not find peripheral: ");
 
@@ -69,8 +72,7 @@ bool TaskRemovalTask::Callback() {
       delete base_task;
       it = tasks_.erase(it);
     } else {
-      Serial.print(F(__PRETTY_FUNCTION__));
-      Serial.println(F(": Attempted to delete non-base class"));
+      Serial.println(F("Attempted to delete non-base class"));
       ++it;
     }
   }

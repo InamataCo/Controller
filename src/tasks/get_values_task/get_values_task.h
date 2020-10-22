@@ -5,7 +5,7 @@
 #include <memory>
 
 #include "managers/services.h"
-#include "peripheral/capabilities/get_value.h"
+#include "peripheral/capabilities/get_values.h"
 #include "peripheral/peripheral.h"
 #include "tasks/base_task.h"
 #include "utils/uuid.h"
@@ -17,16 +17,21 @@ namespace tasks {
  * Abstract class that implements getting a peripheral which supports the
  * GetValue capability for a given name.
  */
-class GetValueTask : public BaseTask {
+class GetValuesTask : public BaseTask {
  public:
-  GetValueTask(const JsonObjectConst& parameters, Scheduler& scheduler);
-  virtual ~GetValueTask() = default;
+  GetValuesTask(const JsonObjectConst& parameters, Scheduler& scheduler);
+  virtual ~GetValuesTask() = default;
 
-  std::shared_ptr<peripheral::capabilities::GetValue> getPeripheral();
-  const UUID& getPeripheralUUID() const;
+  std::shared_ptr<peripheral::capabilities::GetValues> getPeripheral();
+  const utils::UUID& getPeripheralUUID() const;
 
- protected:
-  // JSON keys and error messages
+  /**
+   * Make a JSON object with the value units and UUID from the peripheral
+   *
+   * \param result_object The JSON object to add the value units and UUID to
+   */
+  void makeGetValuesJson(JsonObject& result_object);
+
   static const __FlashStringHelper* threshold_key_;
   static const __FlashStringHelper* threshold_key_error_;
   static const __FlashStringHelper* trigger_type_key_;
@@ -37,8 +42,8 @@ class GetValueTask : public BaseTask {
   static const __FlashStringHelper* duration_ms_key_error_;
 
  private:
-  std::shared_ptr<peripheral::capabilities::GetValue> peripheral_;
-  UUID peripheral_uuid_;
+  std::shared_ptr<peripheral::capabilities::GetValues> peripheral_;
+  utils::UUID peripheral_uuid_;
 };
 
 }  // namespace tasks

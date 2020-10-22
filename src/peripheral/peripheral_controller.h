@@ -29,14 +29,14 @@ class PeripheralController {
    * @param name Name of the peripheral to be found
    * @return A shared pointer of the object, or a nullptr if it does not exist
    */
-  std::shared_ptr<Peripheral> getPeripheral(const UUID& name);
+  std::shared_ptr<Peripheral> getPeripheral(const utils::UUID& name);
 
  private:
   ErrorResult add(const JsonObjectConst& doc);
   ErrorResult remove(const JsonObjectConst& doc);
 
   Server& server_;
-  std::map<UUID, std::shared_ptr<Peripheral>> peripherals_;
+  std::map<utils::UUID, std::shared_ptr<Peripheral>> peripherals_;
   PeripheralFactory& peripheral_factory_;
 
   const __FlashStringHelper* peripheral_command_key_ = F("peripheral");

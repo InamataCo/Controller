@@ -13,6 +13,13 @@ Led::Led(const JsonObjectConst& parameters) {
     return;
   }
 
+  data_point_type_ =
+      utils::UUID(parameters[utils::ValueUnit::data_point_type_key]);
+  if (!data_point_type_.isValid()) {
+    setInvalid(utils::ValueUnit::data_point_type_key_error);
+    return;
+  }
+
   bool error = setup(led_pin);
   if (error) {
     setInvalid(no_channels_available_error_);
@@ -29,19 +36,15 @@ const String& Led::type() {
   return name;
 }
 
-void Led::setValue(capabilities::ValueUnit value_unit) {
-  if (value_unit.unit != String(set_value_unit_)) {
+void Led::setValue(utils::ValueUnit value_unit) {
+  if (value_unit.data_point_type != data_point_type_) {
     Services::getServer().sendError(
-        type(), value_unit.sourceUnitError(set_value_unit_));
+        type(), value_unit.sourceUnitError(data_point_type_));
     return;
   }
 
-  // Bound value as a percentage between 0 and 1
-  if (value_unit.value < 0) {
-    value_unit.value = 0;
-  } else if (value_unit.value > 1) {
-    value_unit.value = 1;
-  }
+  // Clamp the value as a percentage between 0 and 1
+  value_unit.value = std::fmax(0, std::fmin(1, value_unit.value));
 
   const uint max_value = (2 << resolution_) - 1;
   ledcWrite(led_channel_, value_unit.value * max_value);

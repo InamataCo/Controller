@@ -2,8 +2,8 @@
 
 #include <Arduino.h>
 
-#include <set>
 #include <memory>
+#include <set>
 
 #include "peripheral/peripheral.h"
 #include "utils/color.h"
@@ -22,7 +22,7 @@ class LedStrip {
 
   /**
    * Interface to turn the complete LED strip on to a specific color
-   * 
+   *
    * \param color Color to turn the LED strip on to
    */
   virtual void turnOn(utils::Color color) = 0;
@@ -37,7 +37,7 @@ class LedStrip {
   static bool isSupported(const String& type);
   static const std::set<String>& getTypes();
 
-  static String invalidTypeError(const UUID& uuid,
+  static String invalidTypeError(const utils::UUID& uuid,
                                  std::shared_ptr<Peripheral> peripheral);
 
  private:
