@@ -45,10 +45,9 @@ bool SystemMonitor::Callback() {
   float cpuIdle = scheduler_->getCpuLoadIdle();
   scheduler_->cpuLoadReset();
 
-  // Time in idle loop
-  doc["cpu_idle_percent"] = cpuIdle / cpuTotal * 100.0;
   // Productive work (not idle, not scheduling) --> time in task callbacks
   doc["productive_percent"] = 100 - ((cpuIdle + cpuCycles) / cpuTotal * 100.0);
+  doc["wifi_rssi"] = WiFi.RSSI();
 
   server_.send(name_, doc);
   return true;
