@@ -38,7 +38,7 @@ void BaseTask::setInvalid() { is_valid_ = false; }
 
 void BaseTask::setInvalid(const String& error_message) {
   is_valid_ = false;
-  error_message_ = error_message_;
+  error_message_ = error_message;
 }
 
 String BaseTask::peripheralNotFoundError(const utils::UUID& uuid) {

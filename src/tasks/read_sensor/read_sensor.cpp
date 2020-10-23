@@ -5,6 +5,10 @@ namespace tasks {
 
 ReadSensor::ReadSensor(const JsonObjectConst& parameters, Scheduler& scheduler)
     : GetValuesTask(parameters, scheduler) {
+  if(!isValid()) {
+    return;
+  }
+
   // Perform one iteration, then exit
   setIterations(1);
   enable();
@@ -35,12 +39,7 @@ bool ReadSensor::registered_ = TaskFactory::registerTask(type(), factory);
 
 BaseTask* ReadSensor::factory(const JsonObjectConst& parameters,
                               Scheduler& scheduler) {
-  auto read_sensor = new ReadSensor(parameters, scheduler);
-  if (read_sensor->isValid()) {
-    return read_sensor;
-  } else {
-    return nullptr;
-  }
+  return new ReadSensor(parameters, scheduler);
 }
 
 }  // namespace tasks

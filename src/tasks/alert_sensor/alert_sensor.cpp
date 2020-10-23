@@ -6,6 +6,10 @@ namespace tasks {
 AlertSensor::AlertSensor(const JsonObjectConst& parameters,
                          Scheduler& scheduler)
     : GetValuesTask(parameters, scheduler) {
+  if(!isValid()) {
+    return;
+  }
+
   // Get the type of trigger [rising, falling, either]
   JsonVariantConst trigger_type = parameters[trigger_type_key_];
   if (trigger_type.isNull() || !trigger_type.is<char*>()) {

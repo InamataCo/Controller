@@ -69,12 +69,7 @@ bool WriteActuator::registered_ = TaskFactory::registerTask(type(), factory);
 
 BaseTask* WriteActuator::factory(const JsonObjectConst& parameters,
                                  Scheduler& scheduler) {
-  auto write_sensor = new WriteActuator(parameters, scheduler);
-  if (write_sensor->isValid()) {
-    return write_sensor;
-  } else {
-    return nullptr;
-  }
+  return new WriteActuator(parameters, scheduler);
 }
 
 }  // namespace tasks

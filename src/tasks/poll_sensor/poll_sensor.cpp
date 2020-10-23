@@ -5,6 +5,10 @@ namespace tasks {
 
 PollSensor::PollSensor(const JsonObjectConst& parameters, Scheduler& scheduler)
     : GetValuesTask(parameters, scheduler) {
+  if (!isValid()) {
+    return;
+  }
+
   // Get the interval with which to poll the sensor
   JsonVariantConst interval_ms = parameters[interval_ms_key_];
   if (!interval_ms.is<unsigned int>()) {
@@ -44,9 +48,16 @@ bool PollSensor::Callback() {
   makeGetValuesJson(result_object);
 
   // Send the value units and peripheral UUID to the server
-  Services::getMqtt().send(type(), result_doc);
+  Services::getServer().send(type(), result_doc);
 
   return true;
+}
+
+bool PollSensor::registered_ = TaskFactory::registerTask(type(), factory);
+
+BaseTask* PollSensor::factory(const JsonObjectConst& parameters,
+                              Scheduler& scheduler) {
+  return new PollSensor(parameters, scheduler);
 }
 
 }  // namespace tasks

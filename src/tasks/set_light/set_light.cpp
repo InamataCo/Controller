@@ -96,12 +96,7 @@ bool SetLight::registered_ = TaskFactory::registerTask(type(), factory);
 
 BaseTask* SetLight::factory(const JsonObjectConst& parameters,
                             Scheduler& scheduler) {
-  auto alert_sensor = new SetLight(parameters, scheduler);
-  if (alert_sensor->isValid()) {
-    return alert_sensor;
-  } else {
-    return nullptr;
-  }
+  return new SetLight(parameters, scheduler);
 }
 
 const __FlashStringHelper* SetLight::color_key_ = F("color");
