@@ -2,6 +2,7 @@
 
 namespace bernd_box {
 namespace tasks {
+namespace system_monitor {
 
 SystemMonitor::SystemMonitor(Scheduler* scheduler)
     : Task(scheduler),
@@ -55,5 +56,6 @@ bool SystemMonitor::Callback() {
 
 const std::chrono::seconds SystemMonitor::default_interval_{60};
 
+}  // namespace system_monitor
 }  // namespace tasks
 }  // namespace bernd_box

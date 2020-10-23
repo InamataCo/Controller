@@ -7,6 +7,7 @@
 
 namespace bernd_box {
 namespace tasks {
+namespace system_monitor {
 
 /**
  * Monitors the controller's state and informs the coordinator about it. Health
@@ -27,7 +28,7 @@ class SystemMonitor : public Task {
  private:
   /**
    * Resets the CPU load counters and delays the task for one iteration
-   * 
+   *
    * \return true
    */
   bool OnEnable() final;
@@ -48,5 +49,6 @@ class SystemMonitor : public Task {
   static const std::chrono::seconds default_interval_;
 };
 
+}  // namespace system_monitor
 }  // namespace tasks
 }  // namespace bernd_box

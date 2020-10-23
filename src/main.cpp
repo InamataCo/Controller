@@ -19,13 +19,13 @@
 // #include "tasks/acidity_sensor.h"
 // #include "tasks/air_sensors.h"
 // #include "tasks/analog_sensors.h"
-#include "tasks/connectivity.h"
+#include "tasks/connectivity/connectivity.h"
 // #include "tasks/dallas_temperature.h"
 // #include "tasks/dissolved_oxygen_sensor.h"
 // #include "tasks/light_sensors.h"
 // #include "tasks/measurement_protocol.h"
 // #include "tasks/pump.h"
-#include "tasks/system_monitor.h"
+#include "tasks/system_monitor/system_monitor.h"
 #include "utils/setupNode.h"
 
 //----------------------------------------------------------------------------
@@ -45,7 +45,7 @@ Scheduler& scheduler = bernd_box::Services::getScheduler();
     {bernd_box::tasks::Action::kSleep, std::chrono::minutes(15)},
 };*/
 
-bernd_box::tasks::CheckConnectivity checkConnectivity(
+bernd_box::tasks::connectivity::CheckConnectivity checkConnectivity(
     &scheduler, bernd_box::wifi_connect_timeout,
     bernd_box::mqtt_connection_attempts);
 /*bernd_box::tasks::DallasTemperature dallasTemperatureTask(
@@ -63,7 +63,7 @@ bernd_box::tasks::DissolvedOxygenSensor dissolvedOxygenSensorTask(
 bernd_box::tasks::MeasurementProtocol measurementProtocol(
     &scheduler, bernd_box::Services::getMqtt(), io, report_list, pumpTask,
     dallasTemperatureTask, dissolvedOxygenSensorTask, aciditySensorTask);*/
-bernd_box::tasks::SystemMonitor systemMonitorTask(&scheduler);
+bernd_box::tasks::system_monitor::SystemMonitor systemMonitorTask(&scheduler);
 // bernd_box::tasks::L293dMotors l293d_motors(&scheduler, io,
 // bernd_box::Services::getMqtt());
 

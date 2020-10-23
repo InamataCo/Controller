@@ -2,6 +2,7 @@
 
 namespace bernd_box {
 namespace tasks {
+namespace connectivity {
 
 CheckConnectivity::CheckConnectivity(
     Scheduler* scheduler, const std::chrono::seconds wifi_connect_timeout,
@@ -123,5 +124,6 @@ bool CheckConnectivity::handleServer() {
   return true;
 }
 
+}  // namespace connectivity
 }  // namespace tasks
 }  // namespace bernd_box

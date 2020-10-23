@@ -11,6 +11,7 @@
 
 namespace bernd_box {
 namespace tasks {
+namespace connectivity {
 
 class CheckConnectivity : public Task {
  private:
@@ -45,5 +46,6 @@ class CheckConnectivity : public Task {
   long time_check_duration_ms = 24 * 60 * 60 * 1000;
 };
 
+}  // namespace connectivity
 }  // namespace tasks
 }  // namespace bernd_box
