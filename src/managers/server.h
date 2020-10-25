@@ -7,6 +7,7 @@
 #include <map>
 
 #include "managers/io_types.h"
+#include "utils/uuid.h"
 
 namespace bernd_box {
 
@@ -36,6 +37,13 @@ class Server {
 
   virtual void sendRegister() = 0;
   virtual void sendError(const String& who, const String& message) = 0;
-  virtual void sendError(const ErrorResult& error, const String& request_id = "") = 0;
+  virtual void sendError(const ErrorResult& error,
+                         const String& request_id = "") = 0;
+
+  virtual void sendResults(JsonObjectConst results) = 0;
+
+  static const __FlashStringHelper* request_id_key_;
+  static const __FlashStringHelper* type_key_;
+  static const __FlashStringHelper* type_result_name_;
 };
 }  // namespace bernd_box

@@ -169,6 +169,13 @@ void WebSocket::sendError(const ErrorResult& error, const String& request_id) {
   sendTXT(register_buf.data(), n);
 }
 
+void WebSocket::sendResults(JsonObjectConst results) {
+  std::vector<char> buffer = std::vector<char>(measureJson(results) + 1);
+  size_t n = serializeJson(results, buffer.data(), buffer.size());
+
+  sendTXT(buffer.data(), n);
+}
+
 void WebSocket::handleEvent(WStype_t type, uint8_t* payload, size_t length) {
   switch (type) {
     case WStype_DISCONNECTED: {

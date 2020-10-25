@@ -20,15 +20,16 @@ class TaskController {
   TaskController(Scheduler& scheduler, TaskFactory& factory, Server& server);
   virtual ~TaskController() = default;
 
-  const String& type();
+  static const String& type();
 
   /**
-   * Callback for incoming MQTT messages for the TaskFactory
+   * Callback for messages regarding tasks from the server
    *
    * @param message The message as a JSON doc
    */
   void handleCallback(const JsonObjectConst& message);
 
+ private:
   /**
    * Create a new task
    *
@@ -47,25 +48,32 @@ class TaskController {
 
   /**
    * Sends the current status of the task factory
-   *
    */
   void sendStatus();
 
-  const __FlashStringHelper* task_command_name_ = F("task");
-  const __FlashStringHelper* trace_id_name_ = F("id");
-  const __FlashStringHelper* create_command_name_ = F("create");
-  const __FlashStringHelper* stop_command_name_ = F("stop");
-  const __FlashStringHelper* status_command_name_ = F("status");
-
-  static const String task_type_system_task_;
-
- private:
-  Task* findTask(unsigned int id);
+  /**
+   * Find the base task by UUID
+   * 
+   * \param uuid The ID of the base task
+   * \return Pointer to the found base task
+   */
+  BaseTask* findTask(const utils::UUID& uuid);
   const String& getTaskType(Task* task);
+
+  static void addResultEntry(const JsonVariantConst& uuid,
+                             const ErrorResult& error,
+                             const JsonArray& results);
 
   Scheduler& scheduler_;
   TaskFactory& factory_;
   Server& server_;
+
+  static const __FlashStringHelper* task_command_key_;
+  static const __FlashStringHelper* create_command_key_;
+  static const __FlashStringHelper* stop_command_key_;
+  static const __FlashStringHelper* status_command_key_;
+
+  static const String task_type_system_task_;
 };
 }  // namespace tasks
 }  // namespace bernd_box

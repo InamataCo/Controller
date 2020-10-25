@@ -4,7 +4,11 @@ namespace bernd_box {
 namespace tasks {
 
 SetLight::SetLight(const JsonObjectConst& parameters, Scheduler& scheduler)
-    : BaseTask(scheduler) {
+    : BaseTask(scheduler, parameters) {
+  if (!isValid()) {
+    return;
+  }
+
   // Get the UUID to later find the pointer to the peripheral object
   peripheral_uuid_ = utils::UUID(parameters[peripheral_key_]);
   if (!peripheral_uuid_.isValid()) {

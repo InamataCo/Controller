@@ -5,7 +5,12 @@ namespace tasks {
 
 WriteActuator::WriteActuator(const JsonObjectConst& parameters,
                              Scheduler& scheduler)
-    : BaseTask(scheduler) {
+    : BaseTask(scheduler, parameters) {
+  // Abort if the base class failed initialization
+  if (!isValid()) {
+    return;
+  }
+
   // Get the UUID to later find the pointer to the peripheral object
   utils::UUID peripheral_uuid(parameters[peripheral_key_]);
   if (!peripheral_uuid.isValid()) {

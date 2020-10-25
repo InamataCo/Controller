@@ -12,6 +12,42 @@ const String& PeripheralController::type() {
   return name;
 }
 
+void PeripheralController::handleCallback(const JsonObjectConst& message) {
+  // Check if any peripheral commands have to be processed
+  JsonVariantConst peripheral_commands = message[peripheral_command_key_];
+  if (!peripheral_commands) {
+    return;
+  }
+
+  // Init the result doc with type and the request ID
+  DynamicJsonDocument result_doc(BB_JSON_PAYLOAD_SIZE);
+  result_doc[Server::type_key_] = Server::type_result_name_;
+  result_doc[Server::request_id_key_] = message[Server::request_id_key_];
+  JsonObject peripheral_results =
+      result_doc.createNestedObject(peripheral_command_key_);
+
+  // Add a peripheral for each command and store the result
+  JsonArray add_results =
+      peripheral_results.createNestedArray(add_command_key_);
+  for (JsonVariantConst add_command :
+       peripheral_commands[add_command_key_].as<JsonArrayConst>()) {
+    ErrorResult error = add(add_command);
+    addResultEntry(add_command["uuid"], error, add_results);
+  }
+
+  // Remove a peripheral for each command and store the result
+  JsonArray remove_results =
+      peripheral_results.createNestedArray(remove_command_key_);
+  for (JsonVariantConst remove_command :
+       peripheral_commands[remove_command_key_].as<JsonArrayConst>()) {
+    ErrorResult error = remove(remove_command);
+    addResultEntry(remove_command["uuid"], error, remove_results);
+  }
+
+  // Send the command results
+  server_.sendResults(result_doc.as<JsonObject>());
+}
+
 ErrorResult PeripheralController::add(const JsonObjectConst& doc) {
   utils::UUID uuid(doc[uuid_key_]);
   if (!uuid.isValid()) {
@@ -66,27 +102,30 @@ std::shared_ptr<peripheral::Peripheral> PeripheralController::getPeripheral(
   }
 }
 
-void PeripheralController::handleCallback(const JsonObjectConst& message) {
-  JsonVariantConst peripheral_commands = message[peripheral_command_key_];
+void PeripheralController::addResultEntry(const JsonVariantConst& uuid,
+                                          const ErrorResult& error,
+                                          const JsonArray& results) {
+  JsonObject result = results.createNestedObject();
 
-  // Handle all add commands
-  for (JsonVariantConst add_command :
-       peripheral_commands[add_command_key_].as<JsonArrayConst>()) {
-    ErrorResult error = add(add_command);
-    if (error.is_error()) {
-      server_.sendError(error, message[request_id_key_].as<String>());
-    }
-  }
-
-  // Handle all remove commands
-  for (JsonVariantConst remove_command :
-       peripheral_commands[remove_command_key_].as<JsonArrayConst>()) {
-    ErrorResult error = remove(remove_command);
-    if (error.is_error()) {
-      server_.sendError(error, message[request_id_key_].as<String>());
-    }
+  // Save whether the peripheral could be created or the reason for failing
+  if (error.isError()) {
+    result[uuid_key_] = uuid;
+    result["status"] = "fail";
+    result["detail"] = error.detail_;
+  } else {
+    result[uuid_key_] = uuid;
+    result["status"] = "success";
   }
 }
+
+const __FlashStringHelper* PeripheralController::peripheral_command_key_ =
+    F("peripheral");
+const __FlashStringHelper* PeripheralController::uuid_key_ = F("uuid");
+const __FlashStringHelper* PeripheralController::uuid_key_error_ =
+    F("Missing property: uuid (uuid)");
+const __FlashStringHelper* PeripheralController::add_command_key_ = F("add");
+const __FlashStringHelper* PeripheralController::remove_command_key_ =
+    F("remove");
 
 }  // namespace peripheral
 }  // namespace bernd_box

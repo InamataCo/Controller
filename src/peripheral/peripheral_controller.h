@@ -19,9 +19,10 @@ namespace peripheral {
 class PeripheralController {
  public:
   PeripheralController(Server& server, PeripheralFactory& peripheral_factory);
-  void handleCallback(const JsonObjectConst& message);
 
   static const String& type();
+  
+  void handleCallback(const JsonObjectConst& message);
 
   /**
    * Returns a shared pointer to the object or a nullptr if not found
@@ -32,20 +33,38 @@ class PeripheralController {
   std::shared_ptr<Peripheral> getPeripheral(const utils::UUID& name);
 
  private:
+  /**
+   * Create a new peripheral according to the JSON doc
+   *
+   * \param doc The JSON doc with the parameters to create a peripheral
+   * \return Contains the source and cause of the error, if it failed
+   */
   ErrorResult add(const JsonObjectConst& doc);
+
+  /**
+   * Remove a peripheral by its UUID
+   *
+   * \param doc The JSON doc containing the UUID of the peripheral to remove
+   * \return Contains the source and cause of the error, if one occured
+   */
   ErrorResult remove(const JsonObjectConst& doc);
 
+  static void addResultEntry(const JsonVariantConst& uuid,
+                             const ErrorResult& error,
+                             const JsonArray& results);
+
+  /// The server to which to reply to
   Server& server_;
+  /// Map of UUIDs to their respective peripherals
   std::map<utils::UUID, std::shared_ptr<Peripheral>> peripherals_;
+  /// Factory to construct peripherals according to the JSON parameters
   PeripheralFactory& peripheral_factory_;
 
-  const __FlashStringHelper* peripheral_command_key_ = F("peripheral");
-  const __FlashStringHelper* uuid_key_ = F("uuid");
-  const __FlashStringHelper* uuid_key_error_ =
-      F("Missing property: uuid (uuid)");
-  const __FlashStringHelper* request_id_key_ = F("request_id");
-  const __FlashStringHelper* add_command_key_ = F("add");
-  const __FlashStringHelper* remove_command_key_ = F("remove");
+  static const __FlashStringHelper* peripheral_command_key_;
+  static const __FlashStringHelper* uuid_key_;
+  static const __FlashStringHelper* uuid_key_error_;
+  static const __FlashStringHelper* add_command_key_;
+  static const __FlashStringHelper* remove_command_key_;
 };
 
 }  // namespace peripheral

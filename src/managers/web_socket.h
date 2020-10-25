@@ -53,6 +53,7 @@ class WebSocket : public Server, private WebSocketsClient {
   void sendError(const String& who, const String& message) final;
   void sendError(const ErrorResult& error, const String& request_id = "") final;
 
+  void sendResults(JsonObjectConst results) final;
   
  private:
   void handleEvent(WStype_t type, uint8_t* payload, size_t length);
