@@ -45,9 +45,7 @@ Scheduler& scheduler = bernd_box::Services::getScheduler();
     {bernd_box::tasks::Action::kSleep, std::chrono::minutes(15)},
 };*/
 
-bernd_box::tasks::connectivity::CheckConnectivity checkConnectivity(
-    &scheduler, bernd_box::wifi_connect_timeout,
-    bernd_box::mqtt_connection_attempts);
+bernd_box::tasks::connectivity::CheckConnectivity checkConnectivity(&scheduler);
 /*bernd_box::tasks::DallasTemperature dallasTemperatureTask(
     &scheduler, io, bernd_box::Services::getMqtt());
 bernd_box::tasks::AnalogSensors analogSensorsTask(

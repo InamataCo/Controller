@@ -24,7 +24,7 @@ class Server {
 
   virtual ~Server() = default;
 
-  virtual bool connect() = 0;
+  virtual bool connect(std::chrono::seconds timeout) = 0;
   virtual bool isConnected() = 0;
 
   virtual void handle() = 0;

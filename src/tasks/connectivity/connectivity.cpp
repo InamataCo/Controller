@@ -4,18 +4,15 @@ namespace bernd_box {
 namespace tasks {
 namespace connectivity {
 
-CheckConnectivity::CheckConnectivity(
-    Scheduler* scheduler, const std::chrono::seconds wifi_connect_timeout,
-    const uint mqtt_connection_attempts)
+CheckConnectivity::CheckConnectivity(Scheduler* scheduler)
     : Task(scheduler),
       network_(Services::getNetwork()),
       mqtt_(Services::getMqtt()),
       server_(Services::getServer()),
-      wifi_connect_timeout_(wifi_connect_timeout),
-      mqtt_connection_attempts_(mqtt_connection_attempts),
       is_setup_(false) {
   Task::setIterations(TASK_FOREVER);
-  Task::setInterval(std::chrono::milliseconds(default_period_).count());
+  Task::setInterval(
+      std::chrono::milliseconds(check_connectivity_period).count());
 }
 
 CheckConnectivity::~CheckConnectivity() {}
@@ -29,7 +26,6 @@ bool CheckConnectivity::OnEnable() {
 bool CheckConnectivity::Callback() {
   checkNetwork();
   checkInternetTime();
-  // checkMqtt();
   handleServer();
 
   return true;
@@ -37,7 +33,7 @@ bool CheckConnectivity::Callback() {
 
 bool CheckConnectivity::checkNetwork() {
   if (!network_.isConnected()) {
-    if (network_.connect(wifi_connect_timeout_) == false) {
+    if (network_.connect(wifi_connect_timeout) == false) {
       Serial.println(
           F("CheckConnectivity::Callback: Failed to connect to WiFi.\n"
             "Restarting in 10s"));
@@ -110,11 +106,12 @@ bool CheckConnectivity::checkMqtt() {
 
 bool CheckConnectivity::handleServer() {
   if (!server_.isConnected()) {
-    if (!server_.connect()) {
+    if (!server_.connect(server_connect_timeout)) {
       Serial.println(F("Unable to connect to server. Restarting in 10s"));
       ::delay(10000);
       ESP.restart();
     } else {
+      server_.sendRegister();
       Serial.println(F("CheckConnectivity: Reconnected to server"));
     }
   }

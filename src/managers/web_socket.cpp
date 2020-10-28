@@ -2,15 +2,15 @@
 
 namespace bernd_box {
 
-WebSocket::WebSocket(std::function<std::vector<String>()> get_peripheral_names,
+WebSocket::WebSocket(std::function<std::vector<String>()> get_peripheral_types,
                      Server::Callback peripheral_controller_callback,
-                     std::function<std::vector<String>()> get_task_names,
+                     std::function<std::vector<String>()> get_task_types,
                      Server::Callback task_controller_callback,
                      const char* core_domain, const char* ws_token,
                      const char* root_cas)
-    : get_peripheral_names_(get_peripheral_names),
+    : get_peripheral_types_(get_peripheral_types),
       peripheral_controller_callback_(peripheral_controller_callback),
-      get_task_names_(get_task_names),
+      get_task_types_(get_task_types),
       task_controller_callback_(task_controller_callback),
       core_domain_(core_domain),
       ws_token_(ws_token),
@@ -23,8 +23,11 @@ const String& WebSocket::type() {
 
 bool WebSocket::isConnected() { return WebSocketsClient::isConnected(); }
 
-bool WebSocket::connect() {
+bool WebSocket::connect(std::chrono::seconds timeout) {
+  // Configure the WebSocket interface with the server, TLS certificate and the
+  // reconnect interval
   if (!is_setup_) {
+    is_setup_ = true;
     if (root_cas_) {
       beginSslWithCA(core_domain_, 443, controller_path_, root_cas_, ws_token_);
     } else {
@@ -34,18 +37,16 @@ bool WebSocket::connect() {
     setReconnectInterval(5000);
   }
 
-  // TODO: Add timeout to reboot ESP
+  // Attempt to connect to the server until connected or it times out
+  std::chrono::milliseconds connect_start(millis());
   while (!isConnected()) {
+    if (std::chrono::milliseconds(millis()) - connect_start > timeout) {
+      return false;
+    }
     loop();
   }
 
-  if (!is_setup_) {
-    sendRegister();
-
-    is_setup_ = true;
-  }
-
-  return isConnected();
+  return true;
 }
 
 void WebSocket::handle() { loop(); }
@@ -96,28 +97,28 @@ void WebSocket::sendRegister() {
   doc["type"] = "reg";
 
   // Collect all peripheral factory names and write them to a JSON doc
-  std::vector<String> peripheral_names = get_peripheral_names_();
-  DynamicJsonDocument peripherals_doc(JSON_ARRAY_SIZE(peripheral_names.size()));
+  std::vector<String> peripheral_types = get_peripheral_types_();
+  DynamicJsonDocument peripherals_doc(JSON_ARRAY_SIZE(peripheral_types.size()));
   JsonArray peripheral_array = peripherals_doc.to<JsonArray>();
   Serial.println(F("Peripheral types:"));
 
-  for (const auto& name : peripheral_names) {
+  for (const auto& name : peripheral_types) {
     peripheral_array.add(name.c_str());
     Serial.printf("\t%s\n", name.c_str());
   }
-  doc["peripheral_names"] = peripheral_array;
+  doc["peripheral_types"] = peripheral_array;
 
   // Collect all task factory names and write them to a JSON doc
-  std::vector<String> task_names = get_task_names_();
-  DynamicJsonDocument tasks_doc(JSON_ARRAY_SIZE(task_names.size()));
+  std::vector<String> task_types = get_task_types_();
+  DynamicJsonDocument tasks_doc(JSON_ARRAY_SIZE(task_types.size()));
   JsonArray task_array = tasks_doc.to<JsonArray>();
   Serial.println(F("Task types:"));
 
-  for (const auto& name : task_names) {
+  for (const auto& name : task_types) {
     task_array.add(name.c_str());
     Serial.printf("\t%s\n", name.c_str());
   }
-  doc["task_names"] = task_array;
+  doc["task_types"] = task_array;
 
   // Calculate the size of the resultant serialized JSON, create a buffer of
   // that size and serialize the JSON into that buffer.

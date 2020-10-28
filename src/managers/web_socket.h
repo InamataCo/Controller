@@ -27,19 +27,17 @@ class WebSocket : public Server, private WebSocketsClient {
    * This enables bi-directional communication between the controller and the
    * server while removing the intermediate such as the Coordinator over MQTT.
    */
-  WebSocket(std::function<std::vector<String>()> get_peripheral_names,
+  WebSocket(std::function<std::vector<String>()> get_peripheral_types,
             Server::Callback peripheral_controller_callback,
-            std::function<std::vector<String>()> get_task_names,
-            Server::Callback task_controller_callback,
-            const char* core_domain,
-            const char* ws_token,
-            const char* root_cas);
+            std::function<std::vector<String>()> get_task_types,
+            Server::Callback task_controller_callback, const char* core_domain,
+            const char* ws_token, const char* root_cas);
   virtual ~WebSocket() = default;
 
   const String& type();
 
   bool isConnected() final;
-  bool connect() final;
+  bool connect(std::chrono::seconds timeout) final;
 
   void handle() final;
 
@@ -54,7 +52,7 @@ class WebSocket : public Server, private WebSocketsClient {
   void sendError(const ErrorResult& error, const String& request_id = "") final;
 
   void sendResults(JsonObjectConst results) final;
-  
+
  private:
   void handleEvent(WStype_t type, uint8_t* payload, size_t length);
   void handleData(const uint8_t* payload, size_t length);
@@ -62,9 +60,9 @@ class WebSocket : public Server, private WebSocketsClient {
 
   bool is_setup_ = false;
 
-  std::function<std::vector<String>()> get_peripheral_names_;
+  std::function<std::vector<String>()> get_peripheral_types_;
   Callback peripheral_controller_callback_;
-  std::function<std::vector<String>()> get_task_names_;
+  std::function<std::vector<String>()> get_task_types_;
   Callback task_controller_callback_;
 
   const char* core_domain_;

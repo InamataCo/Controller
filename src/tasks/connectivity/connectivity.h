@@ -3,6 +3,7 @@
 #include <limits>
 
 #include "TaskSchedulerDeclarations.h"
+#include "configuration.h"
 #include "managers/io.h"
 #include "managers/mqtt.h"
 #include "managers/network.h"
@@ -14,29 +15,55 @@ namespace tasks {
 namespace connectivity {
 
 class CheckConnectivity : public Task {
- private:
-  const std::chrono::milliseconds default_period_{200};
-
  public:
-  CheckConnectivity(Scheduler* scheduler,
-                    const std::chrono::seconds wifi_connect_timeout,
-                    const uint mqtt_connection_attempts);
+  CheckConnectivity(Scheduler* scheduler);
   virtual ~CheckConnectivity();
 
  private:
   bool OnEnable() final;
   bool Callback() final;
 
+  /**
+   * Connects to a network
+   * 
+   * Attempts to connect to a known WiFi access point. If it fails, restart.
+   * 
+   * \return True if all is ok
+   */
   bool checkNetwork();
+
+  /**
+   * Performs time synchronization when necessary
+   *
+   * Attempts to perform time synchronization with an NTP server. If it fails,
+   * restart.
+   * 
+   * \return True if all is ok
+   */
   bool checkInternetTime();
+
+  /**
+   * Performs server communication processing and ensure connected state
+   *
+   * Attempts to connect within a timeout. If it fails, restart. On success send
+   * a registeration message.
+   *
+   * \return True if all is ok
+   */
   bool handleServer();
+
+  /**
+   * Check the connection to the MQTT broker
+   *
+   * \deprecated As there are multiple methods to connect to the server
+   * (WebSocket or MQTT), they now use the Server() interface.
+   * \see handleServer()
+   */
   bool checkMqtt();
 
   Network& network_;
   Mqtt& mqtt_;
   Server& server_;
-  const std::chrono::seconds wifi_connect_timeout_;
-  const uint mqtt_connection_attempts_;
 
   /// The MQTT receive callback is only enabled after the setup is complete
   bool is_setup_;

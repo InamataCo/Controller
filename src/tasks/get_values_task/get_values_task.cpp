@@ -4,8 +4,13 @@ namespace bernd_box {
 namespace tasks {
 
 GetValuesTask::GetValuesTask(const JsonObjectConst& parameters,
-                           Scheduler& scheduler)
-    : BaseTask(scheduler) {
+                             Scheduler& scheduler)
+    : BaseTask(scheduler, parameters) {
+  // Check if the init from the JSON doc was successful
+  if (!isValid()) {
+    return;
+  }
+
   // Get the UUID to later find the pointer to the peripheral object
   peripheral_uuid_ = utils::UUID(parameters[peripheral_key_]);
   if (!peripheral_uuid_.isValid()) {
@@ -66,7 +71,7 @@ const __FlashStringHelper* GetValuesTask::trigger_type_key_error_ =
     F("Missing property: trigger_type (string)");
 const __FlashStringHelper* GetValuesTask::interval_ms_key_ = F("interval_ms");
 const __FlashStringHelper* GetValuesTask::interval_ms_key_error_ =
-    F("Wrong type for optional property: interval_ms (unsigned int)");
+    F("Missing property: interval_ms (unsigned int)");
 const __FlashStringHelper* GetValuesTask::duration_ms_key_ = F("duration_ms");
 const __FlashStringHelper* GetValuesTask::duration_ms_key_error_ =
     F("Wrong type for optional property: duration_ms (unsigned int)");
