@@ -26,20 +26,27 @@ void TaskController::handleCallback(const JsonObjectConst& message) {
   JsonObject task_results = result_doc.createNestedObject(task_command_key_);
 
   // Create a task for each command and store the result
-  JsonArray create_results =
-      task_results.createNestedArray(create_command_key_);
-  for (JsonVariantConst create_command :
-       task_commands[create_command_key_].as<JsonArrayConst>()) {
-    ErrorResult error = createTask(create_command);
-    addResultEntry(create_command[BaseTask::uuid_key_], error, create_results);
+  JsonArrayConst create_commands =
+      task_commands[create_command_key_].as<JsonArrayConst>();
+  if (create_commands) {
+    JsonArray create_results =
+        task_results.createNestedArray(create_command_key_);
+    for (JsonVariantConst create_command : create_commands) {
+      ErrorResult error = createTask(create_command);
+      addResultEntry(create_command[BaseTask::uuid_key_], error,
+                     create_results);
+    }
   }
 
   // Remove a task for each command and store the result
-  JsonArray stop_results = task_results.createNestedArray(stop_command_key_);
-  for (JsonVariantConst stop_command :
-       task_commands[stop_command_key_].as<JsonArrayConst>()) {
-    ErrorResult error = stopTask(stop_command);
-    addResultEntry(stop_command[BaseTask::uuid_key_], error, stop_results);
+  JsonArrayConst stop_commands =
+      task_commands[stop_command_key_].as<JsonArrayConst>();
+  if (stop_commands) {
+    JsonArray stop_results = task_results.createNestedArray(stop_command_key_);
+    for (JsonVariantConst stop_command : stop_commands) {
+      ErrorResult error = stopTask(stop_command);
+      addResultEntry(stop_command[BaseTask::uuid_key_], error, stop_results);
+    }
   }
 
   // Send the status for each running task

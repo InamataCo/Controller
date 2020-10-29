@@ -27,21 +27,27 @@ void PeripheralController::handleCallback(const JsonObjectConst& message) {
       result_doc.createNestedObject(peripheral_command_key_);
 
   // Add a peripheral for each command and store the result
-  JsonArray add_results =
-      peripheral_results.createNestedArray(add_command_key_);
-  for (JsonVariantConst add_command :
-       peripheral_commands[add_command_key_].as<JsonArrayConst>()) {
-    ErrorResult error = add(add_command);
-    addResultEntry(add_command["uuid"], error, add_results);
+  JsonArrayConst add_commands =
+      peripheral_commands[add_command_key_].as<JsonArrayConst>();
+  if (add_commands) {
+    JsonArray add_results =
+        peripheral_results.createNestedArray(add_command_key_);
+    for (JsonVariantConst add_command : add_commands) {
+      ErrorResult error = add(add_command);
+      addResultEntry(add_command["uuid"], error, add_results);
+    }
   }
 
   // Remove a peripheral for each command and store the result
-  JsonArray remove_results =
-      peripheral_results.createNestedArray(remove_command_key_);
-  for (JsonVariantConst remove_command :
-       peripheral_commands[remove_command_key_].as<JsonArrayConst>()) {
-    ErrorResult error = remove(remove_command);
-    addResultEntry(remove_command["uuid"], error, remove_results);
+  JsonArrayConst remove_commands =
+      peripheral_commands[remove_command_key_].as<JsonArrayConst>();
+  if (remove_commands) {
+    JsonArray remove_results =
+        peripheral_results.createNestedArray(remove_command_key_);
+    for (JsonVariantConst remove_command : remove_commands) {
+      ErrorResult error = remove(remove_command);
+      addResultEntry(remove_command["uuid"], error, remove_results);
+    }
   }
 
   // Send the command results
