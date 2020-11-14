@@ -21,7 +21,7 @@ void PeripheralController::handleCallback(const JsonObjectConst& message) {
 
   // Init the result doc with type and the request ID
   DynamicJsonDocument result_doc(BB_JSON_PAYLOAD_SIZE);
-  result_doc[Server::type_key_] = Server::type_result_name_;
+  result_doc[Server::type_key_] = Server::result_type_;
   result_doc[Server::request_id_key_] = message[Server::request_id_key_];
   JsonObject peripheral_results =
       result_doc.createNestedObject(peripheral_command_key_);

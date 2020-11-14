@@ -47,11 +47,13 @@ class WebSocket : public Server, private WebSocketsClient {
   void send(const String& name, DynamicJsonDocument& doc) final;
   void send(const String& name, const char* value, size_t length) final;
 
+  void sendTelemetry(const utils::UUID& uuid, JsonObject data) final;
   void sendRegister() final;
   void sendError(const String& who, const String& message) final;
   void sendError(const ErrorResult& error, const String& request_id = "") final;
 
   void sendResults(JsonObjectConst results) final;
+  void sendSystem(JsonObject data) final;
 
  private:
   void handleEvent(WStype_t type, uint8_t* payload, size_t length);

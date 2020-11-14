@@ -45,7 +45,7 @@ bool PollSensor::Callback() {
   JsonObject result_object = result_doc.to<JsonObject>();
 
   // Read the peripheral's value units and its UUID and add them to the JSON doc
-  makeGetValuesJson(result_object);
+  makeTelemetryJson(result_object);
 
   // Send the value units and peripheral UUID to the server
   Services::getServer().send(type(), result_doc);

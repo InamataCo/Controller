@@ -3,15 +3,15 @@
 namespace bernd_box {
 namespace tasks {
 
-BaseTask::BaseTask(Scheduler& scheduler, utils::UUID uuid)
-    : Task(&scheduler), scheduler_(scheduler), uuid_(uuid) {}
+BaseTask::BaseTask(Scheduler& scheduler, utils::UUID task_id)
+    : Task(&scheduler), scheduler_(scheduler), task_id_(task_id) {}
 
 BaseTask::BaseTask(Scheduler& scheduler, const JsonObjectConst& parameters)
     : Task(&scheduler), scheduler_(scheduler) {
   // Get and set the UUID to identify the task with the server
-  uuid_ = utils::UUID(parameters[uuid_key_]);
-  if (!uuid_.isValid()) {
-    setInvalid(uuid_key_error_);
+  task_id_ = utils::UUID(parameters[task_id_key_]);
+  if (!task_id_.isValid()) {
+    setInvalid(task_id_key_error_);
     return;
   }
 }
@@ -44,7 +44,7 @@ ErrorResult BaseTask::getError() const {
   }
 }
 
-const utils::UUID& BaseTask::getUUID() const { return uuid_; }
+const utils::UUID& BaseTask::getTaskID() const { return task_id_; }
 
 void BaseTask::setInvalid() { is_valid_ = false; }
 
@@ -64,8 +64,8 @@ const __FlashStringHelper* BaseTask::peripheral_key_error_ =
     F("Missing property: peripheral (uuid)");
 const __FlashStringHelper* BaseTask::peripheral_not_found_error_ =
     F("Could not find peripheral: ");
-const __FlashStringHelper* BaseTask::uuid_key_ = F("uuid");
-const __FlashStringHelper* BaseTask::uuid_key_error_ =
+const __FlashStringHelper* BaseTask::task_id_key_ = F("uuid");
+const __FlashStringHelper* BaseTask::task_id_key_error_ =
     F("Missing property: uuid (uuid)");
 
 TaskRemovalTask::TaskRemovalTask(Scheduler& scheduler) : Task(&scheduler) {

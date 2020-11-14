@@ -90,6 +90,17 @@ void WebSocket::send(const String& name, const char* value, size_t length) {
   ESP.restart();
 }
 
+void WebSocket::sendTelemetry(const utils::UUID& task_id, JsonObject data) {
+  data[Server::type_key_] = Server::telemetry_type_;
+  data[Server::task_id_key_] = task_id.toString();
+
+  std::vector<char> register_buf = std::vector<char>(measureJson(data) + 1);
+  size_t n = serializeJson(data, register_buf.data(), register_buf.size());
+  Serial.printf("Telemetry size: %i\n", n);
+
+  sendTXT(register_buf.data(), n);
+}
+
 void WebSocket::sendRegister() {
   DynamicJsonDocument doc(BB_JSON_PAYLOAD_SIZE);
 
@@ -175,6 +186,15 @@ void WebSocket::sendResults(JsonObjectConst results) {
   size_t n = serializeJson(results, buffer.data(), buffer.size());
 
   sendTXT(buffer.data(), n);
+}
+
+void WebSocket::sendSystem(JsonObject data) {
+  data[Server::type_key_] = Server::system_type_;
+
+  std::vector<char> data_buf = std::vector<char>(measureJson(data) + 1);
+  size_t n = serializeJson(data, data_buf.data(), data_buf.size());
+  
+  sendTXT(data_buf.data(), n);
 }
 
 void WebSocket::handleEvent(WStype_t type, uint8_t* payload, size_t length) {

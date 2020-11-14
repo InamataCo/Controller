@@ -35,15 +35,20 @@ class Server {
   virtual void send(const String& name, DynamicJsonDocument& doc) = 0;
   virtual void send(const String& name, const char* value, size_t length) = 0;
 
+  virtual void sendTelemetry(const utils::UUID& uuid, JsonObject data) = 0;
   virtual void sendRegister() = 0;
   virtual void sendError(const String& who, const String& message) = 0;
   virtual void sendError(const ErrorResult& error,
                          const String& request_id = "") = 0;
 
   virtual void sendResults(JsonObjectConst results) = 0;
+  virtual void sendSystem(JsonObject data) = 0;
 
   static const __FlashStringHelper* request_id_key_;
   static const __FlashStringHelper* type_key_;
-  static const __FlashStringHelper* type_result_name_;
+  static const __FlashStringHelper* result_type_;
+  static const __FlashStringHelper* telemetry_type_;
+  static const __FlashStringHelper* task_id_key_;
+  static const __FlashStringHelper* system_type_;
 };
 }  // namespace bernd_box

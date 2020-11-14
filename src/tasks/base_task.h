@@ -20,7 +20,7 @@ class BaseTask : public Task {
    * \param scheduler The scheduler that executes the tasks
    * \param uuid Unique identifier created locally
    */
-  BaseTask(Scheduler& scheduler, utils::UUID uuid = utils::UUID());
+  BaseTask(Scheduler& scheduler, utils::UUID task_id = utils::UUID());
 
   /**
    * Constructor used when commanded by the server
@@ -80,13 +80,13 @@ class BaseTask : public Task {
    *
    * \return The task's UUID
    */
-  const utils::UUID& getUUID() const;
+  const utils::UUID& getTaskID() const;
 
   static const __FlashStringHelper* peripheral_key_;
   static const __FlashStringHelper* peripheral_key_error_;
   static const __FlashStringHelper* peripheral_not_found_error_;
-  static const __FlashStringHelper* uuid_key_;
-  static const __FlashStringHelper* uuid_key_error_;
+  static const __FlashStringHelper* task_id_key_;
+  static const __FlashStringHelper* task_id_key_error_;
 
  protected:
   /**
@@ -115,7 +115,7 @@ class BaseTask : public Task {
   /// The scheduler the task is bound to
   Scheduler& scheduler_;
   /// The task's identifier
-  utils::UUID uuid_ = utils::UUID(nullptr);
+  utils::UUID task_id_ = utils::UUID(nullptr);
 };
 
 /**

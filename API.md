@@ -1,34 +1,122 @@
 # Server API Documentation
 
+## Controller Messages
+
+### Command
+
 ```
 {
-  id: <uuid>,
-  type: "tel",
+  type: "cmd",
+  request_id: "...",
   peripheral: {
     add: [
-      ...
+      {
+        uuid: "",
+        ...
+      }
     ],
     remove: [
-      ...
+      {
+        uuid: ""
+      }
     ]
   },
   task: {
-    create: [
-      ...
+    start: [
+      {
+        uuid: "",
+        ...
+      }
     ],
     stop: [
-
+      {
+        uuid: ""
+      }
     ],
     status: True
   }
 }
 ```
 
-## Peripheral Controller
+### Telemetry
+
+```
+{
+  type: "tel",
+  peripheral: "...",
+  <time: "...",>
+  data_points: [
+    {
+      value: 0-9,
+      data_point_type: "..."
+    }
+  ]
+}
+```
+
+### Results
+
+```
+{
+  type: "result",
+  <request_id: "...">
+  peripheral: {
+    add: [
+      {
+        uuid: "...",
+        status: <"success", "fail">,
+        <detail: "...">
+      }
+    ],
+    remove: [
+      {
+        uuid: "...",
+        status: <"success", "fail">,
+        <detail: "...">
+      }
+    ]
+  }
+  task: {
+    start: [
+      {
+        uuid: "...",
+        status: <"success", "fail">,
+        <detail: "...">
+      }
+    ],
+    stop: [
+      {
+        uuid: "...",
+        status: <"success", "fail">,
+        <detail: "...">
+      }
+    ]
+  }
+}
+```
+
+### Register
+
+```
+{
+  type: "reg",
+  peripheral_types: [
+    ...
+  ],
+  task_types: [
+    ...
+  ]
+```
 
 
+### System
 
-## Task Controller
+```
+{
+  type: "sys",
+  ...
+}
+```
 
 
 # MQTT API Documentation
@@ -57,10 +145,10 @@ No extra parameters required
 
 #### BH1750 Peripheral
 
-| parameter   | content                           |
-| ----------- | --------------------------------- |
+| parameter   | content                            |
+| ----------- | ---------------------------------- |
 | i2c_adapter | name of the I2C adapter peripheral |
-| address     | address of the BH1750 sensor      |
+| address     | address of the BH1750 sensor       |
 
 Note: The I2C adapter has to have been added
 
@@ -81,10 +169,10 @@ The start command starts a new task. Each start command has to have the followin
 
 On successful creation of the task, the following JSON is returned. In order to stop a long running task, its ID has to be stored on creation and then sent when it is to be stopped. The _type_ corresponds to the task's type while the _peripheral_ equals the name of the peripheral being used by the task. This may also be null.
 
-| parameter | content                          |
-| --------- | -------------------------------- |
-| id        | unique ID of the task            |
-| type      | type of the task                 |
+| parameter  | content                           |
+| ---------- | --------------------------------- |
+| id         | unique ID of the task             |
+| type       | type of the task                  |
 | peripheral | name of the peripheral being used |
 
 ### Stop: `tasks/<uuid>/stop`

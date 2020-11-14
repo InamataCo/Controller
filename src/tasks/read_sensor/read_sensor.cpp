@@ -23,14 +23,14 @@ const String& ReadSensor::type() {
 
 bool ReadSensor::Callback() {
   // Create the JSON doc
-  DynamicJsonDocument result_doc(BB_JSON_PAYLOAD_SIZE);
-  JsonObject result_object = result_doc.to<JsonObject>();
+  DynamicJsonDocument telemetry_doc(BB_JSON_PAYLOAD_SIZE);
+  JsonObject telemetry_obj = telemetry_doc.to<JsonObject>();
 
   // Insert the value units and peripheral UUID
-  makeGetValuesJson(result_object);
+  makeTelemetryJson(telemetry_obj);
   
   // Send the result to the server
-  Services::getServer().send(type(), result_doc);
+  Services::getServer().sendTelemetry(getTaskID(), telemetry_obj);
 
   return true;
 }

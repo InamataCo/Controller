@@ -50,7 +50,7 @@ bool SystemMonitor::Callback() {
   doc["productive_percent"] = 100 - ((cpuIdle + cpuCycles) / cpuTotal * 100.0);
   doc["wifi_rssi"] = WiFi.RSSI();
 
-  server_.send(name_, doc);
+  server_.sendSystem(doc.as<JsonObject>());
   return true;
 }
 

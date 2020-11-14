@@ -69,7 +69,7 @@ class TaskController {
   Server& server_;
 
   static const __FlashStringHelper* task_command_key_;
-  static const __FlashStringHelper* create_command_key_;
+  static const __FlashStringHelper* start_command_key_;
   static const __FlashStringHelper* stop_command_key_;
   static const __FlashStringHelper* status_command_key_;
 
