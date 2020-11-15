@@ -25,6 +25,13 @@ class PeripheralController {
   void handleCallback(const JsonObjectConst& message);
 
   /**
+   * Returns a list of all peripherals' IDs
+   * 
+   * \return A list of all peripherals' IDs
+   */
+  std::vector<utils::UUID> getPeripheralIDs();
+
+  /**
    * Returns a shared pointer to the object or a nullptr if not found
    *
    * @param name Name of the peripheral to be found

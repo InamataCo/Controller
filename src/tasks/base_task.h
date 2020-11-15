@@ -82,6 +82,13 @@ class BaseTask : public Task {
    */
   const utils::UUID& getTaskID() const;
 
+  /**
+   * Sets the callback which accepts tasks to be removed
+   * 
+   * \param callback The function to call to add a task to the removal queue
+   */
+  static void setTaskRemovalCallback(std::function<void(Task&)> callback);
+
   static const __FlashStringHelper* peripheral_key_;
   static const __FlashStringHelper* peripheral_key_error_;
   static const __FlashStringHelper* peripheral_not_found_error_;
@@ -116,37 +123,8 @@ class BaseTask : public Task {
   Scheduler& scheduler_;
   /// The task's identifier
   utils::UUID task_id_ = utils::UUID(nullptr);
-};
-
-/**
- * Internal task to remove tasks that finished or are disabled
- *
- * When the task scheduler calls a task's OnDisable function, the task is added
- * to an instance of this task's removal queue. Once activated, it deletes all
- * queued tasks which thereby remove themselves.
- */
-class TaskRemovalTask : public Task {
- public:
-  TaskRemovalTask(Scheduler& scheduler);
-  virtual ~TaskRemovalTask() = default;
-
-  /**
-   * Adds a task to the task removal queue
-   *
-   * \param to_be_removed The task to be deleted and removed
-   */
-  void add(Task& to_be_removed);
-
- private:
-  /**
-   * Goes through all tasks in the removal queue and deletes them
-   *
-   * \return Always true
-   */
-  bool Callback();
-
-  /// Queued tasks to be removed
-  std::set<Task*> tasks_;
+  /// Add task to removal queue callback
+  static std::function<void(Task&)> task_removal_callback_;
 };
 
 }  // namespace tasks

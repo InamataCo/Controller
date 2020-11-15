@@ -3,6 +3,8 @@
 #include <ArduinoJson.h>
 #include <TaskSchedulerDeclarations.h>
 
+#include <memory>
+
 #include "base_task.h"
 #include "managers/server.h"
 #include "task_factory.h"
@@ -16,6 +18,8 @@ namespace tasks {
  * For usage instructions see the API.md documentation
  */
 class TaskController {
+  friend class TaskRemovalTask;
+
  public:
   TaskController(Scheduler& scheduler, TaskFactory& factory, Server& server);
   virtual ~TaskController() = default;
@@ -29,19 +33,26 @@ class TaskController {
    */
   void handleCallback(const JsonObjectConst& message);
 
+  /**
+   * Gets all currently running task IDs
+   *
+   * \return A vector with the task IDs
+   */
+  std::vector<utils::UUID> getTaskIDs();
+
  private:
   /**
-   * Create a new task
+   * Start a new task
    *
-   * @param parameters JSON object with the parameters to create a task
+   * @param parameters JSON object with the parameters to start a task
    * @return True on success
    */
-  ErrorResult createTask(const JsonObjectConst& parameters);
+  ErrorResult startTask(const JsonObjectConst& parameters);
 
   /**
    * Command a task to end
    *
-   * @param parameters JSON object with the parameters to create a task
+   * @param parameters JSON object with the parameters to start a task
    * @return True on success
    */
   ErrorResult stopTask(const JsonObjectConst& parameters);
@@ -53,15 +64,18 @@ class TaskController {
 
   /**
    * Find the base task by UUID
-   * 
+   *
    * \param uuid The ID of the base task
    * \return Pointer to the found base task
    */
   BaseTask* findTask(const utils::UUID& uuid);
+
   const String& getTaskType(Task* task);
 
   static void addResultEntry(const JsonVariantConst& uuid,
                              const ErrorResult& error,
+                             const JsonArray& results);
+  static void addResultEntry(const utils::UUID& uuid, const ErrorResult& error,
                              const JsonArray& results);
 
   Scheduler& scheduler_;
@@ -72,6 +86,12 @@ class TaskController {
   static const __FlashStringHelper* start_command_key_;
   static const __FlashStringHelper* stop_command_key_;
   static const __FlashStringHelper* status_command_key_;
+  
+  static const __FlashStringHelper* task_results_key_;
+  static const __FlashStringHelper* result_status_key_;
+  static const __FlashStringHelper* result_detail_key_;
+  static const __FlashStringHelper* result_success_name_;
+  static const __FlashStringHelper* result_fail_name_;
 
   static const String task_type_system_task_;
 };

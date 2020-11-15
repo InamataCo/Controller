@@ -28,8 +28,13 @@ bool BaseTask::OnTaskEnable() { return true; }
 
 void BaseTask::OnDisable() {
   OnTaskDisable();
-  static TaskRemovalTask ptrt(scheduler_);
-  ptrt.add(*this);
+  if(task_removal_callback_) {
+    task_removal_callback_(*this);
+  } else {
+    Serial.println(F("Task removal callback not set. Rebooting in 10s"));
+    delay(10000);
+    ESP.restart();
+  }
 }
 
 void BaseTask::OnTaskDisable() {}
@@ -45,6 +50,10 @@ ErrorResult BaseTask::getError() const {
 }
 
 const utils::UUID& BaseTask::getTaskID() const { return task_id_; }
+
+void BaseTask::setTaskRemovalCallback(std::function<void(Task&)> callback) {
+  task_removal_callback_ = callback;
+}
 
 void BaseTask::setInvalid() { is_valid_ = false; }
 
@@ -68,33 +77,7 @@ const __FlashStringHelper* BaseTask::task_id_key_ = F("uuid");
 const __FlashStringHelper* BaseTask::task_id_key_error_ =
     F("Missing property: uuid (uuid)");
 
-TaskRemovalTask::TaskRemovalTask(Scheduler& scheduler) : Task(&scheduler) {
-  scheduler.addTask(*this);
-}
-
-void TaskRemovalTask::add(Task& pt) {
-  tasks_.insert(&pt);
-  setIterations(1);
-  enableIfNot();
-}
-
-bool TaskRemovalTask::Callback() {
-  for (auto it = tasks_.begin(); it != tasks_.end();) {
-    Task* task = *it;
-
-    BaseTask* base_task = dynamic_cast<BaseTask*>(task);
-    if (base_task) {
-      delete base_task;
-      it = tasks_.erase(it);
-    } else {
-      Serial.println(F("Attempted to delete non-base class"));
-      ++it;
-    }
-  }
-  tasks_.clear();
-  return true;
-}
+std::function<void(Task&)> BaseTask::task_removal_callback_ = nullptr;
 
 }  // namespace tasks
-
 }  // namespace bernd_box

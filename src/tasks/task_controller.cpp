@@ -22,8 +22,11 @@ void TaskController::handleCallback(const JsonObjectConst& message) {
   // Init the result doc with type and the request ID
   DynamicJsonDocument result_doc(BB_JSON_PAYLOAD_SIZE);
   result_doc[Server::type_key_] = Server::result_type_;
-  result_doc[Server::request_id_key_] = message[Server::request_id_key_];
-  JsonObject task_results = result_doc.createNestedObject(task_command_key_);
+  JsonVariantConst request_id = message[Server::request_id_key_];
+  if (request_id) {
+    result_doc[Server::request_id_key_] = request_id;
+  }
+  JsonObject task_results = result_doc.createNestedObject(task_results_key_);
 
   // Start a task for each command and store the result
   JsonArrayConst start_commands =
@@ -32,7 +35,7 @@ void TaskController::handleCallback(const JsonObjectConst& message) {
     JsonArray start_results =
         task_results.createNestedArray(start_command_key_);
     for (JsonVariantConst start_command : start_commands) {
-      ErrorResult error = createTask(start_command);
+      ErrorResult error = startTask(start_command);
       addResultEntry(start_command[BaseTask::task_id_key_], error,
                      start_results);
     }
@@ -45,7 +48,12 @@ void TaskController::handleCallback(const JsonObjectConst& message) {
     JsonArray stop_results = task_results.createNestedArray(stop_command_key_);
     for (JsonVariantConst stop_command : stop_commands) {
       ErrorResult error = stopTask(stop_command);
-      addResultEntry(stop_command[BaseTask::task_id_key_], error, stop_results);
+      // Tasks are only fully removed by the TaskRemovalTask. It will send a
+      // stop success result when it succeeds, so only report errors
+      if (error.isError()) {
+        addResultEntry(stop_command[BaseTask::task_id_key_], error,
+                       stop_results);
+      }
     }
   }
 
@@ -58,13 +66,27 @@ void TaskController::handleCallback(const JsonObjectConst& message) {
   server_.sendResults(result_doc.as<JsonObject>());
 }
 
-ErrorResult TaskController::createTask(const JsonObjectConst& parameters) {
-  BaseTask* task = factory_.createTask(parameters);
+std::vector<utils::UUID> TaskController::getTaskIDs() {
+  std::vector<utils::UUID> task_ids;
+
+  for (Task* task = scheduler_.getFirstTask(); task != NULL;
+       task = task->getNextTask()) {
+    BaseTask* base_task = dynamic_cast<BaseTask*>(task);
+    if (base_task) {
+      task_ids.push_back(base_task->getTaskID());
+    }
+  }
+
+  return task_ids;
+}
+
+ErrorResult TaskController::startTask(const JsonObjectConst& parameters) {
+  BaseTask* task = factory_.startTask(parameters);
   if (task) {
     task->enable();
     return task->getError();
   } else {
-    return ErrorResult(type(), "Unable to create task");
+    return ErrorResult(type(), "Unable to start task");
   }
 }
 
@@ -128,14 +150,30 @@ void TaskController::addResultEntry(const JsonVariantConst& uuid,
                                     const JsonArray& results) {
   JsonObject result = results.createNestedObject();
 
-  // Save whether the peripheral could be created or the reason for failing
+  // Save whether the task could be started or the reason for failing
   if (error.isError()) {
     result[BaseTask::task_id_key_] = uuid;
-    result["status"] = "fail";
-    result["detail"] = error.detail_;
+    result[result_status_key_] = result_fail_name_;
+    result[result_detail_key_] = error.detail_;
   } else {
     result[BaseTask::task_id_key_] = uuid;
-    result["status"] = "success";
+    result[result_status_key_] = result_success_name_;
+  }
+}
+
+void TaskController::addResultEntry(const utils::UUID& uuid,
+                                    const ErrorResult& error,
+                                    const JsonArray& results) {
+  JsonObject result = results.createNestedObject();
+
+  // Save whether the task could be started or the reason for failing
+  if (error.isError()) {
+    result[BaseTask::task_id_key_] = uuid.toString();
+    result[result_status_key_] = result_fail_name_;
+    result[result_detail_key_] = error.detail_;
+  } else {
+    result[BaseTask::task_id_key_] = uuid.toString();
+    result[result_status_key_] = result_success_name_;
   }
 }
 
@@ -143,6 +181,12 @@ const __FlashStringHelper* TaskController::task_command_key_ = F("task");
 const __FlashStringHelper* TaskController::start_command_key_ = F("start");
 const __FlashStringHelper* TaskController::stop_command_key_ = F("stop");
 const __FlashStringHelper* TaskController::status_command_key_ = F("status");
+
+const __FlashStringHelper* TaskController::task_results_key_ = F("task");
+const __FlashStringHelper* TaskController::result_status_key_ = F("status");
+const __FlashStringHelper* TaskController::result_detail_key_ = F("detail");
+const __FlashStringHelper* TaskController::result_success_name_ = F("success");
+const __FlashStringHelper* TaskController::result_fail_name_ = F("fail");
 
 const String TaskController::task_type_system_task_{"SystemTask"};
 

@@ -100,12 +100,8 @@
 ```
 {
   type: "reg",
-  peripheral_types: [
-    ...
-  ],
-  task_types: [
-    ...
-  ]
+  <peripherals: [uuid, ...]>,
+  <tasks: [uuid, ...]>
 ```
 
 

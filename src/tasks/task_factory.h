@@ -20,12 +20,12 @@ namespace tasks {
  */
 class TaskFactory {
  public:
-  /// Callback to create a task
+  /// Callback to start a task
   using Factory = BaseTask* (*)(
       const JsonObjectConst& parameters, Scheduler& scheduler);
 
   /**
-   * Create a task factory that forwards 'add' commands to the subfactories
+   * Start a task factory that forwards 'add' commands to the subfactories
    *
    * In order to delete tasks after they have ended, the task factory acts as
    * a task itself to delete the task object after it has been disabled.
@@ -38,7 +38,7 @@ class TaskFactory {
   static const String& type();
 
   /**
-   * Register a task factory as a callback to create a task
+   * Register a task factory as a callback to start a task
    *
    * @param type Name of the task factory
    * @param factory Callback to the task factory
@@ -47,12 +47,12 @@ class TaskFactory {
   static bool registerTask(const String& type, Factory factory);
 
   /**
-   * Create a Task object from a JSON object by passing it to the subfactories
+   * Start a Task object from a JSON object by passing it to the subfactories
    *
-   * @param parameters JSON object with the parameters to create a task
+   * @param parameters JSON object with the parameters to start a task
    * @return True on success
    */
-  BaseTask* createTask(const JsonObjectConst& parameters);
+  BaseTask* startTask(const JsonObjectConst& parameters);
 
   /**
    * Return all registered factories by name
@@ -63,7 +63,7 @@ class TaskFactory {
 
  private:
    
-  /// Get the callback map of the sub-factories to create new task objects
+  /// Get the callback map of the sub-factories to start new task objects
   static std::map<String, Factory>& getFactories();
 
   static String invalidFactoryTypeError(const String& type);

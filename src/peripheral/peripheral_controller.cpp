@@ -22,7 +22,10 @@ void PeripheralController::handleCallback(const JsonObjectConst& message) {
   // Init the result doc with type and the request ID
   DynamicJsonDocument result_doc(BB_JSON_PAYLOAD_SIZE);
   result_doc[Server::type_key_] = Server::result_type_;
-  result_doc[Server::request_id_key_] = message[Server::request_id_key_];
+  JsonVariantConst request_id = message[Server::request_id_key_];
+  if (request_id) {
+    result_doc[Server::request_id_key_] = request_id;
+  }
   JsonObject peripheral_results =
       result_doc.createNestedObject(peripheral_command_key_);
 
@@ -52,6 +55,15 @@ void PeripheralController::handleCallback(const JsonObjectConst& message) {
 
   // Send the command results
   server_.sendResults(result_doc.as<JsonObject>());
+}
+
+std::vector<utils::UUID> PeripheralController::getPeripheralIDs() {
+  std::vector<utils::UUID> uuids;
+  uuids.reserve(peripherals_.size());
+  for(const auto& peripheral : peripherals_) {
+    uuids.push_back(peripheral.first);
+  }
+  return uuids;
 }
 
 ErrorResult PeripheralController::add(const JsonObjectConst& doc) {

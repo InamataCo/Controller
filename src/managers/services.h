@@ -13,6 +13,7 @@
 #include "peripheral/peripheral_factory.h"
 #include "tasks/task_controller.h"
 #include "tasks/task_factory.h"
+#include "tasks/task_removal_task.h"
 
 namespace bernd_box {
 
@@ -40,6 +41,7 @@ class Services {
   static peripheral::PeripheralFactory peripheral_factory_;
   static tasks::TaskFactory task_factory_;
   static tasks::TaskController task_controller_;
+  static tasks::TaskRemovalTask task_removal_task_;
 };
 
 }  // namespace bernd_box

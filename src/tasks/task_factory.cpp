@@ -15,16 +15,16 @@ bool TaskFactory::registerTask(const String& type, Factory factory) {
   return getFactories().insert({type, factory}).second;
 }
 
-BaseTask* TaskFactory::createTask(const JsonObjectConst& parameters) {
+BaseTask* TaskFactory::startTask(const JsonObjectConst& parameters) {
   JsonVariantConst type = parameters[type_key_];
   if (type.isNull() || !type.is<char*>()) {
     return new InvalidTask(scheduler_, type_key_error_);
   }
 
-  // Check if a factory for the type exists. Then try to create such a task
+  // Check if a factory for the type exists. Then try to start such a task
   const auto& factory = getFactories().find(type);
   if (factory != getFactories().end()) {
-    // Create a task via the respective task factory
+    // Start a task via the respective task factory
     return factory->second(parameters, scheduler_);
   } else {
     // Factory type not found, so return an invalid task

@@ -6,7 +6,9 @@
 
 #include <map>
 
+#include "configuration.h"
 #include "server.h"
+#include "utils/uuid.h"
 
 namespace bernd_box {
 
@@ -27,11 +29,10 @@ class WebSocket : public Server, private WebSocketsClient {
    * This enables bi-directional communication between the controller and the
    * server while removing the intermediate such as the Coordinator over MQTT.
    */
-  WebSocket(std::function<std::vector<String>()> get_peripheral_types,
+  WebSocket(std::function<std::vector<utils::UUID>()> get_peripheral_ids,
             Server::Callback peripheral_controller_callback,
-            std::function<std::vector<String>()> get_task_types,
-            Server::Callback task_controller_callback, const char* core_domain,
-            const char* ws_token, const char* root_cas);
+            std::function<std::vector<utils::UUID>()> get_task_ids,
+            Server::Callback task_controller_callback);
   virtual ~WebSocket() = default;
 
   const String& type();
@@ -62,9 +63,9 @@ class WebSocket : public Server, private WebSocketsClient {
 
   bool is_setup_ = false;
 
-  std::function<std::vector<String>()> get_peripheral_types_;
+  std::function<std::vector<utils::UUID>()> get_peripheral_ids_;
   Callback peripheral_controller_callback_;
-  std::function<std::vector<String>()> get_task_types_;
+  std::function<std::vector<utils::UUID>()> get_task_ids_;
   Callback task_controller_callback_;
 
   const char* core_domain_;

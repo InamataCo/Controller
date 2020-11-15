@@ -2,15 +2,14 @@
 
 namespace bernd_box {
 
-WebSocket::WebSocket(std::function<std::vector<String>()> get_peripheral_types,
-                     Server::Callback peripheral_controller_callback,
-                     std::function<std::vector<String>()> get_task_types,
-                     Server::Callback task_controller_callback,
-                     const char* core_domain, const char* ws_token,
-                     const char* root_cas)
-    : get_peripheral_types_(get_peripheral_types),
+WebSocket::WebSocket(
+    std::function<std::vector<utils::UUID>()> get_peripheral_ids,
+    Server::Callback peripheral_controller_callback,
+    std::function<std::vector<utils::UUID>()> get_task_ids,
+    Server::Callback task_controller_callback)
+    : get_peripheral_ids_(get_peripheral_ids),
       peripheral_controller_callback_(peripheral_controller_callback),
-      get_task_types_(get_task_types),
+      get_task_ids_(get_task_ids),
       task_controller_callback_(task_controller_callback),
       core_domain_(core_domain),
       ws_token_(ws_token),
@@ -107,29 +106,23 @@ void WebSocket::sendRegister() {
   // Use ther register message type
   doc["type"] = "reg";
 
-  // Collect all peripheral factory names and write them to a JSON doc
-  std::vector<String> peripheral_types = get_peripheral_types_();
-  DynamicJsonDocument peripherals_doc(JSON_ARRAY_SIZE(peripheral_types.size()));
-  JsonArray peripheral_array = peripherals_doc.to<JsonArray>();
-  Serial.println(F("Peripheral types:"));
-
-  for (const auto& name : peripheral_types) {
-    peripheral_array.add(name.c_str());
-    Serial.printf("\t%s\n", name.c_str());
+  // Collect all added peripheral ids and write them to a JSON doc
+  std::vector<utils::UUID> peripheral_ids = get_peripheral_ids_();
+  if (!peripheral_ids.empty()) {
+    JsonArray peripherals = doc.createNestedArray(F("peripherals"));
+    for (const auto& peripheral_id : peripheral_ids) {
+      peripherals.add(peripheral_id.toString());
+    }
   }
-  doc["peripheral_types"] = peripheral_array;
 
-  // Collect all task factory names and write them to a JSON doc
-  std::vector<String> task_types = get_task_types_();
-  DynamicJsonDocument tasks_doc(JSON_ARRAY_SIZE(task_types.size()));
-  JsonArray task_array = tasks_doc.to<JsonArray>();
-  Serial.println(F("Task types:"));
-
-  for (const auto& name : task_types) {
-    task_array.add(name.c_str());
-    Serial.printf("\t%s\n", name.c_str());
+  // Collect all running task ids and write them to a JSON doc
+  std::vector<utils::UUID> task_ids = get_task_ids_();
+  if (!task_ids.empty()) {
+    JsonArray tasks = doc.createNestedArray(F("tasks"));
+    for (const auto& task_id : task_ids) {
+      tasks.add(task_id.toString());
+    }
   }
-  doc["task_types"] = task_array;
 
   // Calculate the size of the resultant serialized JSON, create a buffer of
   // that size and serialize the JSON into that buffer.
@@ -193,7 +186,7 @@ void WebSocket::sendSystem(JsonObject data) {
 
   std::vector<char> data_buf = std::vector<char>(measureJson(data) + 1);
   size_t n = serializeJson(data, data_buf.data(), data_buf.size());
-  
+
   sendTXT(data_buf.data(), n);
 }
 
