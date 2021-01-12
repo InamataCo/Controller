@@ -2,10 +2,6 @@
  * All user-configurations are set here
  *
  * This includes Wifi's SSID and password.
- *
- * \author Moritz Ulmer <moritz.ulmer@posteo.de>
- * \date 2018
- * \copyright Apache License 2.0
  */
 
 #include "configuration.h"

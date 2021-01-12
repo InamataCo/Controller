@@ -1,9 +1,5 @@
 /**
  * Read the inputs from the various sensors
- *
- * \author Moritz Ulmer <moritz.ulmer@posteo.de>
- * \date 2018
- * \copyright Apache License 2.0
  */
 
 #pragma once
