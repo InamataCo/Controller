@@ -26,7 +26,7 @@ GetValuesTask::GetValuesTask(const JsonObjectConst& parameters,
     return;
   }
 
-  // Check that the peripheral supports the GetValue interface capability
+  // Check that the peripheral supports the GetValues interface capability
   peripheral_ = std::dynamic_pointer_cast<peripheral::capabilities::GetValues>(
       peripheral);
   if (!peripheral_) {

@@ -36,14 +36,14 @@ WriteActuator::WriteActuator(const JsonObjectConst& parameters,
   }
 
   // Get the value
-  JsonVariantConst value = parameters[value_unit_.value_key];
+  JsonVariantConst value = parameters[utils::ValueUnit::value_key];
   if (!value.is<float>()) {
     setInvalid(value_unit_.value_key_error);
     return;
   }
 
   // Get the unit of the value
-  utils::UUID data_point_type(parameters[value_unit_.data_point_type_key]);
+  utils::UUID data_point_type(parameters[utils::ValueUnit::data_point_type_key]);
   if (!data_point_type.isValid()) {
     setInvalid(value_unit_.data_point_type_key_error);
     return;
