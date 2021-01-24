@@ -2,6 +2,7 @@
 
 namespace bernd_box {
 namespace tasks {
+namespace get_values_task {
 
 GetValuesTask::GetValuesTask(const JsonObjectConst& parameters,
                              Scheduler& scheduler)
@@ -76,5 +77,6 @@ const __FlashStringHelper* GetValuesTask::duration_ms_key_ = F("duration_ms");
 const __FlashStringHelper* GetValuesTask::duration_ms_key_error_ =
     F("Wrong type for optional property: duration_ms (unsigned int)");
 
+}  // namespace get_values_task
 }  // namespace tasks
 }  // namespace bernd_box

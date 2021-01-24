@@ -1,9 +1,10 @@
-#include "set_light.h"
+#include "set_rgb_led.h"
 
 namespace bernd_box {
 namespace tasks {
+namespace set_rgb_led {
 
-SetLight::SetLight(const JsonObjectConst& parameters, Scheduler& scheduler)
+SetRgbLed::SetRgbLed(const JsonObjectConst& parameters, Scheduler& scheduler)
     : BaseTask(scheduler, parameters) {
   if (!isValid()) {
     return;
@@ -84,41 +85,42 @@ SetLight::SetLight(const JsonObjectConst& parameters, Scheduler& scheduler)
   setIterations(1);
 }
 
-const String& SetLight::getType() const { return type(); }
+const String& SetRgbLed::getType() const { return type(); }
 
-const String& SetLight::type() {
-  static const String name{"SetLight"};
+const String& SetRgbLed::type() {
+  static const String name{"SetRgbLed"};
   return name;
 }
 
-bool SetLight::Callback() {
+bool SetRgbLed::Callback() {
   peripheral_->turnOn(color_);
   return true;
 }
 
-bool SetLight::registered_ = TaskFactory::registerTask(type(), factory);
+bool SetRgbLed::registered_ = TaskFactory::registerTask(type(), factory);
 
-BaseTask* SetLight::factory(const JsonObjectConst& parameters,
-                            Scheduler& scheduler) {
-  return new SetLight(parameters, scheduler);
+BaseTask* SetRgbLed::factory(const JsonObjectConst& parameters,
+                             Scheduler& scheduler) {
+  return new SetRgbLed(parameters, scheduler);
 }
 
-const __FlashStringHelper* SetLight::color_key_ = F("color");
-const __FlashStringHelper* SetLight::brightness_key_ = F("brightness");
-const __FlashStringHelper* SetLight::brightness_or_color_error_ =
+const __FlashStringHelper* SetRgbLed::color_key_ = F("color");
+const __FlashStringHelper* SetRgbLed::brightness_key_ = F("brightness");
+const __FlashStringHelper* SetRgbLed::brightness_or_color_error_ =
     F("Either set brightness (float) or color (object)");
-const __FlashStringHelper* SetLight::red_key_ = F("red");
-const __FlashStringHelper* SetLight::red_key_error_ =
+const __FlashStringHelper* SetRgbLed::red_key_ = F("red");
+const __FlashStringHelper* SetRgbLed::red_key_error_ =
     F("Missing property: color.red (unsigned uint8_t)");
-const __FlashStringHelper* SetLight::green_key_ = F("green");
-const __FlashStringHelper* SetLight::green_key_error_ =
+const __FlashStringHelper* SetRgbLed::green_key_ = F("green");
+const __FlashStringHelper* SetRgbLed::green_key_error_ =
     F("Missing property: color.green (unsigned uint8_t)");
-const __FlashStringHelper* SetLight::blue_key_ = F("blue");
-const __FlashStringHelper* SetLight::blue_key_error_ =
+const __FlashStringHelper* SetRgbLed::blue_key_ = F("blue");
+const __FlashStringHelper* SetRgbLed::blue_key_error_ =
     F("Missing property: color.blue (unsigned uint8_t)");
-const __FlashStringHelper* SetLight::white_key_ = F("white");
-const __FlashStringHelper* SetLight::white_key_error_ =
+const __FlashStringHelper* SetRgbLed::white_key_ = F("white");
+const __FlashStringHelper* SetRgbLed::white_key_error_ =
     F("Invalid optional property: color.white (unsigned uint8_t)");
 
+}  // namespace set_rgb_led
 }  // namespace tasks
 }  // namespace bernd_box

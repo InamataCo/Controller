@@ -9,11 +9,12 @@
 
 namespace bernd_box {
 namespace tasks {
+namespace read_sensor {
 
 /**
  * Read a single value from a sensor and return it via MQTT
  */
-class ReadSensor : public GetValuesTask {
+class ReadSensor : public get_values_task::GetValuesTask {
  public:
   ReadSensor(const JsonObjectConst& parameters, Scheduler& scheduler);
   virtual ~ReadSensor() = default;
@@ -29,5 +30,6 @@ class ReadSensor : public GetValuesTask {
                            Scheduler& scheduler);
 };
 
+}  // namespace read_sensor
 }  // namespace tasks
 }  // namespace bernd_box

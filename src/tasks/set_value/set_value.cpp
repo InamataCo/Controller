@@ -1,10 +1,10 @@
-#include "write_actuator.h"
+#include "set_value.h"
 
 namespace bernd_box {
 namespace tasks {
+namespace set_value {
 
-WriteActuator::WriteActuator(const JsonObjectConst& parameters,
-                             Scheduler& scheduler)
+SetValue::SetValue(const JsonObjectConst& parameters, Scheduler& scheduler)
     : BaseTask(scheduler, parameters) {
   // Abort if the base class failed initialization
   if (!isValid()) {
@@ -43,7 +43,8 @@ WriteActuator::WriteActuator(const JsonObjectConst& parameters,
   }
 
   // Get the unit of the value
-  utils::UUID data_point_type(parameters[utils::ValueUnit::data_point_type_key]);
+  utils::UUID data_point_type(
+      parameters[utils::ValueUnit::data_point_type_key]);
   if (!data_point_type.isValid()) {
     setInvalid(value_unit_.data_point_type_key_error);
     return;
@@ -58,24 +59,25 @@ WriteActuator::WriteActuator(const JsonObjectConst& parameters,
   enable();
 }
 
-const String& WriteActuator::getType() const { return type(); }
+const String& SetValue::getType() const { return type(); }
 
-const String& WriteActuator::type() {
-  static const String name{"WriteActuator"};
+const String& SetValue::type() {
+  static const String name{"SetValue"};
   return name;
 }
 
-bool WriteActuator::Callback() {
+bool SetValue::Callback() {
   peripheral_->setValue(value_unit_);
   return true;
 }
 
-bool WriteActuator::registered_ = TaskFactory::registerTask(type(), factory);
+bool SetValue::registered_ = TaskFactory::registerTask(type(), factory);
 
-BaseTask* WriteActuator::factory(const JsonObjectConst& parameters,
-                                 Scheduler& scheduler) {
-  return new WriteActuator(parameters, scheduler);
+BaseTask* SetValue::factory(const JsonObjectConst& parameters,
+                            Scheduler& scheduler) {
+  return new SetValue(parameters, scheduler);
 }
 
+}  // namespace set_value
 }  // namespace tasks
 }  // namespace bernd_box

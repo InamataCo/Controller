@@ -12,11 +12,12 @@
 
 namespace bernd_box {
 namespace tasks {
+namespace set_rgb_led {
 
-class SetLight : public BaseTask {
+class SetRgbLed : public BaseTask {
  public:
-  SetLight(const JsonObjectConst& parameters, Scheduler& scheduler);
-  virtual ~SetLight() = default;
+  SetRgbLed(const JsonObjectConst& parameters, Scheduler& scheduler);
+  virtual ~SetRgbLed() = default;
 
   const String& getType() const final;
   static const String& type();
@@ -46,5 +47,6 @@ class SetLight : public BaseTask {
   utils::Color color_;
 };
 
+}  // namespace set_rgb_led
 }  // namespace tasks
 }  // namespace bernd_box

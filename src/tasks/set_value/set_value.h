@@ -10,11 +10,12 @@
 
 namespace bernd_box {
 namespace tasks {
+namespace set_value {
 
-class WriteActuator : public BaseTask {
+class SetValue : public BaseTask {
  public:
-  WriteActuator(const JsonObjectConst& parameters, Scheduler& scheduler);
-  virtual ~WriteActuator() = default;
+  SetValue(const JsonObjectConst& parameters, Scheduler& scheduler);
+  virtual ~SetValue() = default;
 
   const String& getType() const final;
   static const String& type();
@@ -31,5 +32,6 @@ class WriteActuator : public BaseTask {
   utils::ValueUnit value_unit_;
 };
 
+}  // namespace set_value
 }  // namespace tasks
 }  // namespace bernd_box

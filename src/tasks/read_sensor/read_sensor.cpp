@@ -2,10 +2,11 @@
 
 namespace bernd_box {
 namespace tasks {
+namespace read_sensor {
 
 ReadSensor::ReadSensor(const JsonObjectConst& parameters, Scheduler& scheduler)
     : GetValuesTask(parameters, scheduler) {
-  if(!isValid()) {
+  if (!isValid()) {
     return;
   }
 
@@ -28,7 +29,7 @@ bool ReadSensor::Callback() {
 
   // Insert the value units and peripheral UUID
   makeTelemetryJson(telemetry_obj);
-  
+
   // Send the result to the server
   Services::getServer().sendTelemetry(getTaskID(), telemetry_obj);
 
@@ -42,5 +43,6 @@ BaseTask* ReadSensor::factory(const JsonObjectConst& parameters,
   return new ReadSensor(parameters, scheduler);
 }
 
+}  // namespace read_sensor
 }  // namespace tasks
 }  // namespace bernd_box

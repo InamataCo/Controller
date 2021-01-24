@@ -2,11 +2,12 @@
 
 namespace bernd_box {
 namespace tasks {
+namespace alert_sensor {
 
 AlertSensor::AlertSensor(const JsonObjectConst& parameters,
                          Scheduler& scheduler)
     : GetValuesTask(parameters, scheduler) {
-  if(!isValid()) {
+  if (!isValid()) {
     return;
   }
 
@@ -154,6 +155,6 @@ const std::map<AlertSensor::TriggerType, const __FlashStringHelper*>
                                        {TriggerType::kFalling, F("falling")},
                                        {TriggerType::kEither, F("either")}};
 
+}  // namespace alert_sensor
 }  // namespace tasks
-
 }  // namespace bernd_box

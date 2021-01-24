@@ -8,8 +8,9 @@
 
 namespace bernd_box {
 namespace tasks {
+namespace alert_sensor {
 
-class AlertSensor : public GetValuesTask {
+class AlertSensor : public get_values_task::GetValuesTask {
  public:
   enum class TriggerType { kRising, kFalling, kEither };
 
@@ -80,5 +81,6 @@ class AlertSensor : public GetValuesTask {
   float last_value_;
 };
 
+}  // namespace alert_sensor
 }  // namespace tasks
 }  // namespace bernd_box

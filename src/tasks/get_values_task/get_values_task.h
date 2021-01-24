@@ -12,6 +12,7 @@
 
 namespace bernd_box {
 namespace tasks {
+namespace get_values_task {
 
 /**
  * Abstract class that implements getting a peripheral which supports the
@@ -46,5 +47,6 @@ class GetValuesTask : public BaseTask {
   utils::UUID peripheral_uuid_;
 };
 
+}  // namespace get_values_task
 }  // namespace tasks
 }  // namespace bernd_box

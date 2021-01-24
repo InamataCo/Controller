@@ -7,8 +7,9 @@
 
 namespace bernd_box {
 namespace tasks {
+namespace poll_sensor {
 
-class PollSensor : public GetValuesTask {
+class PollSensor : public get_values_task::GetValuesTask {
  public:
   PollSensor(const JsonObjectConst& parameters, Scheduler& scheduler);
   virtual ~PollSensor() = default;
@@ -24,5 +25,6 @@ class PollSensor : public GetValuesTask {
                            Scheduler& scheduler);
 };
 
+}  // namespace poll_sensor
 }  // namespace tasks
 }  // namespace bernd_box

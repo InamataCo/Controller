@@ -2,6 +2,7 @@
 
 namespace bernd_box {
 namespace tasks {
+namespace poll_sensor {
 
 PollSensor::PollSensor(const JsonObjectConst& parameters, Scheduler& scheduler)
     : GetValuesTask(parameters, scheduler) {
@@ -60,5 +61,6 @@ BaseTask* PollSensor::factory(const JsonObjectConst& parameters,
   return new PollSensor(parameters, scheduler);
 }
 
+}  // namespace poll_sensor
 }  // namespace tasks
 }  // namespace bernd_box
