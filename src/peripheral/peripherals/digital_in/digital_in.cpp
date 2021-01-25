@@ -17,7 +17,7 @@ DigitalIn::DigitalIn(const JsonObjectConst& parameters) {
   // Get the data point type for setting the pin state
   state_data_point_type_ = utils::UUID(parameters[state_data_point_type_key_]);
   if (!state_data_point_type_.isValid()) {
-    setInvalid(state_data_point_type_key_error_);
+    setInvalid(data_point_type_key_error_);
     return;
   }
 
@@ -76,11 +76,11 @@ const __FlashStringHelper* DigitalIn::pin_key_error_ =
     F("Missing property: pin (unsigned int)");
 
 const __FlashStringHelper* DigitalIn::state_data_point_type_key_ =
-    F("state_data_point_type");
-const __FlashStringHelper* DigitalIn::state_data_point_type_key_error_ =
-    F("Missing property: state_data_point_type (UUID)");
+    F("data_point_type");
+const __FlashStringHelper* DigitalIn::data_point_type_key_error_ =
+    F("Missing property: data_point_type (UUID)");
 
-const __FlashStringHelper* DigitalIn::input_type_key_ = F("input_pullup");
+const __FlashStringHelper* DigitalIn::input_type_key_ = F("input_type");
 const __FlashStringHelper* DigitalIn::input_type_key_error_ =
     F("Missing property: input_type (str)");
 const __FlashStringHelper* DigitalIn::input_type_floating = F("floating");

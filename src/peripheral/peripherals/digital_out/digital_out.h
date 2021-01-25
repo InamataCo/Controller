@@ -43,7 +43,7 @@ class DigitalOut : public Peripheral, public capabilities::SetValue {
   /// Data point type for the GPIO output pin state
   utils::UUID state_data_point_type_{nullptr};
   static const __FlashStringHelper* state_data_point_type_key_;
-  static const __FlashStringHelper* state_data_point_type_key_error_;
+  static const __FlashStringHelper* data_point_type_key_error_;
 };
 
 }  // namespace digital_out

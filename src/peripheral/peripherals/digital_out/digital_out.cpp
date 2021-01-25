@@ -17,7 +17,7 @@ DigitalOut::DigitalOut(const JsonObjectConst& parameters) {
   state_data_point_type_ =
       utils::UUID(parameters[state_data_point_type_key_]);
   if (!state_data_point_type_.isValid()) {
-    setInvalid(state_data_point_type_key_error_);
+    setInvalid(data_point_type_key_error_);
     return;
   }
 
@@ -56,9 +56,9 @@ const __FlashStringHelper* DigitalOut::pin_key_error_ =
     F("Missing property: pin (unsigned int)");
 
 const __FlashStringHelper* DigitalOut::state_data_point_type_key_ =
-    F("state_data_point_type");
-const __FlashStringHelper* DigitalOut::state_data_point_type_key_error_ =
-    F("Missing property: state_data_point_type (UUID)");
+    F("data_point_type");
+const __FlashStringHelper* DigitalOut::data_point_type_key_error_ =
+    F("Missing property: data_point_type (UUID)");
 
 std::shared_ptr<Peripheral> DigitalOut::factory(const JsonObjectConst& parameters) {
   return std::make_shared<DigitalOut>(parameters);

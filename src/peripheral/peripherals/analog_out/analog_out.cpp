@@ -25,7 +25,7 @@ AnalogOut::AnalogOut(const JsonObjectConst& parameters) {
       utils::UUID(parameters[voltage_data_point_type_key_]);
   percent_data_point_type_ =
       utils::UUID(parameters[percent_data_point_type_key_]);
-  if (voltage_data_point_type_.isValid() !=
+  if (voltage_data_point_type_.isValid() ==
       percent_data_point_type_.isValid()) {
     setInvalid(data_point_type_key_error_);
     return;

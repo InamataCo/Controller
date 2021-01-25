@@ -43,7 +43,7 @@ class DigitalIn : public Peripheral, public capabilities::GetValues {
   /// Data point type for the GPIO output pin state
   utils::UUID state_data_point_type_{nullptr};
   static const __FlashStringHelper* state_data_point_type_key_;
-  static const __FlashStringHelper* state_data_point_type_key_error_;
+  static const __FlashStringHelper* data_point_type_key_error_;
 
   /// How to setup the input GPIO
   static const __FlashStringHelper* input_type_key_;
