@@ -37,8 +37,8 @@ bool TaskRemovalTask::Callback() {
 
     BaseTask* base_task = dynamic_cast<BaseTask*>(task);
     if (base_task) {
-      TaskController::addResultEntry(base_task->getTaskID(), ErrorResult(),
-                                     stop_results);
+      TaskController::addResultEntry(base_task->getTaskID(),
+                                     base_task->getError(), stop_results);
       delete base_task;
       it = tasks_.erase(it);
     } else {

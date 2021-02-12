@@ -25,10 +25,10 @@ class DigitalIn : public Peripheral, public capabilities::GetValues {
 
   /**
    * Get the GPIO state
-   * 
+   *
    * \return The value 1 represents the high state, 0 its low state
    */
-  std::vector<utils::ValueUnit> getValues() final;
+  capabilities::GetValues::Result getValues() final;
 
  private:
   static std::shared_ptr<Peripheral> factory(const JsonObjectConst& parameter);
@@ -41,9 +41,7 @@ class DigitalIn : public Peripheral, public capabilities::GetValues {
   static const __FlashStringHelper* pin_key_error_;
 
   /// Data point type for the GPIO output pin state
-  utils::UUID state_data_point_type_{nullptr};
-  static const __FlashStringHelper* state_data_point_type_key_;
-  static const __FlashStringHelper* data_point_type_key_error_;
+  utils::UUID data_point_type_{nullptr};
 
   /// How to setup the input GPIO
   static const __FlashStringHelper* input_type_key_;

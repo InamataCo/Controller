@@ -14,9 +14,8 @@ DigitalOut::DigitalOut(const JsonObjectConst& parameters) {
   }
   pin_ = pin;
 
-  state_data_point_type_ =
-      utils::UUID(parameters[state_data_point_type_key_]);
-  if (!state_data_point_type_.isValid()) {
+  data_point_type_ = utils::UUID(parameters[data_point_type_key_]);
+  if (!data_point_type_.isValid()) {
     setInvalid(data_point_type_key_error_);
     return;
   }
@@ -33,40 +32,33 @@ const String& DigitalOut::type() {
 }
 
 void DigitalOut::setValue(utils::ValueUnit value_unit) {
-  if (value_unit.data_point_type != state_data_point_type_) {
+  if (value_unit.data_point_type != data_point_type_) {
     Services::getServer().sendError(
-        type(), value_unit.sourceUnitError(state_data_point_type_));
+        type(), value_unit.sourceUnitError(data_point_type_));
     return;
   }
 
+  // Limit the value between 0 and 1 and then round to the nearest integer.
+  // Finally, set the pin value
   float clamped_value = std::fmax(0, std::fmin(value_unit.value, 1));
-  int state = std::lround(clamped_value);
-
-  if (state == 1) {
-    pinMode(pin_, HIGH);
-  } else if (state == 0) {
-    pinMode(pin_, LOW);
-  } else {
-    return;
-  }
+  bool state = std::lround(clamped_value);
+  digitalWrite(pin_, state);
 }
 
 const __FlashStringHelper* DigitalOut::pin_key_ = F("pin");
 const __FlashStringHelper* DigitalOut::pin_key_error_ =
     F("Missing property: pin (unsigned int)");
 
-const __FlashStringHelper* DigitalOut::state_data_point_type_key_ =
-    F("data_point_type");
-const __FlashStringHelper* DigitalOut::data_point_type_key_error_ =
-    F("Missing property: data_point_type (UUID)");
-
-std::shared_ptr<Peripheral> DigitalOut::factory(const JsonObjectConst& parameters) {
+std::shared_ptr<Peripheral> DigitalOut::factory(
+    const JsonObjectConst& parameters) {
   return std::make_shared<DigitalOut>(parameters);
 }
 
-bool DigitalOut::registered_ = PeripheralFactory::registerFactory(type(), factory);
+bool DigitalOut::registered_ =
+    PeripheralFactory::registerFactory(type(), factory);
 
-bool DigitalOut::capability_set_value_ = capabilities::SetValue::registerType(type());
+bool DigitalOut::capability_set_value_ =
+    capabilities::SetValue::registerType(type());
 
 }  // namespace digital_out
 }  // namespace peripherals

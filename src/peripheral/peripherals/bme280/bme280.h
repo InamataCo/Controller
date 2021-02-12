@@ -27,7 +27,7 @@ class BME280 : public peripherals::i2c_adapter::I2CAbstractPeripheral,
    * 
    * \return A vector with all read data points and their type
    */
-  std::vector<utils::ValueUnit> getValues() final;
+  capabilities::GetValues::Result getValues() final;
 
  private:
   static std::shared_ptr<Peripheral> factory(const JsonObjectConst& parameters);
@@ -55,6 +55,8 @@ class BME280 : public peripherals::i2c_adapter::I2CAbstractPeripheral,
 
   /// The driver to read data from the BME/P280
   ::BME280 driver_;
+  /// BME280s I2C address
+  uint8_t i2c_address_;
   /// The detected chip type
   ChipType chip_type_ = ChipType::Unknown;
 

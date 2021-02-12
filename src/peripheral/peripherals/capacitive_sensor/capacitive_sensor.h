@@ -31,7 +31,7 @@ class CapacitiveSensor : public Peripheral, public capabilities::GetValues {
    *
    * \return Value of the touch pad sensor
    */
-  std::vector<utils::ValueUnit> getValues() final;
+  capabilities::GetValues::Result getValues() final;
 
  private:
   static std::shared_ptr<Peripheral> factory(const JsonObjectConst& parameters);

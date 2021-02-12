@@ -108,7 +108,7 @@ void UUID::clear() {
          (sizeof(buffer_[0]) / sizeof(uint8_t)) * buffer_.size());
 }
 
-bool UUID::isValid() {
+bool UUID::isValid() const {
   // The 13th hex has to be 4
   if (buffer_[6] >> 4 != 0x4) {
     return false;

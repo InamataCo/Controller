@@ -30,19 +30,20 @@ BME280::BME280(const JsonObjectConst& parameters)
 
   // Get and check the I2C address of the BME/P280 chip
   JsonVariantConst i2c_address = parameters[i2c_address_key_];
-  if (!i2c_address.is<uint16_t>()) {
+  if (!i2c_address.is<uint8_t>()) {
     setInvalid(i2c_address_key_error_);
     return;
   }
+  i2c_address_ = i2c_address;
 
   // Do a preliminary check to see if the device is connected to the bus
-  if (!isDeviceConnected(i2c_address)) {
-    setInvalid(missingI2CDeviceError(i2c_address.as<uint16_t>()));
+  if (!isDeviceConnected(i2c_address_)) {
+    setInvalid(missingI2CDeviceError(i2c_address_));
     return;
   }
 
   // Initialize the driver with the correct Wire (I2C) interface
-  driver_.setI2CAddress(i2c_address);
+  driver_.setI2CAddress(i2c_address_);
   bool setup_success = driver_.beginI2C(*getWire());
   if (!setup_success) {
     setInvalid(invalid_chip_type_error_);
@@ -76,20 +77,26 @@ const String& BME280::type() {
   return name;
 }
 
-std::vector<utils::ValueUnit> BME280::getValues() {
-  std::vector<utils::ValueUnit> values;
-  values.push_back(
+capabilities::GetValues::Result BME280::getValues() {
+  if (!isDeviceConnected(i2c_address_)) {
+    return {.values = {},
+            .error = ErrorResult(type(), missingI2CDeviceError(i2c_address_))};
+  }
+
+  capabilities::GetValues::Result result;
+
+  result.values.push_back(
       utils::ValueUnit{.value = driver_.readTempC(),
                        .data_point_type = temperature_data_point_type_});
-  values.push_back(
+  result.values.push_back(
       utils::ValueUnit{.value = driver_.readFloatPressure(),
                        .data_point_type = pressure_data_point_type_});
   if (chip_type_ == ChipType::BME280) {
-    values.push_back(
+    result.values.push_back(
         utils::ValueUnit{.value = driver_.readFloatHumidity(),
                          .data_point_type = humidity_data_point_type_});
   }
-  return values;
+  return result;
 }
 
 std::shared_ptr<Peripheral> BME280::factory(const JsonObjectConst& parameters) {

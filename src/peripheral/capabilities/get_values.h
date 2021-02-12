@@ -15,7 +15,17 @@ namespace capabilities {
 
 class GetValues {
  public:
-  virtual std::vector<utils::ValueUnit> getValues() = 0;
+  struct Result {
+    std::vector<utils::ValueUnit> values;
+    ErrorResult error;
+  };
+  
+  /**
+   * Interface to get ValueUnits
+   * 
+   * \return On success, a vector with ValueUnits. On error, true for isError()
+   */
+  virtual Result getValues() = 0;
 
   // Type checking
   static bool registerType(const String& type);
@@ -31,6 +41,9 @@ class GetValues {
    */
   static String invalidTypeError(const utils::UUID& uuid,
                                  std::shared_ptr<Peripheral> peripheral);
+
+ protected:
+  static const __FlashStringHelper* get_values_error_;
 
  private:
   static std::set<String>& getSupportedTypes();

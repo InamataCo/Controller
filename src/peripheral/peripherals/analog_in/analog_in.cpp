@@ -39,7 +39,7 @@ const String& AnalogIn::type() {
   return name;
 }
 
-std::vector<utils::ValueUnit> AnalogIn::getValues() {
+capabilities::GetValues::Result AnalogIn::getValues() {
   std::vector<utils::ValueUnit> values;
   const uint16_t value = analogRead(pin_);
 
@@ -54,7 +54,7 @@ std::vector<utils::ValueUnit> AnalogIn::getValues() {
         .value = percent, .data_point_type = percent_data_point_type_}});
   }
 
-  return values;
+  return {.values = values, .error = ErrorResult()};
 }
 
 std::shared_ptr<Peripheral> AnalogIn::factory(

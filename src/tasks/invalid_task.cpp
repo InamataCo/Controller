@@ -12,7 +12,7 @@ InvalidTask::InvalidTask(Scheduler& scheduler, const String& error)
   setInvalid(error);
 }
 
-bool InvalidTask::Callback() { return false; }
+void InvalidTask::TaskCallback() {}
 
 const String& InvalidTask::getType() const { return type(); }
 

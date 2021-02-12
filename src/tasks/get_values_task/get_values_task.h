@@ -30,8 +30,9 @@ class GetValuesTask : public BaseTask {
    * Make a JSON object with the value units and UUID from the peripheral
    *
    * \param telemetry The JSON object to add the value units and UUID to
+   * \return An object with the error, if one occured
    */
-  void makeTelemetryJson(JsonObject& telemetry);
+  ErrorResult makeTelemetryJson(JsonObject& telemetry);
 
   static const __FlashStringHelper* threshold_key_;
   static const __FlashStringHelper* threshold_key_error_;

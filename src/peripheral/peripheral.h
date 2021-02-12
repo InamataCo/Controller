@@ -59,6 +59,10 @@ class Peripheral {
    */
   void setInvalid(const String& error_message);
 
+  // Common parameter keys can be reused
+  static const __FlashStringHelper* data_point_type_key_;
+  static const __FlashStringHelper* data_point_type_key_error_;
+
  private:
   /// If the peripheral was constructed correctly and is still functional
   bool valid_ = true;

@@ -20,7 +20,7 @@ class SetValue : public BaseTask {
   const String& getType() const final;
   static const String& type();
 
-  bool Callback() final;
+  void TaskCallback() final;
 
  private:
   static bool registered_;

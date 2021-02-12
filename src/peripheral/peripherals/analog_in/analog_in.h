@@ -30,7 +30,7 @@ class AnalogIn : public Peripheral, public capabilities::GetValues {
    *
    * \return The value 1 represents the high state, 0 its low state
    */
-  std::vector<utils::ValueUnit> getValues() final;
+  capabilities::GetValues::Result getValues() final;
 
  private:
   static std::shared_ptr<Peripheral> factory(const JsonObjectConst& parameter);

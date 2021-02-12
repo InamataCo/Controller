@@ -35,13 +35,12 @@ namespace tasks {
 
 DummyTask::~DummyTask() { Serial.println("Deleting DummyTask"); }
 
-bool DummyTask::Callback() {
+void DummyTask::TaskCallback() {
   Serial.println("Too dummy");
-  return true;
 }
 
 void DummyTask::OnTaskDisable() {
-  Serial.println("I'm getting disabled... going to disappear :(");
+  Serial.println(F("I'm getting disabled... going to disappear :("));
 }
 
 DummyTask::DummyTask(Scheduler& scheduler) : BaseTask(scheduler) {}

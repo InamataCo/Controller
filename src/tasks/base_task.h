@@ -35,29 +35,58 @@ class BaseTask : public Task {
   virtual const String& getType() const = 0;
 
   /**
-   * Called by the task scheduler and checks if the task is valid
+   * Called by the task scheduler when the task is enabled and checks if the
+   * task is valid
+   * 
+   * \see OnTaskEnable()
    *
    * \return True if the task is valid
    */
   bool OnEnable() final;
 
   /**
-   * For derived classes to perform init tasks and called when task is enabled
+   * For derived classes to perform init tasks and called when the task is
+   * enabled
    *
+   * \see OnEnable()
+   * 
    * \return True if the derived task inited successfully
    */
   virtual bool OnTaskEnable();
+
+  /**
+   * Called by the task scheduler when the task is to be executed
+   *
+   * \see TaskCallback()
+   * 
+   * \return True if the task is valid
+   */
+  bool Callback() final;
+
+  /**
+   * For derived classes to perform execution logic.
+   *
+   * Use the setInvalid() functions to set error states. The task is cleaned up
+   * and the error reported if it is not valid before or after being executed.
+   * 
+   * \see Callback()
+   */
+  virtual void TaskCallback() = 0;
 
   /**
    * Called by the task scheduler and triggers task removal
    *
    * Contains a static TaskRemovalTask which is tasked with removing disabled
    * tasks.
+   * 
+   * \see OnTaskDisable()
    */
   void OnDisable() final;
 
   /**
    * For derived classes to perform clean up
+   * 
+   * \see OnDisable()
    */
   virtual void OnTaskDisable();
 
@@ -84,7 +113,7 @@ class BaseTask : public Task {
 
   /**
    * Sets the callback which accepts tasks to be removed
-   * 
+   *
    * \param callback The function to call to add a task to the removal queue
    */
   static void setTaskRemovalCallback(std::function<void(Task&)> callback);

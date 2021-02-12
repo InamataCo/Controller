@@ -22,18 +22,20 @@ const String& ReadSensor::type() {
   return name;
 }
 
-bool ReadSensor::Callback() {
+void ReadSensor::TaskCallback() {
   // Create the JSON doc
-  DynamicJsonDocument telemetry_doc(BB_JSON_PAYLOAD_SIZE);
-  JsonObject telemetry_obj = telemetry_doc.to<JsonObject>();
+  DynamicJsonDocument result_doc(BB_JSON_PAYLOAD_SIZE);
+  JsonObject result_object = result_doc.to<JsonObject>();
 
   // Insert the value units and peripheral UUID
-  makeTelemetryJson(telemetry_obj);
+  ErrorResult error = makeTelemetryJson(result_object);
+  if (error.isError()) {
+    setInvalid(error.toString());
+    return;
+  }
 
   // Send the result to the server
-  Services::getServer().sendTelemetry(getTaskID(), telemetry_obj);
-
-  return true;
+  Services::getServer().sendTelemetry(getTaskID(), result_object);
 }
 
 bool ReadSensor::registered_ = TaskFactory::registerTask(type(), factory);

@@ -26,9 +26,26 @@ bool BaseTask::OnEnable() {
 
 bool BaseTask::OnTaskEnable() { return true; }
 
+bool BaseTask::Callback() {
+  // Check that the task is valid before it is executed
+  if (isValid()) {
+    // Run the actual task logic
+    TaskCallback();
+
+    // Check if the task is still valid. Disable task if not
+    if (isValid()) {
+      return true;
+    } else {
+      return false;
+    }
+  } else {
+    return false;
+  }
+}
+
 void BaseTask::OnDisable() {
   OnTaskDisable();
-  if(task_removal_callback_) {
+  if (task_removal_callback_) {
     task_removal_callback_(*this);
   } else {
     Serial.println(F("Task removal callback not set. Rebooting in 10s"));

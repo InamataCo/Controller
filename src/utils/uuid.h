@@ -76,7 +76,7 @@ class UUID : public Printable {
    *
    * \return True if it is valid
    */
-  bool isValid();
+  bool isValid() const;
 
  private:
   /// The internal binary buffer holding the UUID

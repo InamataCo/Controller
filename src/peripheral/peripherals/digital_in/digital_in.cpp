@@ -15,8 +15,8 @@ DigitalIn::DigitalIn(const JsonObjectConst& parameters) {
   pin_ = pin;
 
   // Get the data point type for setting the pin state
-  state_data_point_type_ = utils::UUID(parameters[state_data_point_type_key_]);
-  if (!state_data_point_type_.isValid()) {
+  data_point_type_ = utils::UUID(parameters[data_point_type_key_]);
+  if (!data_point_type_.isValid()) {
     setInvalid(data_point_type_key_error_);
     return;
   }
@@ -46,39 +46,26 @@ const String& DigitalIn::type() {
   return name;
 }
 
-std::vector<utils::ValueUnit> DigitalIn::getValues() {
-  const int state = digitalRead(pin_);
-
-  float value;
-  if (state == LOW) {
-    value = 0;
-  } else if (state == HIGH) {
-    value = 1;
-  } else {
-    Services::getServer().sendError(type(), String("Unknown value: ") + state);
-    value = -1;
-  }
-
-  return {utils::ValueUnit{.value = value,
-                           .data_point_type = state_data_point_type_}};
+capabilities::GetValues::Result DigitalIn::getValues() {
+  return {.values = {
+              utils::ValueUnit{.value = static_cast<float>(digitalRead(pin_)),
+                               .data_point_type = data_point_type_}}};
 }
 
-std::shared_ptr<Peripheral> DigitalIn::factory(const JsonObjectConst& parameters) {
+std::shared_ptr<Peripheral> DigitalIn::factory(
+    const JsonObjectConst& parameters) {
   return std::make_shared<DigitalIn>(parameters);
 }
 
-bool DigitalIn::registered_ = PeripheralFactory::registerFactory(type(), factory);
+bool DigitalIn::registered_ =
+    PeripheralFactory::registerFactory(type(), factory);
 
-bool DigitalIn::capability_get_values_ = capabilities::GetValues::registerType(type());
+bool DigitalIn::capability_get_values_ =
+    capabilities::GetValues::registerType(type());
 
 const __FlashStringHelper* DigitalIn::pin_key_ = F("pin");
 const __FlashStringHelper* DigitalIn::pin_key_error_ =
     F("Missing property: pin (unsigned int)");
-
-const __FlashStringHelper* DigitalIn::state_data_point_type_key_ =
-    F("data_point_type");
-const __FlashStringHelper* DigitalIn::data_point_type_key_error_ =
-    F("Missing property: data_point_type (UUID)");
 
 const __FlashStringHelper* DigitalIn::input_type_key_ = F("input_type");
 const __FlashStringHelper* DigitalIn::input_type_key_error_ =

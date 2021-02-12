@@ -66,10 +66,7 @@ const String& SetValue::type() {
   return name;
 }
 
-bool SetValue::Callback() {
-  peripheral_->setValue(value_unit_);
-  return true;
-}
+void SetValue::TaskCallback() { peripheral_->setValue(value_unit_); }
 
 bool SetValue::registered_ = TaskFactory::registerTask(type(), factory);
 

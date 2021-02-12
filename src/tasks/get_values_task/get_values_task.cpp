@@ -46,14 +46,18 @@ const utils::UUID& GetValuesTask::getPeripheralUUID() const {
   return peripheral_uuid_;
 }
 
-void GetValuesTask::makeTelemetryJson(JsonObject& telemetry) {
+ErrorResult GetValuesTask::makeTelemetryJson(JsonObject& telemetry) {
   // Create an array for the value units and get them from the peripheral
   JsonArray value_units_doc =
       telemetry.createNestedArray(utils::ValueUnit::data_points_key);
-  const std::vector<utils::ValueUnit> value_units = peripheral_->getValues();
+  peripheral::capabilities::GetValues::Result result = peripheral_->getValues();
+  if(result.error.isError()) {
+    return result.error;
+  }
+
 
   // Create a JSON object representation for each value unit in the array
-  for (const auto& value_unit : value_units) {
+  for (const auto& value_unit : result.values) {
     JsonObject value_unit_object = value_units_doc.createNestedObject();
     value_unit_object[utils::ValueUnit::value_key] = value_unit.value;
     value_unit_object[utils::ValueUnit::data_point_type_key] =
@@ -62,6 +66,7 @@ void GetValuesTask::makeTelemetryJson(JsonObject& telemetry) {
 
   // Add the peripheral UUID to the result
   telemetry[peripheral_key_] = peripheral_uuid_.toString();
+  return ErrorResult();
 }
 
 const __FlashStringHelper* GetValuesTask::threshold_key_ = F("threshold");

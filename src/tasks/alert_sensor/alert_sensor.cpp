@@ -66,20 +66,26 @@ const String& AlertSensor::type() {
   return name;
 }
 
-bool AlertSensor::Callback() {
-  std::vector<utils::ValueUnit> value_units = getPeripheral()->getValues();
+void AlertSensor::TaskCallback() {
+  auto result = getPeripheral()->getValues();
+  if (result.error.isError()) {
+    setInvalid(result.error.toString());
+    return;
+  }
 
+  // Find the specified data point type. Uses first found. Error if none found
   auto match_unit = [&](const utils::ValueUnit& value_unit) {
     return value_unit.data_point_type == data_point_type_;
   };
   const auto trigger_value_unit =
-      std::find_if(value_units.cbegin(), value_units.cend(), match_unit);
-  if (trigger_value_unit == value_units.end()) {
+      std::find_if(result.values.cbegin(), result.values.cend(), match_unit);
+  if (trigger_value_unit == result.values.end()) {
     setInvalid(String(F("Data point type not found: ")) +
                data_point_type_.toString());
-    return false;
+    return;
   }
 
+  // Check the flank type if it should trigger
   if (isRisingThreshold(trigger_value_unit->value)) {
     if (trigger_type_ == TriggerType::kRising ||
         trigger_type_ == TriggerType::kEither) {
@@ -92,8 +98,8 @@ bool AlertSensor::Callback() {
     }
   }
 
+  // Store the current value for the next iteration
   last_value_ = trigger_value_unit->value;
-  return true;
 }
 
 bool AlertSensor::setTriggerType(const String& type) {

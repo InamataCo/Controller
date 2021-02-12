@@ -40,18 +40,22 @@ const String& PollSensor::type() {
   return name;
 }
 
-bool PollSensor::Callback() {
+void PollSensor::TaskCallback() {
   // Create a JSON doc on the heap
   DynamicJsonDocument result_doc(BB_JSON_PAYLOAD_SIZE);
   JsonObject result_object = result_doc.to<JsonObject>();
 
   // Read the peripheral's value units and its UUID and add them to the JSON doc
-  makeTelemetryJson(result_object);
+  ErrorResult error = makeTelemetryJson(result_object);
+
+  // Check if the values could be successfully read
+  if (error.isError()) {
+    setInvalid(error.toString());
+    return;
+  }
 
   // Send the value units and peripheral UUID to the server
   Services::getServer().send(type(), result_doc);
-
-  return true;
 }
 
 bool PollSensor::registered_ = TaskFactory::registerTask(type(), factory);

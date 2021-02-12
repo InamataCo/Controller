@@ -92,9 +92,8 @@ const String& SetRgbLed::type() {
   return name;
 }
 
-bool SetRgbLed::Callback() {
+void SetRgbLed::TaskCallback() {
   peripheral_->turnOn(color_);
-  return true;
 }
 
 bool SetRgbLed::registered_ = TaskFactory::registerTask(type(), factory);
