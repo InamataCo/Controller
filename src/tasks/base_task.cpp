@@ -18,7 +18,12 @@ BaseTask::BaseTask(Scheduler& scheduler, const JsonObjectConst& parameters)
 
 bool BaseTask::OnEnable() {
   if (isValid()) {
-    return OnTaskEnable();
+    bool is_ok = OnTaskEnable();
+    if (isValid() && is_ok) {
+      return true;
+    } else {
+      return false;
+    }
   } else {
     return false;
   }
@@ -30,10 +35,10 @@ bool BaseTask::Callback() {
   // Check that the task is valid before it is executed
   if (isValid()) {
     // Run the actual task logic
-    TaskCallback();
+    bool is_ok = TaskCallback();
 
     // Check if the task is still valid. Disable task if not
-    if (isValid()) {
+    if (isValid() && is_ok) {
       return true;
     } else {
       return false;

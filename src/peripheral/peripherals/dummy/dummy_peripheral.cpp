@@ -35,8 +35,9 @@ namespace tasks {
 
 DummyTask::~DummyTask() { Serial.println("Deleting DummyTask"); }
 
-void DummyTask::TaskCallback() {
+bool DummyTask::TaskCallback() {
   Serial.println("Too dummy");
+  return false;
 }
 
 void DummyTask::OnTaskDisable() {

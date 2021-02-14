@@ -66,11 +66,11 @@ const String& AlertSensor::type() {
   return name;
 }
 
-void AlertSensor::TaskCallback() {
+bool AlertSensor::TaskCallback() {
   auto result = getPeripheral()->getValues();
   if (result.error.isError()) {
     setInvalid(result.error.toString());
-    return;
+    return false;
   }
 
   // Find the specified data point type. Uses first found. Error if none found
@@ -82,7 +82,7 @@ void AlertSensor::TaskCallback() {
   if (trigger_value_unit == result.values.end()) {
     setInvalid(String(F("Data point type not found: ")) +
                data_point_type_.toString());
-    return;
+    return false;
   }
 
   // Check the flank type if it should trigger
@@ -100,6 +100,7 @@ void AlertSensor::TaskCallback() {
 
   // Store the current value for the next iteration
   last_value_ = trigger_value_unit->value;
+  return true;
 }
 
 bool AlertSensor::setTriggerType(const String& type) {

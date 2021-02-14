@@ -82,7 +82,7 @@ SetRgbLed::SetRgbLed(const JsonObjectConst& parameters, Scheduler& scheduler)
     }
   }
 
-  setIterations(1);
+  enable();
 }
 
 const String& SetRgbLed::getType() const { return type(); }
@@ -92,8 +92,9 @@ const String& SetRgbLed::type() {
   return name;
 }
 
-void SetRgbLed::TaskCallback() {
+bool SetRgbLed::TaskCallback() {
   peripheral_->turnOn(color_);
+  return false;
 }
 
 bool SetRgbLed::registered_ = TaskFactory::registerTask(type(), factory);

@@ -39,7 +39,7 @@ class DummyTask : public BaseTask {
   DummyTask(Scheduler& scheduler);
   virtual ~DummyTask();
 
-  void TaskCallback() final;
+  bool TaskCallback() final;
   void OnTaskDisable() final;
 
   const String& getType() const final;

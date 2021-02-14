@@ -43,7 +43,7 @@ class StartMeasurement {
    *
    * \return State of the current measurement
    */
-  virtual Result measurementState() = 0;
+  virtual Result handleMeasurement() = 0;
 
   // Type checking
   static bool registerType(const String& type);

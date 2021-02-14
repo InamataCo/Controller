@@ -16,21 +16,38 @@ PollSensor::PollSensor(const JsonObjectConst& parameters, Scheduler& scheduler)
     setInvalid(interval_ms_key_error_);
     return;
   }
-
-  setInterval(interval_ms);
+  interval_ = std::chrono::milliseconds(interval_ms);
 
   // Optionally get the duration for which to poll the sensor [default: forever]
   JsonVariantConst duration_ms = parameters[duration_ms_key_];
-  if (duration_ms.isNull()) {
-    setIterations(TASK_FOREVER);
-  } else if (duration_ms.is<unsigned int>()) {
-    setIterations(duration_ms.as<unsigned int>() / getInterval());
+  if (duration_ms.is<unsigned int>()) {
+    run_until_ = std::chrono::steady_clock::now() +
+                 std::chrono::milliseconds(duration_ms);
+  } else if (duration_ms.isNull()) {
+    run_until_ = std::chrono::steady_clock::time_point::max();
   } else {
     setInvalid(duration_ms_key_error_);
     return;
   }
 
-  enable();
+  // Check if the peripheral supports the startMeasurement capability. Start a
+  // measurement if yes. Wait the returned amount of time to check the
+  // measurement state. If doesn't support it, enable the task without delay.
+  auto start_measurement_peripheral =
+      std::dynamic_pointer_cast<peripheral::capabilities::StartMeasurement>(
+          getPeripheral());
+  if (start_measurement_peripheral) {
+    auto result = start_measurement_peripheral->startMeasurement(parameters);
+    if (result.error.isError()) {
+      setInvalid(result.error.toString());
+      return;
+    }
+    enableDelayed(
+        std::chrono::duration_cast<std::chrono::milliseconds>(result.wait)
+            .count());
+  } else {
+    enable();
+  }
 }
 
 const String& PollSensor::getType() const { return type(); }
@@ -40,7 +57,24 @@ const String& PollSensor::type() {
   return name;
 }
 
-void PollSensor::TaskCallback() {
+bool PollSensor::TaskCallback() {
+  // If using a startMeasurement peripheral, handle the measurement. Delay
+  // reading values if the result includes a wait duration. Otherwise, read the
+  // values and send them to the server.
+  if (start_measurement_peripheral_) {
+    auto result = start_measurement_peripheral_->handleMeasurement();
+    if (result.error.isError()) {
+      setInvalid(result.error.toString());
+      return false;
+    }
+    if (result.wait.count() != 0) {
+      Task::delay(
+          std::chrono::duration_cast<std::chrono::milliseconds>(result.wait)
+              .count());
+      return true;
+    }
+  }
+
   // Create a JSON doc on the heap
   DynamicJsonDocument result_doc(BB_JSON_PAYLOAD_SIZE);
   JsonObject result_object = result_doc.to<JsonObject>();
@@ -51,11 +85,19 @@ void PollSensor::TaskCallback() {
   // Check if the values could be successfully read
   if (error.isError()) {
     setInvalid(error.toString());
-    return;
+    return false;
   }
 
   // Send the value units and peripheral UUID to the server
   Services::getServer().send(type(), result_doc);
+
+  if (run_until_ < std::chrono::steady_clock::now()) {
+    return false;
+  } else {
+    Task::delay(std::chrono::duration_cast<std::chrono::milliseconds>(interval_)
+                    .count());
+  }
+  return true;
 }
 
 bool PollSensor::registered_ = TaskFactory::registerTask(type(), factory);

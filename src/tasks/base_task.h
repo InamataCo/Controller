@@ -71,7 +71,7 @@ class BaseTask : public Task {
    * 
    * \see Callback()
    */
-  virtual void TaskCallback() = 0;
+  virtual bool TaskCallback() = 0;
 
   /**
    * Called by the task scheduler and triggers task removal

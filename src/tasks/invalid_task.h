@@ -26,7 +26,7 @@ class InvalidTask : public BaseTask {
   /**
    * Never runs as set invalid in constructor
    */
-  void TaskCallback() final;
+  bool TaskCallback() final;
 
   const String& getType() const;
   static const String& type();

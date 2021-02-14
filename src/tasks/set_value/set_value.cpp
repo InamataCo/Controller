@@ -54,8 +54,6 @@ SetValue::SetValue(const JsonObjectConst& parameters, Scheduler& scheduler)
   value_unit_ =
       utils::ValueUnit{.value = value, .data_point_type = data_point_type};
 
-  // Perform one iteration, then exit
-  setIterations(1);
   enable();
 }
 
@@ -66,7 +64,10 @@ const String& SetValue::type() {
   return name;
 }
 
-void SetValue::TaskCallback() { peripheral_->setValue(value_unit_); }
+bool SetValue::TaskCallback() {
+  peripheral_->setValue(value_unit_);
+  return false;
+}
 
 bool SetValue::registered_ = TaskFactory::registerTask(type(), factory);
 

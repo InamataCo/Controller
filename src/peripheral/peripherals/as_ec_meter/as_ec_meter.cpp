@@ -70,267 +70,117 @@ capabilities::Calibrate::Result AsEcMeterI2C::startCalibration(
   // then returns the expected time to complete the calibration process.
   // https://atlas-scientific.com/files/EC_EZO_Datasheet.pdf
   const String command = calibrate_command.as<String>();
+  capabilities::Calibrate::Result result;
   if (command == calibrate_clear_command_) {
-    // Clear the calibration settings on the Ezo_board
-    send_cmd(String(calibrate_clear_code_).c_str());
-    calibration_duration_ = std::chrono::milliseconds(300);
-    calibration_state_ = CalibrationState::kClear;
-
+    result = startClearCalibration(parameters);
   } else if (command == calibrate_dry_command_) {
-    // Start the dry calibration process
-    if (calibration_state_ != CalibrationState::kNone) {
-      calibration_state_ = CalibrationState::kNone;
-      return {.wait = {},
-              .error = ErrorResult(type(), invalid_transition_error_)};
-    }
-    // Request readings to stabilize readings
-    send_read_cmd();
-    calibration_duration_ = reading_duration_;
-    calibration_state_ = CalibrationState::kDryStabilize;
-
+    result = startDryCalibration(parameters);
   } else if (command == calibrate_single_command_) {
-    // Start the single point calibration process for the given value
-    if (calibration_state_ != CalibrationState::kDryDone) {
-      calibration_state_ = CalibrationState::kNone;
-      return {.wait = {},
-              .error = ErrorResult(type(), invalid_transition_error_)};
-    }
-    JsonVariantConst calibrate_value = parameters[calibrate_value_key_];
-    if (!calibrate_value.is<int>()) {
-      return {.wait = {},
-              .error = ErrorResult(type(), calibrate_value_key_error_)};
-    }
-    calibrate_value_ = calibrate_value;
-    JsonVariantConst temperature_c = parameters[temperature_c_key_];
-    if (!temperature_c.is<int>()) {
-      return {.wait = {},
-              .error = ErrorResult(type(), temperature_c_key_error_)};
-    }
-    temperature_c_ = temperature_c;
-
-    // Request readings to stabilize readings
-    send_read_with_temp_comp(temperature_c_);
-    calibration_duration_ = reading_duration_;
-    calibration_state_ = CalibrationState::kSingleStabilize;
-
+    result = startSingleCalibration(parameters);
   } else if (command == calibrate_double_low_command_) {
-    // Start the lower of the two point calibration process
-    if (calibration_state_ != CalibrationState::kDryDone) {
-      calibration_state_ = CalibrationState::kNone;
-      return {.wait = {},
-              .error = ErrorResult(type(), invalid_transition_error_)};
-    }
-    JsonVariantConst calibrate_value = parameters[calibrate_value_key_];
-    if (!calibrate_value.is<int>()) {
-      return {.wait = {},
-              .error = ErrorResult(type(), calibrate_value_key_error_)};
-    }
-    calibrate_value_ = calibrate_value;
-    JsonVariantConst temperature_c = parameters[temperature_c_key_];
-    if (!temperature_c.is<int>()) {
-      return {.wait = {},
-              .error = ErrorResult(type(), temperature_c_key_error_)};
-    }
-    temperature_c_ = temperature_c;
-
-    // Request readings to stabilize readings
-    send_read_with_temp_comp(temperature_c_);
-    calibration_duration_ = reading_duration_;
-    calibration_state_ = CalibrationState::kDoubleLowStabilize;
-
+    result = startDoubleLowCalibration(parameters);
   } else if (command == calibrate_double_high_command_) {
-    // Start the upper of the two point calibration process
-    if (calibration_state_ != CalibrationState::kDoubleLowDone) {
-      calibration_state_ = CalibrationState::kNone;
-      return {.wait = {},
-              .error = ErrorResult(type(), invalid_transition_error_)};
-    }
-    JsonVariantConst calibrate_value = parameters[calibrate_value_key_];
-    if (!calibrate_value.is<int>()) {
-      return {.wait = {},
-              .error = ErrorResult(type(), calibrate_value_key_error_)};
-    }
-    calibrate_value_ = calibrate_value;
-    JsonVariantConst temperature_c = parameters[temperature_c_key_];
-    if (!temperature_c.is<int>()) {
-      return {.wait = {},
-              .error = ErrorResult(type(), temperature_c_key_error_)};
-    }
-    temperature_c_ = temperature_c;
-
-    // Request readings to stabilize readings
-    send_read_with_temp_comp(temperature_c_);
-    calibration_duration_ = reading_duration_;
-    calibration_state_ = CalibrationState::kDoubleHighStabilize;
-
+    result = startDoubleHighCalibration(parameters);
   } else {
     // No valid calibration command received
     calibration_state_ = CalibrationState::kNone;
     return {.wait = {}, .error = ErrorResult(type(), unknown_command_error_)};
   }
-  calibration_start_ = std::chrono::steady_clock::now();
-  return {.wait = calibration_duration_};
+  // Perform timing setup for running the calibration, if the setup succeeded
+  if (!result.error.isError()) {
+    calibration_duration_ = result.wait;
+    calibration_start_ = std::chrono::steady_clock::now();
+  }
+  return result;
 }
 
 capabilities::Calibrate::Result AsEcMeterI2C::handleCalibration() {
   auto elapsed_time = std::chrono::steady_clock::now() - calibration_start_;
-  // Check if the calibration had enough time to complete. Return the time
-  // remaining and request to retry.
+  // Check waited long enough. Return the time remaining if not
   if (elapsed_time < calibration_duration_) {
     return {.wait = calibration_duration_ - elapsed_time};
   }
-
   // Check transitions
+  capabilities::Calibrate::Result result;
   if (calibration_state_ == CalibrationState::kDryStabilize) {
-    // Check if readings have stabilized and the dry point can be calibrated
-    errors error = receive_read_cmd();
-    if (error == errors::SUCCESS) {
-      if (isReadingStable()) {
-        send_cmd(String(calibrate_dry_code_).c_str());
-        calibration_duration_ = std::chrono::milliseconds(600);
-        calibration_state_ = CalibrationState::kDrySet;
-      } else {
-        send_read_cmd();
-        calibration_duration_ = reading_duration_;
-      }
-    } else {
-      calibration_state_ = CalibrationState::kNone;
-      return {.wait = {}, .error = ErrorResult(type(), receive_error_)};
-    }
-  }
-
-  if (calibration_state_ == CalibrationState::kDrySet) {
-    // Finish dry calibration step. Wait for new calibration command
-    calibration_state_ = CalibrationState::kDryDone;
-    calibration_duration_ = std::chrono::milliseconds(0);
-
+    result = handleDryStabilizeCalibration();
+  } else if (calibration_state_ == CalibrationState::kDrySet) {
+    result = handleDrySetCalibration();
   } else if (calibration_state_ == CalibrationState::kSingleStabilize) {
-    // Check if readings have stabilized and the single point can be calibrated
-    errors error = receive_read_cmd();
-    if (error == errors::SUCCESS) {
-      if (isReadingStable()) {
-        send_cmd((String(calibrate_single_code_) + calibrate_value_).c_str());
-        calibration_duration_ = std::chrono::milliseconds(600);
-        calibration_state_ = CalibrationState::kSingleSet;
-      } else {
-        send_read_with_temp_comp(temperature_c_);
-        calibration_duration_ = reading_duration_;
-      }
-    } else {
-      calibration_state_ = CalibrationState::kNone;
-      return {.wait = {}, .error = ErrorResult(type(), receive_error_)};
-    }
-
+    result = handleSingleStabilizeCalibration();
   } else if (calibration_state_ == CalibrationState::kSingleSet) {
-    // Finish single calibration step. Check if succeeded
-    calibration_state_ = CalibrationState::kCheck;
-    send_cmd(String(calibrate_check_code_).c_str());
-    calibration_duration_ = std::chrono::milliseconds(300);
-
+    result = handleSingleSetCalibration();
   } else if (calibration_state_ == CalibrationState::kCheck) {
-    // Finish calibration check. Go to initial state
-    char sensor_data[this->bufferlen];
-    errors error = receive_cmd(sensor_data, bufferlen);
-    // If a response was received and it did not send the not calibrated
-    // status, the calibration was successful
-    if (error == errors::SUCCESS &&
-        String(not_calibrated_code_) != sensor_data) {
-      calibration_state_ = CalibrationState::kNone;
-      calibration_duration_ = std::chrono::milliseconds(0);
-    } else {
-      calibration_state_ = CalibrationState::kNone;
-      return {.wait = std::chrono::milliseconds(0),
-              .error = ErrorResult(type(), not_calibrated_error_)};
-    }
-
+    result = handleCheckCalibration();
   } else if (calibration_state_ == CalibrationState::kDoubleLowStabilize) {
-    // Check if readings have stabilized and the single point can be calibrated
-    errors error = receive_read_cmd();
-    if (error == errors::SUCCESS) {
-      if (isReadingStable()) {
-        send_cmd(
-            (String(calibrate_double_low_code_) + calibrate_value_).c_str());
-        calibration_duration_ = std::chrono::milliseconds(600);
-        calibration_state_ = CalibrationState::kDoubleLowSet;
-      } else {
-        send_read_with_temp_comp(temperature_c_);
-        calibration_duration_ = reading_duration_;
-      }
-    } else {
-      calibration_state_ = CalibrationState::kNone;
-      return {.wait = {}, .error = ErrorResult(type(), receive_error_)};
-    }
-
+    result = handleDoubleLowStabilize();
   } else if (calibration_state_ == CalibrationState::kDoubleLowSet) {
-    // Finish single calibration step. Wait for new calibration command
-    calibration_state_ = CalibrationState::kDoubleLowDone;
-    calibration_duration_ = std::chrono::milliseconds(0);
-
+    result = handleDoubleLowSet();
   } else if (calibration_state_ == CalibrationState::kDoubleHighStabilize) {
-    // Check if readings have stabilized and the single point can be calibrated
-    errors error = receive_read_cmd();
-    if (error == errors::SUCCESS) {
-      if (isReadingStable()) {
-        send_cmd(
-            (String(calibrate_double_high_code_) + calibrate_value_).c_str());
-        calibration_duration_ = std::chrono::milliseconds(600);
-        calibration_state_ = CalibrationState::kDoubleHighSet;
-      } else {
-        send_read_with_temp_comp(temperature_c_);
-        calibration_duration_ = reading_duration_;
-      }
-    } else {
-      calibration_state_ = CalibrationState::kNone;
-      return {.wait = {}, .error = ErrorResult(type(), receive_error_)};
-    }
-
+    result = handleDoubleHighStabilize();
   } else if (calibration_state_ == CalibrationState::kDoubleHighSet) {
-    // Finish single calibration step. Check if succeeded
-    calibration_state_ = CalibrationState::kCheck;
-    send_cmd(String(calibrate_check_code_).c_str());
-    calibration_duration_ = std::chrono::milliseconds(300);
-
+    result = handleDoubleHighSet();
   } else if (calibration_state_ == CalibrationState::kClear) {
     // Finish clearing of calibration data
     calibration_state_ = CalibrationState::kNone;
     calibration_duration_ = std::chrono::milliseconds(0);
 
   } else {
-    return {.wait = std::chrono::milliseconds(0),
+    return {.wait = {},
             .error = ErrorResult(type(), invalid_transition_error_)};
   }
-  return {.wait = calibration_duration_};
+  if (!result.error.isError()) {
+    calibration_duration_ = result.wait;
+    calibration_start_ = std::chrono::steady_clock::now();
+  }
+  return result;
 }
 
 capabilities::StartMeasurement::Result AsEcMeterI2C::startMeasurement(
     const JsonVariantConst& parameters) {
-  // Invalidate the last reading
-  last_reading_ = NAN;
-
+  // Check if temperature compensation is enabled
   JsonVariantConst temperature_c = parameters[temperature_c_key_];
   if (temperature_c.is<float>()) {
-    send_read_with_temp_comp(temperature_c);
+    temperature_c_ = temperature_c;
   } else if (temperature_c.isNull()) {
-    send_read_cmd();
+    temperature_c_ = NAN;
   } else {
     return {.wait = {}, .error = ErrorResult(type(), temperature_c_key_error_)};
   }
+
+  // Start reading type depending on whether temperature compoensation is set
+  if (std::isnan(temperature_c_)) {
+    send_read_cmd();
+  } else {
+    send_read_with_temp_comp(temperature_c_);
+  }
+
+  // Invalidate the last reading
+  last_reading_ = NAN;
+
   return {.wait = reading_duration_};
 }
 
-capabilities::StartMeasurement::Result AsEcMeterI2C::measurementState() {
+capabilities::StartMeasurement::Result AsEcMeterI2C::handleMeasurement() {
+  // Receive reading values, check if errors occured, check if measurement has
+  // stabilized. Repeat if not stable.
   Ezo_board::errors error = receive_read_cmd();
   if (error == Ezo_board::errors::SUCCESS) {
+    last_reading_ = reading;
     if (isReadingStable()) {
-      last_reading_ = reading;
       return {.wait = {}};
     } else {
-      last_reading_ = reading;
+      // Start reading type depending if temperature compoensation is set
+      if (std::isnan(temperature_c_)) {
+        send_read_cmd();
+      } else {
+        send_read_with_temp_comp(temperature_c_);
+      }
       return {.wait = reading_duration_};
     }
   } else if (error == Ezo_board::errors::NOT_READY) {
-    auto elapsed_time = std::chrono::steady_clock::now() - reading_start_;
-    return {.wait = reading_duration_ - elapsed_time};
+    // Be conservative. Wait another complete reading cycle
+    return {.wait = reading_duration_};
   } else if (error == Ezo_board::errors::NO_DATA) {
     return {.wait = {}, ErrorResult(type(), F("No data"))};
   } else if (error == Ezo_board::errors::NOT_READ_CMD) {
@@ -341,14 +191,222 @@ capabilities::StartMeasurement::Result AsEcMeterI2C::measurementState() {
 }
 
 capabilities::GetValues::Result AsEcMeterI2C::getValues() {
-  // Request the EC reading. On success return the reading, else an error
-  errors error = receive_read_cmd();
-  if (error == errors::SUCCESS) {
-    return {.values = {utils::ValueUnit{.value = reading,
-                                        .data_point_type = data_point_type_}}};
+  // Use EC reading of last reading. Use startMeasurement capability. Invalidate
+  // reading after returning it.
+  if (!std::isnan(last_reading_)) {
+    capabilities::GetValues::Result result = {
+        .values = {utils::ValueUnit{.value = reading,
+                                    .data_point_type = data_point_type_}}};
+    last_reading_ = NAN;
+    return result;
   } else {
     return {.values = {}, .error = ErrorResult(type(), get_values_error_)};
   }
+}
+
+capabilities::Calibrate::Result AsEcMeterI2C::startClearCalibration(
+    const JsonObjectConst& parameters) {
+  send_cmd(String(calibrate_clear_code_).c_str());
+  calibration_state_ = CalibrationState::kClear;
+  return {.wait = std::chrono::milliseconds(300)};
+}
+
+capabilities::Calibrate::Result AsEcMeterI2C::startDryCalibration(
+    const JsonObjectConst& parameters) {
+  if (calibration_state_ != CalibrationState::kNone) {
+    calibration_state_ = CalibrationState::kNone;
+    return {.wait = {},
+            .error = ErrorResult(type(), invalid_transition_error_)};
+  }
+  // Request read to stabilize readings
+  calibration_state_ = CalibrationState::kDryStabilize;
+  last_reading_ = NAN;
+  send_read_cmd();
+  return {.wait = reading_duration_};
+}
+
+capabilities::Calibrate::Result AsEcMeterI2C::startSingleCalibration(
+    const JsonObjectConst& parameters) {
+  // Start the single point calibration process for the given value
+  if (calibration_state_ != CalibrationState::kDryDone) {
+    calibration_state_ = CalibrationState::kNone;
+    return {.wait = {},
+            .error = ErrorResult(type(), invalid_transition_error_)};
+  }
+  JsonVariantConst calibrate_value = parameters[calibrate_value_key_];
+  if (!calibrate_value.is<int>()) {
+    return {.wait = {},
+            .error = ErrorResult(type(), calibrate_value_key_error_)};
+  }
+  calibrate_value_ = calibrate_value;
+  JsonVariantConst temperature_c = parameters[temperature_c_key_];
+  if (!temperature_c.is<int>()) {
+    return {.wait = {}, .error = ErrorResult(type(), temperature_c_key_error_)};
+  }
+  temperature_c_ = temperature_c;
+
+  // Request readings to stabilize readings
+  calibration_state_ = CalibrationState::kSingleStabilize;
+  last_reading_ = NAN;
+  send_read_with_temp_comp(temperature_c_);
+  return {.wait = reading_duration_};
+}
+
+capabilities::Calibrate::Result AsEcMeterI2C::startDoubleLowCalibration(
+    const JsonObjectConst& parameters) {
+  if (calibration_state_ != CalibrationState::kDryDone) {
+    calibration_state_ = CalibrationState::kNone;
+    return {.wait = {},
+            .error = ErrorResult(type(), invalid_transition_error_)};
+  }
+  JsonVariantConst calibrate_value = parameters[calibrate_value_key_];
+  if (!calibrate_value.is<int>()) {
+    return {.wait = {},
+            .error = ErrorResult(type(), calibrate_value_key_error_)};
+  }
+  calibrate_value_ = calibrate_value;
+  JsonVariantConst temperature_c = parameters[temperature_c_key_];
+  if (!temperature_c.is<int>()) {
+    return {.wait = {}, .error = ErrorResult(type(), temperature_c_key_error_)};
+  }
+  temperature_c_ = temperature_c;
+
+  // Request readings to stabilize readings
+  calibration_state_ = CalibrationState::kDoubleLowStabilize;
+  last_reading_ = NAN;
+  send_read_with_temp_comp(temperature_c_);
+  return {.wait = reading_duration_};
+}
+
+capabilities::Calibrate::Result AsEcMeterI2C::startDoubleHighCalibration(
+    const JsonObjectConst& parameters) {
+  if (calibration_state_ != CalibrationState::kDoubleLowDone) {
+    calibration_state_ = CalibrationState::kNone;
+    return {.wait = {},
+            .error = ErrorResult(type(), invalid_transition_error_)};
+  }
+  JsonVariantConst calibrate_value = parameters[calibrate_value_key_];
+  if (!calibrate_value.is<int>()) {
+    return {.wait = {},
+            .error = ErrorResult(type(), calibrate_value_key_error_)};
+  }
+  calibrate_value_ = calibrate_value;
+  JsonVariantConst temperature_c = parameters[temperature_c_key_];
+  if (!temperature_c.is<int>()) {
+    return {.wait = {}, .error = ErrorResult(type(), temperature_c_key_error_)};
+  }
+  temperature_c_ = temperature_c;
+
+  // Request readings to stabilize readings
+  calibration_state_ = CalibrationState::kDoubleHighStabilize;
+  last_reading_ = NAN;
+  send_read_with_temp_comp(temperature_c_);
+  return {.wait = reading_duration_};
+}
+
+capabilities::Calibrate::Result AsEcMeterI2C::handleDryStabilizeCalibration() {
+  errors error = receive_read_cmd();
+  if (error == errors::SUCCESS) {
+    if (isReadingStable()) {
+      send_cmd(String(calibrate_dry_code_).c_str());
+      calibration_state_ = CalibrationState::kDrySet;
+      return {.wait = std::chrono::milliseconds(600)};
+    } else {
+      send_read_cmd();
+      return {.wait = reading_duration_};
+    }
+  } else {
+    calibration_state_ = CalibrationState::kNone;
+    return {.wait = {}, .error = ErrorResult(type(), receive_error_)};
+  }
+}
+
+capabilities::Calibrate::Result AsEcMeterI2C::handleDrySetCalibration() {
+  calibration_state_ = CalibrationState::kDryDone;
+  return {.wait = {}};
+}
+
+capabilities::Calibrate::Result
+AsEcMeterI2C::handleSingleStabilizeCalibration() {
+  errors error = receive_read_cmd();
+  if (error == errors::SUCCESS) {
+    if (isReadingStable()) {
+      send_cmd((String(calibrate_single_code_) + calibrate_value_).c_str());
+      calibration_state_ = CalibrationState::kSingleSet;
+      return {.wait = std::chrono::milliseconds(600)};
+    } else {
+      send_read_with_temp_comp(temperature_c_);
+      return {.wait = reading_duration_};
+    }
+  } else {
+    calibration_state_ = CalibrationState::kNone;
+    return {.wait = {}, .error = ErrorResult(type(), receive_error_)};
+  }
+}
+
+capabilities::Calibrate::Result AsEcMeterI2C::handleSingleSetCalibration() {
+  calibration_state_ = CalibrationState::kCheck;
+  send_cmd(String(calibrate_check_code_).c_str());
+  return {.wait = std::chrono::milliseconds(300)};
+}
+
+capabilities::Calibrate::Result AsEcMeterI2C::handleCheckCalibration() {
+  char sensor_data[this->bufferlen];
+  errors error = receive_cmd(sensor_data, bufferlen);
+  // If a response was received and it did not return the "not calibrated"
+  // status, the calibration was successful
+  if (error == errors::SUCCESS && String(not_calibrated_code_) != sensor_data) {
+    calibration_state_ = CalibrationState::kNone;
+    return {.wait = {}};
+  } else {
+    calibration_state_ = CalibrationState::kNone;
+    return {.wait = {}, .error = ErrorResult(type(), not_calibrated_error_)};
+  }
+}
+
+capabilities::Calibrate::Result AsEcMeterI2C::handleDoubleLowStabilize() {
+  errors error = receive_read_cmd();
+  if (error == errors::SUCCESS) {
+    if (isReadingStable()) {
+      send_cmd((String(calibrate_double_low_code_) + calibrate_value_).c_str());
+      calibration_state_ = CalibrationState::kDoubleLowSet;
+      return {.wait = std::chrono::milliseconds(600)};
+    } else {
+      send_read_with_temp_comp(temperature_c_);
+      return {.wait = reading_duration_};
+    }
+  } else {
+    calibration_state_ = CalibrationState::kNone;
+    return {.wait = {}, .error = ErrorResult(type(), receive_error_)};
+  }
+}
+capabilities::Calibrate::Result AsEcMeterI2C::handleDoubleLowSet() {
+  calibration_state_ = CalibrationState::kDoubleLowDone;
+  return {.wait = {}};
+}
+
+capabilities::Calibrate::Result AsEcMeterI2C::handleDoubleHighStabilize() {
+  errors error = receive_read_cmd();
+  if (error == errors::SUCCESS) {
+    if (isReadingStable()) {
+      send_cmd(
+          (String(calibrate_double_high_code_) + calibrate_value_).c_str());
+      calibration_state_ = CalibrationState::kDoubleHighSet;
+      return {.wait = std::chrono::milliseconds(600)};
+    } else {
+      send_read_with_temp_comp(temperature_c_);
+      return {.wait = reading_duration_};
+    }
+  } else {
+    calibration_state_ = CalibrationState::kNone;
+    return {.wait = {}, .error = ErrorResult(type(), receive_error_)};
+  }
+}
+
+capabilities::Calibrate::Result AsEcMeterI2C::handleDoubleHighSet() {
+  calibration_state_ = CalibrationState::kCheck;
+  send_cmd(String(calibrate_check_code_).c_str());
+  return {.wait = std::chrono::milliseconds(300)};
 }
 
 bool AsEcMeterI2C::isReadingStable() const {

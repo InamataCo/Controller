@@ -22,7 +22,7 @@ class SetRgbLed : public BaseTask {
   const String& getType() const final;
   static const String& type();
 
-  void TaskCallback() final;
+  bool TaskCallback() final;
 
  private:
   static bool registered_;

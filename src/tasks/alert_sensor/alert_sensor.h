@@ -20,7 +20,7 @@ class AlertSensor : public get_values_task::GetValuesTask {
   const String& getType() const final;
   static const String& type();
 
-  void TaskCallback() final;
+  bool TaskCallback() final;
 
   /**
    * Sets the trigger type

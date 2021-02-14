@@ -6,7 +6,7 @@ namespace tasks {
 TaskRemovalTask::TaskRemovalTask(Scheduler& scheduler, Server& server)
     : Task(&scheduler), server_(server) {
   BaseTask::setTaskRemovalCallback(std::bind(&TaskRemovalTask::add, this, _1));
-  scheduler.addTask(*this);
+  // scheduler.addTask(*this); // TODO: Is this a bug? Superfluous addTask call?
 }
 
 const String& TaskRemovalTask::type() {

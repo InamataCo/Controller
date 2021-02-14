@@ -10,9 +10,24 @@ ReadSensor::ReadSensor(const JsonObjectConst& parameters, Scheduler& scheduler)
     return;
   }
 
-  // Perform one iteration, then exit
-  setIterations(1);
-  enable();
+  // Check if the peripheral supports the startMeasurement capability. Start a
+  // measurement if yes. Wait the returned amount of time to check the
+  // measurement state. If doesn't support it, enable the task without delay.
+  auto start_measurement_peripheral =
+      std::dynamic_pointer_cast<peripheral::capabilities::StartMeasurement>(
+          getPeripheral());
+  if (start_measurement_peripheral) {
+    auto result = start_measurement_peripheral->startMeasurement(parameters);
+    if (result.error.isError()) {
+      setInvalid(result.error.toString());
+      return;
+    }
+    enableDelayed(
+        std::chrono::duration_cast<std::chrono::milliseconds>(result.wait)
+            .count());
+  } else {
+    enable();
+  }
 }
 
 const String& ReadSensor::getType() const { return type(); }
@@ -22,7 +37,24 @@ const String& ReadSensor::type() {
   return name;
 }
 
-void ReadSensor::TaskCallback() {
+bool ReadSensor::TaskCallback() {
+  // If using a startMeasurement peripheral, handle the measurement. Delay
+  // reading values if the result includes a wait duration. Otherwise, read the
+  // values and send them to the server.
+  if (start_measurement_peripheral_) {
+    auto result = start_measurement_peripheral_->handleMeasurement();
+    if (result.error.isError()) {
+      setInvalid(result.error.toString());
+      return false;
+    }
+    if (result.wait.count() != 0) {
+      Task::delay(
+          std::chrono::duration_cast<std::chrono::milliseconds>(result.wait)
+              .count());
+      return true;
+    }
+  }
+
   // Create the JSON doc
   DynamicJsonDocument result_doc(BB_JSON_PAYLOAD_SIZE);
   JsonObject result_object = result_doc.to<JsonObject>();
@@ -31,11 +63,12 @@ void ReadSensor::TaskCallback() {
   ErrorResult error = makeTelemetryJson(result_object);
   if (error.isError()) {
     setInvalid(error.toString());
-    return;
+    return false;
   }
 
   // Send the result to the server
   Services::getServer().sendTelemetry(getTaskID(), result_object);
+  return false;
 }
 
 bool ReadSensor::registered_ = TaskFactory::registerTask(type(), factory);

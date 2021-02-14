@@ -2,20 +2,18 @@
 
 #include <ArduinoJson.h>
 
-#include <memory>
-
 #include "managers/services.h"
-#include "peripheral/capabilities/set_value.h"
+#include "peripheral/capabilities/calibrate.h"
 #include "tasks/base_task.h"
 
 namespace bernd_box {
 namespace tasks {
-namespace set_value {
+namespace calibrate {
 
-class SetValue : public BaseTask {
+class Calibrate : public BaseTask {
  public:
-  SetValue(const JsonObjectConst& parameters, Scheduler& scheduler);
-  virtual ~SetValue() = default;
+  Calibrate(const JsonObjectConst& parameters, Scheduler& scheduler);
+  virtual ~Calibrate() = default;
 
   const String& getType() const final;
   static const String& type();
@@ -27,11 +25,9 @@ class SetValue : public BaseTask {
   static BaseTask* factory(const JsonObjectConst& parameters,
                            Scheduler& scheduler);
 
-  std::shared_ptr<peripheral::capabilities::SetValue> peripheral_;
-
-  utils::ValueUnit value_unit_;
+  std::shared_ptr<peripheral::capabilities::Calibrate> peripheral_;
 };
 
-}  // namespace set_value
+}  // namespace calibrate
 }  // namespace tasks
 }  // namespace bernd_box
