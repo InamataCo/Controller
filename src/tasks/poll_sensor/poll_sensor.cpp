@@ -18,6 +18,9 @@ PollSensor::PollSensor(const JsonObjectConst& parameters, Scheduler& scheduler)
   }
   interval_ = std::chrono::milliseconds(interval_ms);
 
+  // Inifite iterations until end time
+  Task::setIterations(-1);
+
   // Optionally get the duration for which to poll the sensor [default: forever]
   JsonVariantConst duration_ms = parameters[duration_ms_key_];
   if (duration_ms.is<unsigned int>()) {
@@ -91,13 +94,14 @@ bool PollSensor::TaskCallback() {
   // Send the value units and peripheral UUID to the server
   Services::getServer().send(type(), result_doc);
 
+  // Check if to wait and run again or to end due to timeout
   if (run_until_ < std::chrono::steady_clock::now()) {
     return false;
   } else {
     Task::delay(std::chrono::duration_cast<std::chrono::milliseconds>(interval_)
                     .count());
+    return true;
   }
-  return true;
 }
 
 bool PollSensor::registered_ = TaskFactory::registerTask(type(), factory);

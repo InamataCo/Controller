@@ -59,7 +59,7 @@ class BaseTask : public Task {
    *
    * \see TaskCallback()
    * 
-   * \return True if the task is valid
+   * \return True if the task performed work
    */
   bool Callback() final;
 
@@ -70,6 +70,8 @@ class BaseTask : public Task {
    * and the error reported if it is not valid before or after being executed.
    * 
    * \see Callback()
+   * 
+   * \return True to continue, false to end normally
    */
   virtual bool TaskCallback() = 0;
 

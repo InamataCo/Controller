@@ -218,6 +218,7 @@ class AsEcMeterI2C : public peripherals::i2c_adapter::I2CAbstractPeripheral,
 
   static const __FlashStringHelper* probe_type_key_;
   static const __FlashStringHelper* probe_type_key_error_;
+  static const __FlashStringHelper* probe_type_cast_error_;
   static const __FlashStringHelper* probe_type_code_;
 
   float stabalized_threshold_{0.01};

@@ -13,11 +13,11 @@ ReadSensor::ReadSensor(const JsonObjectConst& parameters, Scheduler& scheduler)
   // Check if the peripheral supports the startMeasurement capability. Start a
   // measurement if yes. Wait the returned amount of time to check the
   // measurement state. If doesn't support it, enable the task without delay.
-  auto start_measurement_peripheral =
+  start_measurement_peripheral_ =
       std::dynamic_pointer_cast<peripheral::capabilities::StartMeasurement>(
           getPeripheral());
-  if (start_measurement_peripheral) {
-    auto result = start_measurement_peripheral->startMeasurement(parameters);
+  if (start_measurement_peripheral_) {
+    auto result = start_measurement_peripheral_->startMeasurement(parameters);
     if (result.error.isError()) {
       setInvalid(result.error.toString());
       return;

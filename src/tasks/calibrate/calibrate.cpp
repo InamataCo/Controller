@@ -47,6 +47,13 @@ Calibrate::Calibrate(const JsonObjectConst& parameters, Scheduler& scheduler)
           .count());
 }
 
+const String& Calibrate::getType() const { return type(); }
+
+const String& Calibrate::type() {
+  static const String name{"Calibrate"};
+  return name;
+}
+
 bool Calibrate::TaskCallback() {
   auto result = peripheral_->handleCalibration();
   if (result.error.isError()) {
