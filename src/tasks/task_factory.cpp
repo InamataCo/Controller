@@ -1,10 +1,11 @@
 #include "task_factory.h"
 
+#include "invalid_task.h"
+
 namespace bernd_box {
 namespace tasks {
 
-TaskFactory::TaskFactory(Server& server, Scheduler& scheduler)
-    : server_(server), scheduler_(scheduler) {}
+TaskFactory::TaskFactory(Scheduler& scheduler) : scheduler_(scheduler) {}
 
 const String& TaskFactory::type() {
   static const String name{"TaskFactory"};
@@ -15,7 +16,8 @@ bool TaskFactory::registerTask(const String& type, Factory factory) {
   return getFactories().insert({type, factory}).second;
 }
 
-BaseTask* TaskFactory::startTask(const JsonObjectConst& parameters) {
+BaseTask* TaskFactory::startTask(const ServiceGetters& services,
+                                 const JsonObjectConst& parameters) {
   JsonVariantConst type = parameters[type_key_];
   if (type.isNull() || !type.is<char*>()) {
     return new InvalidTask(scheduler_, type_key_error_);
@@ -25,7 +27,7 @@ BaseTask* TaskFactory::startTask(const JsonObjectConst& parameters) {
   const auto& factory = getFactories().find(type);
   if (factory != getFactories().end()) {
     // Start a task via the respective task factory
-    return factory->second(parameters, scheduler_);
+    return factory->second(services, parameters, scheduler_);
   } else {
     // Factory type not found, so return an invalid task
     return new InvalidTask(scheduler_,

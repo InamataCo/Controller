@@ -4,11 +4,9 @@
 #include <TaskSchedulerDeclarations.h>
 
 #include <map>
-#include <memory>
 
 #include "base_task.h"
-#include "invalid_task.h"
-#include "managers/server.h"
+#include "managers/service_getters.h"
 
 namespace bernd_box {
 namespace tasks {
@@ -21,8 +19,9 @@ namespace tasks {
 class TaskFactory {
  public:
   /// Callback to start a task
-  using Factory = BaseTask* (*)(
-      const JsonObjectConst& parameters, Scheduler& scheduler);
+  using Factory = BaseTask* (*)(const ServiceGetters& services,
+                                const JsonObjectConst& parameters,
+                                Scheduler& scheduler);
 
   /**
    * Start a task factory that forwards 'add' commands to the subfactories
@@ -30,9 +29,9 @@ class TaskFactory {
    * In order to delete tasks after they have ended, the task factory acts as
    * a task itself to delete the task object after it has been disabled.
    *
-   * @param server Server object to send success and error notifications
+   * @param scheduler The scheduler to use for the created tasks
    */
-  TaskFactory(Server& server, Scheduler& scheduler);
+  TaskFactory(Scheduler& scheduler);
   virtual ~TaskFactory() = default;
 
   static const String& type();
@@ -52,29 +51,28 @@ class TaskFactory {
    * @param parameters JSON object with the parameters to start a task
    * @return True on success
    */
-  BaseTask* startTask(const JsonObjectConst& parameters);
+  BaseTask* startTask(const ServiceGetters& services,
+                      const JsonObjectConst& parameters);
 
   /**
    * Return all registered factories by name
-   * 
+   *
    * \return A vector with all names
    */
   const std::vector<String> getFactoryNames();
 
  private:
-   
   /// Get the callback map of the sub-factories to start new task objects
   static std::map<String, Factory>& getFactories();
 
   static String invalidFactoryTypeError(const String& type);
 
-  /// Reference to the Server interface
-  Server& server_;
   /// Refernce to the Scheduler
   Scheduler& scheduler_;
 
   const __FlashStringHelper* type_key_ = F("type");
-  const __FlashStringHelper* type_key_error_ = F("Missing property: type (string)");
+  const __FlashStringHelper* type_key_error_ =
+      F("Missing property: type (string)");
 };
 
 }  // namespace tasks

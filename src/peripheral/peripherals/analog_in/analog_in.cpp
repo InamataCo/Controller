@@ -1,5 +1,7 @@
 #include "analog_in.h"
 
+#include "peripheral/peripheral_factory.h"
+
 namespace bernd_box {
 namespace peripheral {
 namespace peripherals {
@@ -58,7 +60,7 @@ capabilities::GetValues::Result AnalogIn::getValues() {
 }
 
 std::shared_ptr<Peripheral> AnalogIn::factory(
-    const JsonObjectConst& parameters) {
+    const ServiceGetters& services, const JsonObjectConst& parameters) {
   return std::make_shared<AnalogIn>(parameters);
 }
 

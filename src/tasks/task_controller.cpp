@@ -1,15 +1,20 @@
 #include "task_controller.h"
 
+#include <ArduinoJson.h>
+
 namespace bernd_box {
 namespace tasks {
 
-TaskController::TaskController(Scheduler& scheduler, TaskFactory& factory,
-                               Server& server)
-    : scheduler_(scheduler), factory_(factory), server_(server){};
+TaskController::TaskController(Scheduler& scheduler, TaskFactory& factory)
+    : scheduler_(scheduler), factory_(factory){};
 
 const String& TaskController::type() {
   static const String name{"TaskController"};
   return name;
+}
+
+void TaskController::setServices(ServiceGetters services) {
+  services_ = services;
 }
 
 void TaskController::handleCallback(const JsonObjectConst& message) {
@@ -35,7 +40,7 @@ void TaskController::handleCallback(const JsonObjectConst& message) {
     JsonArray start_results =
         task_results.createNestedArray(start_command_key_);
     for (JsonVariantConst start_command : start_commands) {
-      ErrorResult error = startTask(start_command);
+      ErrorResult error = startTask(services_, start_command);
       addResultEntry(start_command[BaseTask::task_id_key_], error,
                      start_results);
     }
@@ -63,7 +68,12 @@ void TaskController::handleCallback(const JsonObjectConst& message) {
   }
 
   // Send the command results
-  server_.sendResults(result_doc.as<JsonObject>());
+  if (server_ != nullptr) {
+    server_->sendResults(result_doc.as<JsonObject>());
+  } else {
+    Serial.println(
+        ErrorResult(type(), services_.server_nullptr_error_).toString());
+  }
 }
 
 std::vector<utils::UUID> TaskController::getTaskIDs() {
@@ -80,11 +90,20 @@ std::vector<utils::UUID> TaskController::getTaskIDs() {
   return task_ids;
 }
 
-ErrorResult TaskController::startTask(const JsonObjectConst& parameters) {
-  BaseTask* task = factory_.startTask(parameters);
+ErrorResult TaskController::startTask(const ServiceGetters& services,
+                                      const JsonObjectConst& parameters) {
+  // Create a task and check if a nullptr was returned
+  BaseTask* task = factory_.startTask(services, parameters);
   if (task) {
+    // Try enabling the task and check if it could be enabled
     task->enable();
-    return task->getError();
+    ErrorResult error = task->getError();
+    // On error, directly delete task without using the TaskRemovalTask to
+    // avoid sending double stop notifications to the server.
+    if (error.isError()) {
+      delete task;
+    }
+    return error;
   } else {
     return ErrorResult(type(), "Unable to start task");
   }
@@ -119,7 +138,12 @@ void TaskController::sendStatus() {
       task_object["type"] = base_task->getType().c_str();
     }
   }
-  server_.send(type(), doc);
+  if (server_ != nullptr) {
+    server_->send(type(), doc);
+  } else {
+    Serial.println(
+        ErrorResult(type(), services_.server_nullptr_error_).toString());
+  }
 }
 
 BaseTask* TaskController::findTask(const utils::UUID& uuid) {

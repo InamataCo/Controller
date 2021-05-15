@@ -1,53 +1,52 @@
 #include "services.h"
 
+#include "configuration.h"
+
 namespace bernd_box {
 
-Network& Services::getNetwork() { return network_; }
+Services::Services() {
+  peripheral_controller_.setServices(getGetters());
+  task_controller_.setServices(getGetters());
+}
+
+std::shared_ptr<Network> Services::getNetwork() { return network_; }
+
+void Services::setNetwork(std::shared_ptr<Network> network) {
+  network_ = network;
+}
+
+std::shared_ptr<Server> Services::getServer() { return server_; }
+
+void Services::setServer(std::shared_ptr<Server> server) { server_ = server; }
 
 peripheral::PeripheralController& Services::getPeripheralController() {
   return peripheral_controller_;
 }
 
-Mqtt& Services::getMqtt() { return mqtt_; }
-
-Server& Services::getServer() { return web_socket_; }
+tasks::TaskController& Services::getTaskController() {
+  return task_controller_;
+}
 
 Scheduler& Services::getScheduler() { return scheduler_; }
 
-Network Services::network_{bernd_box::access_points, bernd_box::core_domain,
-                           bernd_box::root_cas};
+ServiceGetters Services::getGetters() {
+  ServiceGetters getters = {
+      .get_network = std::bind(&Services::getNetwork, this),
+      .get_server = std::bind(&Services::getServer, this)};
+  return getters;
+}
 
-Mqtt Services::mqtt_{
-    wifi_client_,
-    std::bind(&peripheral::PeripheralFactory::getFactoryNames,
-              &peripheral_factory_),
-    std::bind(&peripheral::PeripheralController::handleCallback,
-              &peripheral_controller_, _1),
-    std::bind(&tasks::TaskController::handleCallback, &task_controller_, _1)};
+Scheduler Services::scheduler_{};
 
-WebSocket Services::web_socket_{
-    std::bind(&peripheral::PeripheralController::getPeripheralIDs,
-              &peripheral_controller_),
-    std::bind(&peripheral::PeripheralController::handleCallback,
-              &peripheral_controller_, _1),
-    std::bind(&tasks::TaskController::getTaskIDs, &task_controller_),
-    std::bind(&tasks::TaskController::handleCallback, &task_controller_, _1)
-};
-
-WiFiClient Services::wifi_client_;
-
-Scheduler Services::scheduler_;
-
-peripheral::PeripheralFactory Services::peripheral_factory_{web_socket_};
+peripheral::PeripheralFactory Services::peripheral_factory_{};
 
 peripheral::PeripheralController Services::peripheral_controller_{
-    web_socket_, peripheral_factory_};
+    peripheral_factory_};
 
-tasks::TaskFactory Services::task_factory_{web_socket_, scheduler_};
+tasks::TaskFactory Services::task_factory_{scheduler_};
 
-tasks::TaskController Services::task_controller_{scheduler_, task_factory_,
-                                                 web_socket_};
+tasks::TaskController Services::task_controller_{scheduler_, task_factory_};
 
-tasks::TaskRemovalTask Services::task_removal_task_{scheduler_, getServer()};
+tasks::TaskRemovalTask Services::task_removal_task_{scheduler_};
 
 }  // namespace bernd_box

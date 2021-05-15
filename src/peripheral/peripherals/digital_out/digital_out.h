@@ -2,7 +2,7 @@
 
 #include <ArduinoJson.h>
 
-#include "managers/services.h"
+#include "managers/service_getters.h"
 #include "peripheral/capabilities/set_value.h"
 #include "peripheral/peripheral.h"
 
@@ -16,7 +16,7 @@ namespace digital_out {
  */
 class DigitalOut : public Peripheral, public capabilities::SetValue {
  public:
-  DigitalOut(const JsonObjectConst& parameters);
+  DigitalOut(const ServiceGetters& services, const JsonObjectConst& parameters);
   virtual ~DigitalOut() = default;
 
   // Type registration in the peripheral factory
@@ -31,9 +31,13 @@ class DigitalOut : public Peripheral, public capabilities::SetValue {
   void setValue(utils::ValueUnit value_unit) final;
 
  private:
-  static std::shared_ptr<Peripheral> factory(const JsonObjectConst& parameter);
+  static std::shared_ptr<Peripheral> factory(const ServiceGetters& services,
+                                             const JsonObjectConst& parameter);
   static bool registered_;
   static bool capability_set_value_;
+
+  /// Interface to send data to the server
+  std::shared_ptr<Server> server_;
 
   /// The pin to be used as a GPIO output
   unsigned int pin_;

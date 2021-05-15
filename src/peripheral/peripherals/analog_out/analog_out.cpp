@@ -1,11 +1,20 @@
 #include "analog_out.h"
 
+#include "peripheral/peripheral_factory.h"
+
 namespace bernd_box {
 namespace peripheral {
 namespace peripherals {
 namespace analog_out {
 
-AnalogOut::AnalogOut(const JsonObjectConst& parameters) {
+AnalogOut::AnalogOut(const ServiceGetters& services,
+                     const JsonObjectConst& parameters) {
+  server_ = services.get_server();
+  if (server_ == nullptr) {
+    setInvalid(services.server_nullptr_error_);
+    return;
+  }
+  
   // Get the pin # for the GPIO output and validate data. Invalidate on error
   JsonVariantConst pin = parameters[pin_key_];
   if (!pin.is<unsigned int>()) {
@@ -43,15 +52,15 @@ void AnalogOut::setValue(utils::ValueUnit value_unit) {
   float max_value;
   if (voltage_data_point_type_.isValid()) {
     if (value_unit.data_point_type != voltage_data_point_type_) {
-      Services::getServer().sendError(
-          type(), value_unit.sourceUnitError(voltage_data_point_type_));
+      server_->sendError(type(),
+                         value_unit.sourceUnitError(voltage_data_point_type_));
       return;
     }
     max_value = 3.3;
-  } else if(percent_data_point_type_.isValid()) {
+  } else if (percent_data_point_type_.isValid()) {
     if (value_unit.data_point_type != percent_data_point_type_) {
-      Services::getServer().sendError(
-          type(), value_unit.sourceUnitError(percent_data_point_type_));
+      server_->sendError(type(),
+                         value_unit.sourceUnitError(percent_data_point_type_));
       return;
     }
     max_value = 1.0;
@@ -66,8 +75,8 @@ void AnalogOut::setValue(utils::ValueUnit value_unit) {
 }
 
 std::shared_ptr<Peripheral> AnalogOut::factory(
-    const JsonObjectConst& parameters) {
-  return std::make_shared<AnalogOut>(parameters);
+    const ServiceGetters& services, const JsonObjectConst& parameters) {
+  return std::make_shared<AnalogOut>(services, parameters);
 }
 
 bool AnalogOut::registered_ =
@@ -84,7 +93,7 @@ const __FlashStringHelper* AnalogOut::invalid_pin_error_ =
 
 const __FlashStringHelper* AnalogOut::voltage_data_point_type_key_ =
     F("voltage_data_point_type");
-const __FlashStringHelper* AnalogOut::percent_data_point_type_key_ = 
+const __FlashStringHelper* AnalogOut::percent_data_point_type_key_ =
     F("percent_data_point_type");
 const __FlashStringHelper* AnalogOut::data_point_type_key_error_ =
     F("Missing property: data_point_type (UUID)");

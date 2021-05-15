@@ -1,5 +1,8 @@
 #include "set_value.h"
 
+#include "managers/services.h"
+#include "tasks/task_factory.h"
+
 namespace bernd_box {
 namespace tasks {
 namespace set_value {
@@ -71,7 +74,8 @@ bool SetValue::TaskCallback() {
 
 bool SetValue::registered_ = TaskFactory::registerTask(type(), factory);
 
-BaseTask* SetValue::factory(const JsonObjectConst& parameters,
+BaseTask* SetValue::factory(const ServiceGetters& services,
+                            const JsonObjectConst& parameters,
                             Scheduler& scheduler) {
   return new SetValue(parameters, scheduler);
 }

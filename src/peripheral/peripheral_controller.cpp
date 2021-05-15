@@ -4,12 +4,16 @@ namespace bernd_box {
 namespace peripheral {
 
 PeripheralController::PeripheralController(
-    Server& server, peripheral::PeripheralFactory& peripheral_factory)
-    : server_(server), peripheral_factory_(peripheral_factory) {}
+    peripheral::PeripheralFactory& peripheral_factory)
+    : peripheral_factory_(peripheral_factory) {}
 
 const String& PeripheralController::type() {
   static const String name{"PeripheralController"};
   return name;
+}
+
+void PeripheralController::setServices(ServiceGetters services) {
+  services_ = services;
 }
 
 void PeripheralController::handleCallback(const JsonObjectConst& message) {
@@ -54,13 +58,19 @@ void PeripheralController::handleCallback(const JsonObjectConst& message) {
   }
 
   // Send the command results
-  server_.sendResults(result_doc.as<JsonObject>());
+  std::shared_ptr<Server> server = services_.get_server();
+  if (server) {
+    server->sendResults(result_doc.as<JsonObject>());
+  } else {
+    Serial.println(
+        ErrorResult(type(), ServiceGetters::nullptr_error_).toString());
+  }
 }
 
 std::vector<utils::UUID> PeripheralController::getPeripheralIDs() {
   std::vector<utils::UUID> uuids;
   uuids.reserve(peripherals_.size());
-  for(const auto& peripheral : peripherals_) {
+  for (const auto& peripheral : peripherals_) {
     uuids.push_back(peripheral.first);
   }
   return uuids;
@@ -79,7 +89,7 @@ ErrorResult PeripheralController::add(const JsonObjectConst& doc) {
 
   // Not present, so try to create a new instance
   std::shared_ptr<peripheral::Peripheral> peripheral(
-      peripheral_factory_.createPeripheral(doc));
+      peripheral_factory_.createPeripheral(services_, doc));
   if (peripheral) {
     if (!peripheral->isValid()) {
       return peripheral->getError();

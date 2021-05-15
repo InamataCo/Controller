@@ -32,7 +32,8 @@ class WebSocket : public Server, private WebSocketsClient {
   WebSocket(std::function<std::vector<utils::UUID>()> get_peripheral_ids,
             Server::Callback peripheral_controller_callback,
             std::function<std::vector<utils::UUID>()> get_task_ids,
-            Server::Callback task_controller_callback);
+            Server::Callback task_controller_callback, const char* core_domain,
+            const char* ws_token, const char* root_cas = "");
   virtual ~WebSocket() = default;
 
   const String& type();
@@ -68,10 +69,10 @@ class WebSocket : public Server, private WebSocketsClient {
   std::function<std::vector<utils::UUID>()> get_task_ids_;
   Callback task_controller_callback_;
 
-  const char* core_domain_;
+  String core_domain_;
   const char* controller_path_ = "/ws-api/v1/farms/controllers/";
-  const char* ws_token_;
-  const char* root_cas_;
+  String ws_token_;
+  String root_cas_;
 };
 
 }  // namespace bernd_box

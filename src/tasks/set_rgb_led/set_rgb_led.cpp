@@ -1,5 +1,8 @@
 #include "set_rgb_led.h"
 
+#include "managers/services.h"
+#include "tasks/task_factory.h"
+
 namespace bernd_box {
 namespace tasks {
 namespace set_rgb_led {
@@ -99,7 +102,8 @@ bool SetRgbLed::TaskCallback() {
 
 bool SetRgbLed::registered_ = TaskFactory::registerTask(type(), factory);
 
-BaseTask* SetRgbLed::factory(const JsonObjectConst& parameters,
+BaseTask* SetRgbLed::factory(const ServiceGetters& services,
+                             const JsonObjectConst& parameters,
                              Scheduler& scheduler) {
   return new SetRgbLed(parameters, scheduler);
 }

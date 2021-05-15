@@ -1,11 +1,9 @@
 #pragma once
 
-#include <functional>
 #include <set>
 
+#include "managers/service_getters.h"
 #include "tasks/base_task.h"
-#include "tasks/task_controller.h"
-#include "managers/server.h"
 
 namespace bernd_box {
 namespace tasks {
@@ -21,10 +19,12 @@ using namespace std::placeholders;
  */
 class TaskRemovalTask : public Task {
  public:
-  TaskRemovalTask(Scheduler& scheduler, Server& server);
+  TaskRemovalTask(Scheduler& scheduler);
   virtual ~TaskRemovalTask() = default;
 
   static const String& type();
+
+  void setServices(const ServiceGetters& services);
 
   /**
    * Adds a task to the task removal queue
@@ -41,10 +41,11 @@ class TaskRemovalTask : public Task {
    */
   bool Callback();
 
+  /// Interface to send data to the server
+  std::shared_ptr<Server> server_;
+
   /// Queued tasks to be removed
   std::set<Task*> tasks_;
-  /// Server to send messages to
-  Server& server_;
 };
 
 }  // namespace tasks

@@ -1,5 +1,7 @@
 #include "neo_pixel.h"
 
+#include "peripheral/peripheral_factory.h"
+
 namespace bernd_box {
 namespace peripheral {
 namespace peripherals {
@@ -65,7 +67,7 @@ String NeoPixel::invalidColorEncodingError(const String& color_encoding) {
 }
 
 std::shared_ptr<Peripheral> NeoPixel::factory(
-    const JsonObjectConst& parameter) {
+    const ServiceGetters& services, const JsonObjectConst& parameter) {
   return std::make_shared<NeoPixel>(parameter);
 }
 

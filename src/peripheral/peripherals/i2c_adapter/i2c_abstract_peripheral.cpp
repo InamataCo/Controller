@@ -1,5 +1,7 @@
 #include "i2c_abstract_peripheral.h"
 
+#include "managers/services.h"
+
 namespace bernd_box {
 namespace peripheral {
 namespace peripherals {

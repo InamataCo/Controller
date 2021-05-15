@@ -1,5 +1,7 @@
 #include "digital_in.h"
 
+#include "peripheral/peripheral_factory.h"
+
 namespace bernd_box {
 namespace peripheral {
 namespace peripherals {
@@ -53,7 +55,7 @@ capabilities::GetValues::Result DigitalIn::getValues() {
 }
 
 std::shared_ptr<Peripheral> DigitalIn::factory(
-    const JsonObjectConst& parameters) {
+    const ServiceGetters& services, const JsonObjectConst& parameters) {
   return std::make_shared<DigitalIn>(parameters);
 }
 

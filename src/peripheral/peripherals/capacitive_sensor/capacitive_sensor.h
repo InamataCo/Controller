@@ -4,10 +4,9 @@
 
 #include <memory>
 
+#include "managers/service_getters.h"
 #include "peripheral/capabilities/get_values.h"
 #include "peripheral/peripheral.h"
-#include "peripheral/peripheral_factory.h"
-#include "utils/value_unit.h"
 
 namespace bernd_box {
 namespace peripheral {
@@ -34,7 +33,8 @@ class CapacitiveSensor : public Peripheral, public capabilities::GetValues {
   capabilities::GetValues::Result getValues() final;
 
  private:
-  static std::shared_ptr<Peripheral> factory(const JsonObjectConst& parameters);
+  static std::shared_ptr<Peripheral> factory(const ServiceGetters& services,
+                                             const JsonObjectConst& parameters);
   static bool registered_;
   static bool capability_get_value_;
 

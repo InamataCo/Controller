@@ -1,9 +1,9 @@
 #include "peripheral_factory.h"
 
+#include "peripheral/invalid_peripheral.h"
+
 namespace bernd_box {
 namespace peripheral {
-
-PeripheralFactory::PeripheralFactory(Server& server) : server_(server) {}
 
 bool PeripheralFactory::registerFactory(const String& name, Callback factory) {
   if (getFactories().count(name) == 0) {
@@ -14,7 +14,7 @@ bool PeripheralFactory::registerFactory(const String& name, Callback factory) {
 }
 
 std::shared_ptr<Peripheral> PeripheralFactory::createPeripheral(
-    const JsonObjectConst& parameter) {
+    const ServiceGetters& services, const JsonObjectConst& parameter) {
   const JsonVariantConst type = parameter[type_key_];
   if (type.isNull() || !type.is<char*>()) {
     return std::make_shared<InvalidPeripheral>(type_key_error_);
@@ -22,7 +22,7 @@ std::shared_ptr<Peripheral> PeripheralFactory::createPeripheral(
 
   auto factory = getFactories().find(type);
   if (factory != getFactories().end()) {
-    return factory->second(parameter);
+    return factory->second(services, parameter);
   } else {
     return std::make_shared<InvalidPeripheral>(
         unknownTypeError(type.as<char*>()));

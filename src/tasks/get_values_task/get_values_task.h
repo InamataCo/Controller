@@ -4,9 +4,7 @@
 
 #include <memory>
 
-#include "managers/services.h"
 #include "peripheral/capabilities/get_values.h"
-#include "peripheral/peripheral.h"
 #include "tasks/base_task.h"
 #include "utils/uuid.h"
 

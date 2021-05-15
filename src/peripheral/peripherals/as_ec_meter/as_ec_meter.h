@@ -3,6 +3,7 @@
 #include <ArduinoJson.h>
 #include <Ezo_i2c.h>
 
+#include "managers/service_getters.h"
 #include "peripheral/capabilities/calibrate.h"
 #include "peripheral/capabilities/get_values.h"
 #include "peripheral/capabilities/start_measurement.h"
@@ -210,7 +211,8 @@ class AsEcMeterI2C : public peripherals::i2c_adapter::I2CAbstractPeripheral,
    */
   bool isReadingStable() const;
 
-  static std::shared_ptr<Peripheral> factory(const JsonObjectConst& parameters);
+  static std::shared_ptr<Peripheral> factory(const ServiceGetters& services,
+                                             const JsonObjectConst& parameters);
   static bool registered_;
   static bool capability_get_values_;
 

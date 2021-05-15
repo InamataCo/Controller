@@ -1,16 +1,10 @@
 #pragma once
 
-#include <Arduino.h>
-#include <ArduinoJson.h>
-#include <HTTPClient.h>
-#include <WiFi.h>
 #include <WiFiMulti.h>
 
 #include <chrono>
-#include <initializer_list>
 
 #include "managers/types.h"
-#include "utils/setupNode.h"
 
 namespace bernd_box {
 
@@ -24,9 +18,10 @@ class Network {
   /**
    * WiFi helper class that deals with connection time-outs and checking its
    * state
+   * 
+   * \param acces_points The WiFi access points to try to connect to
    */
-  Network(std::initializer_list<AccessPoint>& access_points,
-          const char* core_domain, const char* root_cas = nullptr);
+  Network(std::vector<WiFiAP>& access_points);
 
   /**
    * Connects to the configured WiFi access point and contacts the SDG server
@@ -37,18 +32,6 @@ class Network {
    * \return True if successful
    */
   bool connect(std::chrono::duration<int> timeout);
-
-  String pingSdgServer();
-
-  /**
-   * Asks the SDG server for the IP address of the local coordinator.
-   *
-   * The coordinator hosts the MQTT broker, which is required for local
-   * communication.
-   *
-   * \return IP address of the local MQTT server, empty if not found
-   */
-  String getCoordinatorLocalIpAddress();
 
   /**
    * Prints the current WiFi state to the serial terminal
@@ -72,21 +55,7 @@ class Network {
 
  private:
   WiFiMulti wiFiMulti_;
-  std::initializer_list<AccessPoint>& access_points_;
-
-  /// HTTPS client with support for TLS connections
-  HTTPClient httpClient_;
-
-  std::chrono::milliseconds connect_wait_duration_;
-
-  // SDG Server
-  /// URL to for controllers to ping the server
-  String ping_url_;
-  const char* core_domain_;
-  const char* ping_path_ = "/api/v1/farms/controllers/ping/";
-
-  /// Currently the Let's Encrypt staging root certificate authority (CA)
-  const char* root_cas_;
+  std::vector<WiFiAP> wifi_aps_;
 };
 
 }  // namespace bernd_box

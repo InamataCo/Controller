@@ -1,12 +1,21 @@
 #include "read_sensor.h"
 
+#include "tasks/task_factory.h"
+
 namespace bernd_box {
 namespace tasks {
 namespace read_sensor {
 
-ReadSensor::ReadSensor(const JsonObjectConst& parameters, Scheduler& scheduler)
+ReadSensor::ReadSensor(const ServiceGetters& services,
+                       const JsonObjectConst& parameters, Scheduler& scheduler)
     : GetValuesTask(parameters, scheduler) {
   if (!isValid()) {
+    return;
+  }
+
+  server_ = services.get_server();
+  if (server_ == nullptr) {
+    setInvalid(services.server_nullptr_error_);
     return;
   }
 
@@ -67,15 +76,16 @@ bool ReadSensor::TaskCallback() {
   }
 
   // Send the result to the server
-  Services::getServer().sendTelemetry(getTaskID(), result_object);
+  server_->sendTelemetry(getTaskID(), result_object);
   return false;
 }
 
 bool ReadSensor::registered_ = TaskFactory::registerTask(type(), factory);
 
-BaseTask* ReadSensor::factory(const JsonObjectConst& parameters,
+BaseTask* ReadSensor::factory(const ServiceGetters& services,
+                              const JsonObjectConst& parameters,
                               Scheduler& scheduler) {
-  return new ReadSensor(parameters, scheduler);
+  return new ReadSensor(services, parameters, scheduler);
 }
 
 }  // namespace read_sensor

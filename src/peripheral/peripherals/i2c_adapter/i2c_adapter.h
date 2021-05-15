@@ -2,7 +2,7 @@
 
 #include <Wire.h>
 
-#include "managers/services.h"
+#include "managers/service_getters.h"
 #include "peripheral/peripheral.h"
 
 namespace bernd_box {
@@ -15,7 +15,7 @@ namespace util {
  */
 class I2CAdapter : public Peripheral {
  public:
-  I2CAdapter(const JsonObjectConst& parameter);
+  I2CAdapter(const ServiceGetters& services, const JsonObjectConst& parameter);
   virtual ~I2CAdapter();
 
   const String& getType() const final;
@@ -24,12 +24,15 @@ class I2CAdapter : public Peripheral {
   TwoWire* getWire();
 
  private:
-  static std::shared_ptr<Peripheral> factory(const JsonObjectConst&);
+  static std::shared_ptr<Peripheral> factory(const ServiceGetters& services,
+                                             const JsonObjectConst&);
 
   static bool registered_;
 
   static bool wire_taken;
   static bool wire1_taken;
+
+  std::shared_ptr<Server> server_;
 
   bool* taken_variable;
   TwoWire* wire_;

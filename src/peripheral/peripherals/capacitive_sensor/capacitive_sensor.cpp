@@ -1,5 +1,8 @@
 #include "capacitive_sensor.h"
 
+#include "peripheral/peripheral_factory.h"
+#include "utils/value_unit.h"
+
 namespace bernd_box {
 namespace peripheral {
 namespace peripherals {
@@ -39,7 +42,7 @@ const __FlashStringHelper* CapacitiveSensor::sense_pin_key_error_ =
     F("Missing property: sense_pin (unsigned int)");
 
 std::shared_ptr<Peripheral> CapacitiveSensor::factory(
-    const JsonObjectConst& parameters) {
+    const ServiceGetters& services, const JsonObjectConst& parameters) {
   return std::make_shared<CapacitiveSensor>(parameters);
 }
 

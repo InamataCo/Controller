@@ -1,15 +1,13 @@
 #include "invalid_peripheral.h"
 
+#include "peripheral/peripheral_factory.h"
+
 namespace bernd_box {
 namespace peripheral {
 
-InvalidPeripheral::InvalidPeripheral() {
-  setInvalid();
-}
+InvalidPeripheral::InvalidPeripheral() { setInvalid(); }
 
-InvalidPeripheral::InvalidPeripheral(const String& error) {
-  setInvalid(error);
-}
+InvalidPeripheral::InvalidPeripheral(const String& error) { setInvalid(error); }
 
 const String& InvalidPeripheral::type() {
   static const String name{"InvalidPeripheral"};
@@ -18,7 +16,8 @@ const String& InvalidPeripheral::type() {
 
 const String& InvalidPeripheral::getType() const { return type(); }
 
-std::shared_ptr<Peripheral> InvalidPeripheral::factory(const JsonObjectConst&) {
+std::shared_ptr<Peripheral> InvalidPeripheral::factory(const ServiceGetters& services,
+                                                       const JsonObjectConst&) {
   return std::make_shared<InvalidPeripheral>();
 }
 

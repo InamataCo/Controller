@@ -1,5 +1,8 @@
 #include "get_values_task.h"
 
+#include "managers/services.h"
+#include "peripheral/peripheral.h"
+
 namespace bernd_box {
 namespace tasks {
 namespace get_values_task {
@@ -51,10 +54,9 @@ ErrorResult GetValuesTask::makeTelemetryJson(JsonObject& telemetry) {
   JsonArray value_units_doc =
       telemetry.createNestedArray(utils::ValueUnit::data_points_key);
   peripheral::capabilities::GetValues::Result result = peripheral_->getValues();
-  if(result.error.isError()) {
+  if (result.error.isError()) {
     return result.error;
   }
-
 
   // Create a JSON object representation for each value unit in the array
   for (const auto& value_unit : result.values) {

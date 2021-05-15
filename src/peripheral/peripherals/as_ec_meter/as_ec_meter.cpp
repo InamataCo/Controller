@@ -1,5 +1,7 @@
 #include "as_ec_meter.h"
 
+#include "peripheral/peripheral_factory.h"
+
 namespace bernd_box {
 namespace peripheral {
 namespace peripherals {
@@ -24,7 +26,7 @@ AsEcMeterI2C::AsEcMeterI2C(const JsonObjectConst& parameters)
     setInvalid(probe_type_key_error_);
     return;
   }
-  if(atof(probe_type.as<char*>()) == 0) {
+  if (atof(probe_type.as<char*>()) == 0) {
     setInvalid(probe_type_cast_error_);
     return;
   }
@@ -425,7 +427,7 @@ bool AsEcMeterI2C::isReadingStable() const {
 }
 
 std::shared_ptr<Peripheral> AsEcMeterI2C::factory(
-    const JsonObjectConst& parameters) {
+    const ServiceGetters& services, const JsonObjectConst& parameters) {
   return std::make_shared<AsEcMeterI2C>(parameters);
 }
 

@@ -1,8 +1,10 @@
 #pragma once
 
+#include <ArduinoJson.h>
+
 #include <memory>
 
-#include "ArduinoJson.h"
+#include "managers/service_getters.h"
 #include "tasks/get_values_task/get_values_task.h"
 #include "utils/value_unit.h"
 
@@ -14,7 +16,8 @@ class AlertSensor : public get_values_task::GetValuesTask {
  public:
   enum class TriggerType { kRising, kFalling, kEither };
 
-  AlertSensor(const JsonObjectConst& parameters, Scheduler& scheduler);
+  AlertSensor(const ServiceGetters& services, const JsonObjectConst& parameters,
+              Scheduler& scheduler);
   virtual ~AlertSensor() = default;
 
   const String& getType() const final;
@@ -59,11 +62,15 @@ class AlertSensor : public get_values_task::GetValuesTask {
   bool isFallingThreshold(const float value);
 
   static bool registered_;
-  static BaseTask* factory(const JsonObjectConst& parameters,
+  static BaseTask* factory(const ServiceGetters& services,
+                           const JsonObjectConst& parameters,
                            Scheduler& scheduler);
 
   static const std::map<TriggerType, const __FlashStringHelper*>
       trigger_type_strings_;
+
+  /// Interface to send data to the server
+  std::shared_ptr<Server> server_;
 
   /// The data point type to trigger on
   utils::UUID data_point_type_;

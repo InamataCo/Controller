@@ -5,9 +5,9 @@
 
 #include <memory>
 
+#include "managers/service_getters.h"
 #include "peripheral/capabilities/led_strip.h"
 #include "peripheral/peripheral.h"
-#include "peripheral/peripheral_factory.h"
 #include "utils/color.h"
 
 namespace bernd_box {
@@ -42,7 +42,8 @@ class NeoPixel : public Peripheral, public capabilities::LedStrip {
  private:
   static String invalidColorEncodingError(const String& color_encoding);
 
-  static std::shared_ptr<Peripheral> factory(const JsonObjectConst& parameters);
+  static std::shared_ptr<Peripheral> factory(const ServiceGetters& services,
+                                             const JsonObjectConst& parameters);
   static bool registered_;
   static bool capability_led_strip_;
 

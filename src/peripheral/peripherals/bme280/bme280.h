@@ -3,6 +3,7 @@
 #include <ArduinoJson.h>
 #include <SparkFunBME280.h>
 
+#include "managers/service_getters.h"
 #include "peripheral/capabilities/get_values.h"
 #include "peripheral/peripheral.h"
 #include "peripheral/peripherals/i2c_adapter/i2c_abstract_peripheral.h"
@@ -24,13 +25,14 @@ class BME280 : public peripherals::i2c_adapter::I2CAbstractPeripheral,
 
   /**
    * Reads all available data points from the BME/P280
-   * 
+   *
    * \return A vector with all read data points and their type
    */
   capabilities::GetValues::Result getValues() final;
 
  private:
-  static std::shared_ptr<Peripheral> factory(const JsonObjectConst& parameters);
+  static std::shared_ptr<Peripheral> factory(const ServiceGetters& services,
+                                             const JsonObjectConst& parameters);
   static bool registered_;
   static bool capability_get_values_;
 
@@ -41,17 +43,13 @@ class BME280 : public peripherals::i2c_adapter::I2CAbstractPeripheral,
   utils::UUID pressure_data_point_type_{nullptr};
   static const __FlashStringHelper* pressure_data_point_type_key_;
   static const __FlashStringHelper* pressure_data_point_type_key_error_;
-  
+
   utils::UUID humidity_data_point_type_{nullptr};
   static const __FlashStringHelper* humidity_data_point_type_key_;
   static const __FlashStringHelper* humidity_data_point_type_key_error_;
 
   /// The supported chip types and their chip IDs used to identify them
-  enum class ChipType {
-    BMP280 = 0x58,
-    BME280 = 0x60,
-    Unknown
-  };
+  enum class ChipType { BMP280 = 0x58, BME280 = 0x60, Unknown };
 
   /// The driver to read data from the BME/P280
   ::BME280 driver_;

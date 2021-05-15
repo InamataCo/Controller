@@ -1,13 +1,20 @@
 #include "pwm.h"
 
+#include "peripheral/peripheral_factory.h"
+
 namespace bernd_box {
 namespace peripheral {
 namespace peripherals {
 namespace pwm {
 
-Pwm::Pwm(const JsonObjectConst& parameters) {
-  JsonVariantConst pin = parameters[pin_key_];
+Pwm::Pwm(const ServiceGetters& services, const JsonObjectConst& parameters) {
+  server_ = services.get_server();
+  if (server_ == nullptr) {
+    setInvalid(services.server_nullptr_error_);
+    return;
+  }
 
+  JsonVariantConst pin = parameters[pin_key_];
   if (!pin.is<unsigned int>()) {
     setInvalid(pin_key_error_);
     return;
@@ -38,8 +45,7 @@ const String& Pwm::type() {
 
 void Pwm::setValue(utils::ValueUnit value_unit) {
   if (value_unit.data_point_type != data_point_type_) {
-    Services::getServer().sendError(
-        type(), value_unit.sourceUnitError(data_point_type_));
+    server_->sendError(type(), value_unit.sourceUnitError(data_point_type_));
     return;
   }
 
@@ -99,8 +105,9 @@ const __FlashStringHelper* Pwm::pin_key_error_ =
 const __FlashStringHelper* Pwm::no_channels_available_error_ =
     F("No remaining PWM channels available");
 
-std::shared_ptr<Peripheral> Pwm::factory(const JsonObjectConst& parameters) {
-  return std::make_shared<Pwm>(parameters);
+std::shared_ptr<Peripheral> Pwm::factory(const ServiceGetters& services,
+                                         const JsonObjectConst& parameters) {
+  return std::make_shared<Pwm>(services, parameters);
 }
 
 bool Pwm::registered_ = PeripheralFactory::registerFactory(type(), factory);

@@ -1,10 +1,16 @@
 #include "task_removal_task.h"
 
+#include <ArduinoJson.h>
+#include <TaskSchedulerDeclarations.h>
+
+#include <functional>
+
+#include "tasks/task_controller.h"
+
 namespace bernd_box {
 namespace tasks {
 
-TaskRemovalTask::TaskRemovalTask(Scheduler& scheduler, Server& server)
-    : Task(&scheduler), server_(server) {
+TaskRemovalTask::TaskRemovalTask(Scheduler& scheduler) : Task(&scheduler) {
   BaseTask::setTaskRemovalCallback(std::bind(&TaskRemovalTask::add, this, _1));
   // scheduler.addTask(*this); // TODO: Is this a bug? Superfluous addTask call?
 }
@@ -12,6 +18,10 @@ TaskRemovalTask::TaskRemovalTask(Scheduler& scheduler, Server& server)
 const String& TaskRemovalTask::type() {
   static const String name{"TaskRemovalTask"};
   return name;
+}
+
+void TaskRemovalTask::setServices(const ServiceGetters& services) {
+  server_ = services.get_server();
 }
 
 void TaskRemovalTask::add(Task& pt) {
@@ -42,13 +52,24 @@ bool TaskRemovalTask::Callback() {
       delete base_task;
       it = tasks_.erase(it);
     } else {
-      server_.sendError(
-          ErrorResult(type(), F("Attempted to delete non-base class")));
+      if (server_ != nullptr) {
+        server_->sendError(
+            ErrorResult(type(), F("Attempted to delete non-base class")));
+      } else {
+        Serial.println(
+            ErrorResult(type(), ServiceGetters::server_nullptr_error_)
+                .toString());
+      }
       ++it;
     }
   }
   tasks_.clear();
-  server_.sendResults(result_doc.as<JsonObject>());
+  if (server_ != nullptr) {
+    server_->sendResults(result_doc.as<JsonObject>());
+  } else {
+    Serial.println(
+        ErrorResult(type(), ServiceGetters::server_nullptr_error_).toString());
+  }
 
   return true;
 }

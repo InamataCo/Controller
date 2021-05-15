@@ -1,13 +1,22 @@
 #include "alert_sensor.h"
 
+#include "tasks/task_factory.h"
+
 namespace bernd_box {
 namespace tasks {
 namespace alert_sensor {
 
-AlertSensor::AlertSensor(const JsonObjectConst& parameters,
+AlertSensor::AlertSensor(const ServiceGetters& services,
+                         const JsonObjectConst& parameters,
                          Scheduler& scheduler)
     : GetValuesTask(parameters, scheduler) {
   if (!isValid()) {
+    return;
+  }
+
+  server_ = services.get_server();
+  if (server_ == nullptr) {
+    setInvalid(services.server_nullptr_error_);
     return;
   }
 
@@ -135,7 +144,7 @@ bool AlertSensor::sendAlert(TriggerType trigger_type) {
 
     doc[peripheral_key_] = getPeripheralUUID().toString();
 
-    Services::getServer().send(type(), doc);
+    server_->send(type(), doc);
     return true;
   }
 
@@ -152,9 +161,10 @@ bool AlertSensor::isFallingThreshold(const float value) {
 
 bool AlertSensor::registered_ = TaskFactory::registerTask(type(), factory);
 
-BaseTask* AlertSensor::factory(const JsonObjectConst& parameters,
+BaseTask* AlertSensor::factory(const ServiceGetters& services,
+                               const JsonObjectConst& parameters,
                                Scheduler& scheduler) {
-  return new AlertSensor(parameters, scheduler);
+  return new AlertSensor(services, parameters, scheduler);
 }
 
 const std::map<AlertSensor::TriggerType, const __FlashStringHelper*>

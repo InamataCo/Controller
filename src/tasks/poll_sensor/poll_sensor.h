@@ -4,6 +4,7 @@
 
 #include <memory>
 
+#include "managers/service_getters.h"
 #include "peripheral/capabilities/start_measurement.h"
 #include "tasks/get_values_task/get_values_task.h"
 
@@ -26,7 +27,8 @@ namespace poll_sensor {
  */
 class PollSensor : public get_values_task::GetValuesTask {
  public:
-  PollSensor(const JsonObjectConst& parameters, Scheduler& scheduler);
+  PollSensor(const ServiceGetters& services, const JsonObjectConst& parameters,
+             Scheduler& scheduler);
   virtual ~PollSensor() = default;
 
   const String& getType() const final;
@@ -36,8 +38,11 @@ class PollSensor : public get_values_task::GetValuesTask {
 
  private:
   static bool registered_;
-  static BaseTask* factory(const JsonObjectConst& parameters,
+  static BaseTask* factory(const ServiceGetters& services,
+                           const JsonObjectConst& parameters,
                            Scheduler& scheduler);
+
+  std::shared_ptr<Server> server_;
 
   std::chrono::milliseconds interval_;
   std::chrono::steady_clock::time_point run_until_;

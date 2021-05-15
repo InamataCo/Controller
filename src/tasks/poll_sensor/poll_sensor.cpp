@@ -1,12 +1,21 @@
 #include "poll_sensor.h"
 
+#include "tasks/task_factory.h"
+
 namespace bernd_box {
 namespace tasks {
 namespace poll_sensor {
 
-PollSensor::PollSensor(const JsonObjectConst& parameters, Scheduler& scheduler)
+PollSensor::PollSensor(const ServiceGetters& services,
+                       const JsonObjectConst& parameters, Scheduler& scheduler)
     : GetValuesTask(parameters, scheduler) {
   if (!isValid()) {
+    return;
+  }
+
+  server_ = services.get_server();
+  if (server_ == nullptr) {
+    setInvalid(services.server_nullptr_error_);
     return;
   }
 
@@ -92,7 +101,7 @@ bool PollSensor::TaskCallback() {
   }
 
   // Send the value units and peripheral UUID to the server
-  Services::getServer().send(type(), result_doc);
+  server_->send(type(), result_doc);
 
   // Check if to wait and run again or to end due to timeout
   if (run_until_ < std::chrono::steady_clock::now()) {
@@ -106,9 +115,10 @@ bool PollSensor::TaskCallback() {
 
 bool PollSensor::registered_ = TaskFactory::registerTask(type(), factory);
 
-BaseTask* PollSensor::factory(const JsonObjectConst& parameters,
+BaseTask* PollSensor::factory(const ServiceGetters& services,
+                              const JsonObjectConst& parameters,
                               Scheduler& scheduler) {
-  return new PollSensor(parameters, scheduler);
+  return new PollSensor(services, parameters, scheduler);
 }
 
 }  // namespace poll_sensor

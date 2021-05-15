@@ -4,29 +4,40 @@ namespace bernd_box {
 namespace tasks {
 namespace system_monitor {
 
-SystemMonitor::SystemMonitor(Scheduler* scheduler)
-    : Task(scheduler),
-      scheduler_(scheduler),
-      server_(Services::getServer()),
-      name_(F("system_monitor")) {
+SystemMonitor::SystemMonitor(const ServiceGetters& services,
+                             Scheduler& scheduler)
+    : BaseTask(scheduler), scheduler_(scheduler), services_(services) {
   setIterations(TASK_FOREVER);
   Task::setInterval(std::chrono::milliseconds(default_interval_).count());
 }
+
 SystemMonitor::~SystemMonitor() {}
+
+const String& SystemMonitor::getType() const { return type(); }
+
+const String& SystemMonitor::type() {
+  static const String name{"SystemMonitor"};
+  return name;
+}
 
 void SystemMonitor::SetInterval(std::chrono::milliseconds interval) {
   Task::setInterval(interval.count());
 }
 
-bool SystemMonitor::OnEnable() {
+bool SystemMonitor::OnTaskEnable() {
+  server_ = services_.get_server();
+  if (server_ == nullptr) {
+    setInvalid(services_.network_nullptr_error_);
+    return false;
+  }
   // Reset counters to calculate CPU load. Wait one interval for valid readings
-  scheduler_->cpuLoadReset();
+  scheduler_.cpuLoadReset();
   delay();
 
   return true;
 }
 
-bool SystemMonitor::Callback() {
+bool SystemMonitor::TaskCallback() {
   // Get the total available memory and largest continguous memory block.
   // This allows us to calculate the fragmentation index =
   //     (total free - largest free block) / total free * 100
@@ -41,16 +52,16 @@ bool SystemMonitor::Callback() {
       float(100);
   doc["least_free_bytes"] = least_free_bytes;
 
-  float cpuTotal = scheduler_->getCpuLoadTotal();
-  float cpuCycles = scheduler_->getCpuLoadCycle();
-  float cpuIdle = scheduler_->getCpuLoadIdle();
-  scheduler_->cpuLoadReset();
+  float cpuTotal = scheduler_.getCpuLoadTotal();
+  float cpuCycles = scheduler_.getCpuLoadCycle();
+  float cpuIdle = scheduler_.getCpuLoadIdle();
+  scheduler_.cpuLoadReset();
 
   // Productive work (not idle, not scheduling) --> time in task callbacks
   doc["productive_percent"] = 100 - ((cpuIdle + cpuCycles) / cpuTotal * 100.0);
   doc["wifi_rssi"] = WiFi.RSSI();
 
-  server_.sendSystem(doc.as<JsonObject>());
+  server_->sendSystem(doc.as<JsonObject>());
   return true;
 }
 

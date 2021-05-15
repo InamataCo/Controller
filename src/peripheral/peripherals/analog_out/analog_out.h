@@ -2,7 +2,7 @@
 
 #include <ArduinoJson.h>
 
-#include "managers/services.h"
+#include "managers/service_getters.h"
 #include "peripheral/capabilities/set_value.h"
 #include "peripheral/peripheral.h"
 
@@ -16,7 +16,7 @@ namespace analog_out {
  */
 class AnalogOut : public Peripheral, public capabilities::SetValue {
  public:
-  AnalogOut(const JsonObjectConst& parameters);
+  AnalogOut(const ServiceGetters& services, const JsonObjectConst& parameters);
   virtual ~AnalogOut() = default;
 
   // Type registration in the peripheral factory
@@ -25,15 +25,19 @@ class AnalogOut : public Peripheral, public capabilities::SetValue {
 
   /**
    * Turns the GPIO on or off
-   * 
+   *
    * \param value 1 sets the pin to its high state, 0 to its low state
    */
   void setValue(utils::ValueUnit value_unit) final;
 
  private:
-  static std::shared_ptr<Peripheral> factory(const JsonObjectConst& parameter);
+  static std::shared_ptr<Peripheral> factory(const ServiceGetters& services,
+                                             const JsonObjectConst& parameter);
   static bool registered_;
   static bool capability_set_value_;
+
+  /// Interface to send data to the server
+  std::shared_ptr<Server> server_;
 
   /// The pin to be used as a GPIO output
   unsigned int pin_;

@@ -1,11 +1,20 @@
 #include "digital_out.h"
 
+#include "peripheral/peripheral_factory.h"
+
 namespace bernd_box {
 namespace peripheral {
 namespace peripherals {
 namespace digital_out {
 
-DigitalOut::DigitalOut(const JsonObjectConst& parameters) {
+DigitalOut::DigitalOut(const ServiceGetters& services,
+                       const JsonObjectConst& parameters) {
+  server_ = services.get_server();
+  if (server_ == nullptr) {
+    setInvalid(ServiceGetters::server_nullptr_error_);
+    return;
+  }
+
   // Get the pin # for the GPIO output and validate data. Invalidate on error
   JsonVariantConst pin = parameters[pin_key_];
   if (!pin.is<unsigned int>()) {
@@ -59,8 +68,7 @@ const String& DigitalOut::type() {
 
 void DigitalOut::setValue(utils::ValueUnit value_unit) {
   if (value_unit.data_point_type != data_point_type_) {
-    Services::getServer().sendError(
-        type(), value_unit.sourceUnitError(data_point_type_));
+    server_->sendError(type(), value_unit.sourceUnitError(data_point_type_));
     return;
   }
 
@@ -78,8 +86,8 @@ void DigitalOut::setValue(utils::ValueUnit value_unit) {
 }
 
 std::shared_ptr<Peripheral> DigitalOut::factory(
-    const JsonObjectConst& parameters) {
-  return std::make_shared<DigitalOut>(parameters);
+    const ServiceGetters& services, const JsonObjectConst& parameters) {
+  return std::make_shared<DigitalOut>(services, parameters);
 }
 
 bool DigitalOut::registered_ =

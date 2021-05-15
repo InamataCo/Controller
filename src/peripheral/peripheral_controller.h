@@ -7,8 +7,7 @@
 #include <memory>
 
 #include "managers/io_types.h"
-#include "managers/server.h"
-#include "peripheral/invalid_peripheral.h"
+#include "managers/service_getters.h"
 #include "peripheral/peripheral.h"
 #include "peripheral/peripheral_factory.h"
 #include "utils/uuid.h"
@@ -18,15 +17,17 @@ namespace peripheral {
 
 class PeripheralController {
  public:
-  PeripheralController(Server& server, PeripheralFactory& peripheral_factory);
+  PeripheralController(PeripheralFactory& peripheral_factory);
 
   static const String& type();
-  
+
+  void setServices(ServiceGetters services);
+
   void handleCallback(const JsonObjectConst& message);
 
   /**
    * Returns a list of all peripherals' IDs
-   * 
+   *
    * \return A list of all peripherals' IDs
    */
   std::vector<utils::UUID> getPeripheralIDs();
@@ -61,7 +62,7 @@ class PeripheralController {
                              const JsonArray& results);
 
   /// The server to which to reply to
-  Server& server_;
+  ServiceGetters services_;
   /// Map of UUIDs to their respective peripherals
   std::map<utils::UUID, std::shared_ptr<Peripheral>> peripherals_;
   /// Factory to construct peripherals according to the JSON parameters

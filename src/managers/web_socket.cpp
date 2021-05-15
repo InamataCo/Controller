@@ -6,14 +6,17 @@ WebSocket::WebSocket(
     std::function<std::vector<utils::UUID>()> get_peripheral_ids,
     Server::Callback peripheral_controller_callback,
     std::function<std::vector<utils::UUID>()> get_task_ids,
-    Server::Callback task_controller_callback)
+    Server::Callback task_controller_callback, const char* core_domain,
+    const char* ws_token, const char* root_cas)
     : get_peripheral_ids_(get_peripheral_ids),
       peripheral_controller_callback_(peripheral_controller_callback),
       get_task_ids_(get_task_ids),
       task_controller_callback_(task_controller_callback),
       core_domain_(core_domain),
-      ws_token_(ws_token),
-      root_cas_(root_cas) {}
+      root_cas_(root_cas) {
+  ws_token_ = F("token_");
+  ws_token_ += ws_token;
+}
 
 const String& WebSocket::type() {
   static const String name{"WebSocket"};
@@ -27,10 +30,11 @@ bool WebSocket::connect(std::chrono::seconds timeout) {
   // reconnect interval
   if (!is_setup_) {
     is_setup_ = true;
-    if (root_cas_) {
-      beginSslWithCA(core_domain_, 443, controller_path_, root_cas_, ws_token_);
+    if (root_cas_.length()) {
+      beginSslWithCA(core_domain_.c_str(), 443, controller_path_,
+                     root_cas_.c_str(), ws_token_.c_str());
     } else {
-      begin(core_domain_, 8000, controller_path_, ws_token_);
+      begin(core_domain_.c_str(), 8000, controller_path_, ws_token_.c_str());
     }
     onEvent(std::bind(&WebSocket::handleEvent, this, _1, _2, _3));
     setReconnectInterval(5000);

@@ -4,7 +4,7 @@
 
 #include <memory>
 
-#include "managers/services.h"
+#include "managers/service_getters.h"
 #include "peripheral/capabilities/led_strip.h"
 #include "tasks/base_task.h"
 #include "utils/color.h"
@@ -26,7 +26,8 @@ class SetRgbLed : public BaseTask {
 
  private:
   static bool registered_;
-  static BaseTask* factory(const JsonObjectConst& parameters,
+  static BaseTask* factory(const ServiceGetters& services,
+                           const JsonObjectConst& parameters,
                            Scheduler& scheduler);
 
   std::shared_ptr<peripheral::capabilities::LedStrip> peripheral_;

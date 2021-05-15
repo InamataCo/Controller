@@ -1,5 +1,7 @@
 #include "i2c_adapter.h"
 
+#include "peripheral/peripheral_factory.h"
+
 namespace bernd_box {
 namespace peripheral {
 namespace peripherals {
@@ -8,17 +10,24 @@ namespace util {
 bool I2CAdapter::wire_taken = false;
 bool I2CAdapter::wire1_taken = false;
 
-I2CAdapter::I2CAdapter(const JsonObjectConst& parameter) {
+I2CAdapter::I2CAdapter(const ServiceGetters& services,
+                       const JsonObjectConst& parameter) {
+  server_ = services.get_server();
+  if (server_ == nullptr) {
+    setInvalid(services.server_nullptr_error_);
+    return;
+  }
+
   JsonVariantConst clock_pin = parameter[F("scl")];
   if (!clock_pin.is<int>()) {
-    Services::getServer().sendError(type(), F("Missing property: scl (int)"));
+    server_->sendError(type(), F("Missing property: scl (int)"));
     setInvalid();
     return;
   }
 
   JsonVariantConst data_pin = parameter[F("sda")];
   if (!data_pin.is<int>()) {
-    Services::getServer().sendError(type(), F("Missing property: sda (int)"));
+    server_->sendError(type(), F("Missing property: sda (int)"));
     setInvalid();
     return;
   }
@@ -30,7 +39,7 @@ I2CAdapter::I2CAdapter(const JsonObjectConst& parameter) {
     taken_variable = &wire1_taken;
     wire_ = &Wire1;
   } else {
-    Services::getServer().sendError(type(), F("Both wires already taken :("));
+    server_->sendError(type(), F("Both wires already taken :("));
     setInvalid();
     return;
   }
@@ -51,11 +60,12 @@ const String& I2CAdapter::type() {
 TwoWire* I2CAdapter::getWire() { return wire_; }
 
 std::shared_ptr<Peripheral> I2CAdapter::factory(
-    const JsonObjectConst& parameter) {
-  return std::make_shared<I2CAdapter>(parameter);
+    const ServiceGetters& services, const JsonObjectConst& parameter) {
+  return std::make_shared<I2CAdapter>(services, parameter);
 }
 
-bool I2CAdapter::registered_ = PeripheralFactory::registerFactory(type(), factory);
+bool I2CAdapter::registered_ =
+    PeripheralFactory::registerFactory(type(), factory);
 
 }  // namespace util
 }  // namespace peripherals

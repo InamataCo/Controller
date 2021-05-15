@@ -1,14 +1,10 @@
 #pragma once
 
 #include <TaskSchedulerDeclarations.h>
-#include <WiFiClient.h>
-#include <WiFiClientSecure.h>
 
-#include "configuration.h"
-#include "managers/mqtt.h"
+#include "managers/service_getters.h"
 #include "managers/network.h"
 #include "managers/server.h"
-#include "managers/web_socket.h"
 #include "peripheral/peripheral_controller.h"
 #include "peripheral/peripheral_factory.h"
 #include "tasks/task_controller.h"
@@ -18,29 +14,52 @@
 namespace bernd_box {
 
 /**
- * All services provided as static instances by the middleware
+ * All the system services
  *
- * The services cover functions such as the connection to the server and MQTT
- * broker, the peripheral and task controller as well as the scheduler.
+ * The services cover functions such as the connection to the server,
+ * the peripheral and task controller as well as the scheduler. The task and
+ * peripheral services are static instances, while the network and server are
+ * created by the setup procedure setupNode().
  */
 class Services {
  public:
-  static Network& getNetwork();
-  static Mqtt& getMqtt();
-  static Server& getServer();
+  Services();
+  virtual ~Services() = default;
+
+  std::shared_ptr<Network> getNetwork();
+  void setNetwork(std::shared_ptr<Network> network);
+
+  std::shared_ptr<Server> getServer();
+  void setServer(std::shared_ptr<Server> server);
+
   static peripheral::PeripheralController& getPeripheralController();
+  static tasks::TaskController& getTaskController();
+
   static Scheduler& getScheduler();
 
+  /**
+   * Get callbacks to get the pointers to dynamic services (network and server)
+   * 
+   * \return Struct with callbacks to get pointers to the services
+   */
+  ServiceGetters getGetters();
+
  private:
-  static Network network_;
-  static Mqtt mqtt_;
-  static WebSocket web_socket_;
-  static WiFiClient wifi_client_;
+  /// Handles network connectivity and time synchronization
+  std::shared_ptr<Network> network_;
+  /// Handles communication to the server
+  std::shared_ptr<Server> server_;
+  /// Executes the active tasks
   static Scheduler scheduler_;
-  static peripheral::PeripheralController peripheral_controller_;
+  /// Creates peripherals with the registered peripheral factory callbacks
   static peripheral::PeripheralFactory peripheral_factory_;
+  /// Handles server requests to create / delete peripherals
+  static peripheral::PeripheralController peripheral_controller_;
+  /// Creates tasks with the registered task factory callbacks
   static tasks::TaskFactory task_factory_;
+  /// Handles server requests to start / stop tasks
   static tasks::TaskController task_controller_;
+  /// Singleton to delete stopped tasks and inform the server
   static tasks::TaskRemovalTask task_removal_task_;
 };
 

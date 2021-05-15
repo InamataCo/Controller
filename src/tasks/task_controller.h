@@ -1,12 +1,11 @@
 #pragma once
 
-#include <ArduinoJson.h>
 #include <TaskSchedulerDeclarations.h>
 
 #include <memory>
 
 #include "base_task.h"
-#include "managers/server.h"
+#include "managers/service_getters.h"
 #include "task_factory.h"
 
 namespace bernd_box {
@@ -21,10 +20,12 @@ class TaskController {
   friend class TaskRemovalTask;
 
  public:
-  TaskController(Scheduler& scheduler, TaskFactory& factory, Server& server);
+  TaskController(Scheduler& scheduler, TaskFactory& factory);
   virtual ~TaskController() = default;
 
   static const String& type();
+
+  void setServices(ServiceGetters services);
 
   /**
    * Callback for messages regarding tasks from the server
@@ -47,7 +48,8 @@ class TaskController {
    * @param parameters JSON object with the parameters to start a task
    * @return True on success
    */
-  ErrorResult startTask(const JsonObjectConst& parameters);
+  ErrorResult startTask(const ServiceGetters& services,
+                        const JsonObjectConst& parameters);
 
   /**
    * Command a task to end
@@ -80,13 +82,14 @@ class TaskController {
 
   Scheduler& scheduler_;
   TaskFactory& factory_;
-  Server& server_;
+  ServiceGetters services_;
+  std::shared_ptr<Server> server_;
 
   static const __FlashStringHelper* task_command_key_;
   static const __FlashStringHelper* start_command_key_;
   static const __FlashStringHelper* stop_command_key_;
   static const __FlashStringHelper* status_command_key_;
-  
+
   static const __FlashStringHelper* task_results_key_;
   static const __FlashStringHelper* result_status_key_;
   static const __FlashStringHelper* result_detail_key_;

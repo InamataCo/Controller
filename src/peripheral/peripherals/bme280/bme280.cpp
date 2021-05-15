@@ -1,5 +1,7 @@
 #include "bme280.h"
 
+#include "peripheral/peripheral_factory.h"
+
 namespace bernd_box {
 namespace peripheral {
 namespace peripherals {
@@ -99,7 +101,8 @@ capabilities::GetValues::Result BME280::getValues() {
   return result;
 }
 
-std::shared_ptr<Peripheral> BME280::factory(const JsonObjectConst& parameters) {
+std::shared_ptr<Peripheral> BME280::factory(const ServiceGetters& services,
+                                            const JsonObjectConst& parameters) {
   return std::make_shared<BME280>(parameters);
 }
 

@@ -4,9 +4,9 @@
 
 namespace bernd_box {
 
-struct AccessPoint {
-  const __FlashStringHelper* ssid;
-  const __FlashStringHelper* password;
+struct WiFiAP {
+  String ssid;
+  String password;
 };
 
 }

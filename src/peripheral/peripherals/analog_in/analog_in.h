@@ -1,10 +1,10 @@
 #pragma once
 
-#include <memory>
-
 #include <ArduinoJson.h>
 
-#include "managers/services.h"
+#include <memory>
+
+#include "managers/service_getters.h"
 #include "peripheral/capabilities/get_values.h"
 #include "peripheral/peripheral.h"
 
@@ -33,7 +33,8 @@ class AnalogIn : public Peripheral, public capabilities::GetValues {
   capabilities::GetValues::Result getValues() final;
 
  private:
-  static std::shared_ptr<Peripheral> factory(const JsonObjectConst& parameter);
+  static std::shared_ptr<Peripheral> factory(const ServiceGetters& services,
+                                             const JsonObjectConst& parameter);
   static bool registered_;
   static bool capability_get_values_;
 

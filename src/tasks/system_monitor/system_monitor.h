@@ -1,9 +1,11 @@
 #pragma once
 
+#include <TaskSchedulerDeclarations.h>
+
 #include <chrono>
 
-#include "TaskSchedulerDeclarations.h"
-#include "managers/services.h"
+#include "managers/service_getters.h"
+#include "tasks/base_task.h"
 
 namespace bernd_box {
 namespace tasks {
@@ -13,10 +15,13 @@ namespace system_monitor {
  * Monitors the controller's state and informs the coordinator about it. Health
  * parameters include free memory and heap fragmentation.
  */
-class SystemMonitor : public Task {
+class SystemMonitor : public BaseTask {
  public:
-  SystemMonitor(Scheduler* scheduler);
+  SystemMonitor(const ServiceGetters& services, Scheduler& scheduler);
   virtual ~SystemMonitor();
+
+  const String& getType() const final;
+  static const String& type();
 
   /**
    * Specifies how often the system monitor should check and send its state
@@ -31,19 +36,18 @@ class SystemMonitor : public Task {
    *
    * \return true
    */
-  bool OnEnable() final;
+  bool OnTaskEnable() final;
 
   /**
    * Measure the state of the heap.
    *
    * \return true
    */
-  bool Callback() final;
+  bool TaskCallback() final;
 
-  Scheduler* scheduler_;
-  Server& server_;
-  /// The suffix of the telemetry and action topic to publish on
-  const __FlashStringHelper* name_;
+  Scheduler& scheduler_;
+  ServiceGetters services_;
+  std::shared_ptr<Server> server_;
 
   // Max time is ~72 minutes due to an overflow in the CPU load counter
   static const std::chrono::seconds default_interval_;

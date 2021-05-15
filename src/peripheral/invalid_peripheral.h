@@ -1,7 +1,9 @@
 #pragma once
 
+#include <memory>
+
+#include "managers/service_getters.h"
 #include "peripheral/peripheral.h"
-#include "peripheral/peripheral_factory.h"
 
 namespace bernd_box {
 namespace peripheral {
@@ -16,7 +18,8 @@ class InvalidPeripheral : public Peripheral {
   static const String& type();
 
  private:
-  static std::shared_ptr<Peripheral> factory(const JsonObjectConst&);
+  static std::shared_ptr<Peripheral> factory(const ServiceGetters& services,
+                                             const JsonObjectConst&);
 
   static bool registered_;
 };
