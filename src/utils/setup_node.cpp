@@ -1,6 +1,5 @@
 #include "setup_node.h"
 
-#include <ESPRandom.h>
 #include <FS.h>
 #include <SPIFFS.h>
 
@@ -18,8 +17,9 @@ bool loadNetwork(Services& services, JsonObjectConst secrets) {
   }
   std::vector<WiFiAP> wifi_aps;
   for (const JsonObjectConst i : wifi_aps_doc) {
-    wifi_aps.emplace_back(WiFiAP{.ssid = i[F("ssid")].as<char*>(),
-                                 .password = i[F("password")].as<char*>()});
+    wifi_aps.emplace_back(
+        WiFiAP{.ssid = i[F("ssid")].as<const char*>(),
+               .password = i[F("password")].as<const char*>()});
   }
   services.setNetwork(std::make_shared<Network>(wifi_aps));
   return true;
@@ -30,12 +30,12 @@ bool loadWebsocket(Services& services, JsonObjectConst secrets) {
 
   // Get the required data from the secrets file
   JsonVariantConst ws_token = secrets[F("ws_token")];
-  if (ws_token.isNull() || !ws_token.is<char*>()) {
+  if (!ws_token.is<const char*>()) {
     Serial.println(F("Empty/no ws_token in secrets"));
     return false;
   }
   JsonVariantConst core_domain = secrets[F("core_domain")];
-  if (ws_token.isNull() || !core_domain.is<char*>()) {
+  if (!core_domain.is<const char*>()) {
     Serial.println(F("Empty/no core_domain in secrets"));
     return false;
   }
@@ -66,7 +66,7 @@ bool loadWebsocket(Services& services, JsonObjectConst secrets) {
                 &peripheral_controller, _1),
       std::bind(&tasks::TaskController::getTaskIDs, &task_controller),
       std::bind(&tasks::TaskController::handleCallback, &task_controller, _1),
-      core_domain.as<char*>(), ws_token.as<char*>(), root_cas.c_str()));
+      core_domain.as<const char*>(), ws_token.as<const char*>(), root_cas.c_str()));
   return true;
 }
 

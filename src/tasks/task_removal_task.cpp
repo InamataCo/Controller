@@ -44,31 +44,22 @@ bool TaskRemovalTask::Callback() {
 
   for (auto it = tasks_.begin(); it != tasks_.end();) {
     Task* task = *it;
-
     BaseTask* base_task = dynamic_cast<BaseTask*>(task);
-    if (base_task) {
+    if (base_task && !base_task->isSystemTask()) {
       TaskController::addResultEntry(base_task->getTaskID(),
                                      base_task->getError(), stop_results);
       delete base_task;
       it = tasks_.erase(it);
-    } else {
-      if (server_ != nullptr) {
-        server_->sendError(
-            ErrorResult(type(), F("Attempted to delete non-base class")));
-      } else {
-        Serial.println(
-            ErrorResult(type(), ServiceGetters::server_nullptr_error_)
-                .toString());
-      }
-      ++it;
     }
   }
   tasks_.clear();
-  if (server_ != nullptr) {
-    server_->sendResults(result_doc.as<JsonObject>());
-  } else {
-    Serial.println(
-        ErrorResult(type(), ServiceGetters::server_nullptr_error_).toString());
+  if (stop_results.size()) {
+    if (server_ != nullptr) {
+      server_->sendResults(result_doc.as<JsonObject>());
+    } else {
+      Serial.println(
+          ErrorResult(type(), ServiceGetters::server_nullptr_error_).toString());
+    }
   }
 
   return true;

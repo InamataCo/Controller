@@ -17,10 +17,13 @@ class BaseTask : public Task {
   /**
    * Constructor used by tasks created locally
    *
+   * If the task ID is not defined, it is marked as a system task which won't
+   * be deleted by the task remover.
+   * 
    * \param scheduler The scheduler that executes the tasks
    * \param uuid Unique identifier created locally
    */
-  BaseTask(Scheduler& scheduler, utils::UUID task_id = utils::UUID());
+  BaseTask(Scheduler& scheduler, utils::UUID task_id = utils::UUID(nullptr));
 
   /**
    * Constructor used when commanded by the server
@@ -112,6 +115,13 @@ class BaseTask : public Task {
    * \return The task's UUID
    */
   const utils::UUID& getTaskID() const;
+
+  /**
+   * Checks if it is a system task
+   * 
+   * \return True if it is a system task
+   */
+  bool isSystemTask() const;
 
   /**
    * Sets the callback which accepts tasks to be removed

@@ -25,7 +25,7 @@ DigitalIn::DigitalIn(const JsonObjectConst& parameters) {
 
   // Set up the input pin
   JsonVariantConst input_type = parameters[input_type_key_];
-  if (input_type.isNull() || !input_type.is<char*>()) {
+  if (!input_type.is<const char*>()) {
     setInvalid(input_type_key_error_);
     return;
   }

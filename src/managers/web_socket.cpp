@@ -1,5 +1,7 @@
 #include "web_socket.h"
 
+#include <esp_tls.h>
+
 namespace bernd_box {
 
 WebSocket::WebSocket(
@@ -16,6 +18,8 @@ WebSocket::WebSocket(
       root_cas_(root_cas) {
   ws_token_ = F("token_");
   ws_token_ += ws_token;
+  esp_tls_init_global_ca_store();
+  esp_tls_set_global_ca_store((const unsigned char*) root_cas_.c_str(), root_cas_.length());
 }
 
 const String& WebSocket::type() {

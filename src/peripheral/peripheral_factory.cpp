@@ -16,7 +16,7 @@ bool PeripheralFactory::registerFactory(const String& name, Callback factory) {
 std::shared_ptr<Peripheral> PeripheralFactory::createPeripheral(
     const ServiceGetters& services, const JsonObjectConst& parameter) {
   const JsonVariantConst type = parameter[type_key_];
-  if (type.isNull() || !type.is<char*>()) {
+  if (!type.is<const char*>()) {
     return std::make_shared<InvalidPeripheral>(type_key_error_);
   }
 

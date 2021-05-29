@@ -22,7 +22,7 @@ AlertSensor::AlertSensor(const ServiceGetters& services,
 
   // Get the type of trigger [rising, falling, either]
   JsonVariantConst trigger_type = parameters[trigger_type_key_];
-  if (trigger_type.isNull() || !trigger_type.is<char*>()) {
+  if (!trigger_type.is<const char*>()) {
     setInvalid(trigger_type_key_error_);
     return;
   }

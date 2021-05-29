@@ -17,7 +17,7 @@ UUID::UUID() {
 UUID::UUID(const char* str) { fromString(str); }
 
 UUID::UUID(const JsonVariantConst& uuid) {
-  if (uuid.isNull() || !uuid.is<char*>()) {
+  if (!uuid.is<const char*>()) {
     clear();
     return;
   }

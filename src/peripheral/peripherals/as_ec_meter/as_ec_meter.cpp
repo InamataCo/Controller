@@ -22,7 +22,7 @@ AsEcMeterI2C::AsEcMeterI2C(const JsonObjectConst& parameters)
   }
   // Get the probe type and check if the string is a float
   JsonVariantConst probe_type = parameters[probe_type_key_];
-  if (probe_type.isNull() || !probe_type.is<char*>()) {
+  if (!probe_type.is<const char*>()) {
     setInvalid(probe_type_key_error_);
     return;
   }
@@ -66,7 +66,7 @@ capabilities::Calibrate::Result AsEcMeterI2C::startCalibration(
     const JsonObjectConst& parameters) {
   // Get the calibration command to be performed
   JsonVariantConst calibrate_command = parameters[calibrate_command_key_];
-  if (calibrate_command.isNull() || !calibrate_command.is<char*>()) {
+  if (!calibrate_command.is<const char*>()) {
     return {.wait = {},
             .error = ErrorResult(type(), calibrate_command_key_error_)};
   }

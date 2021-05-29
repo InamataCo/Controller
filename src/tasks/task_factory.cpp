@@ -19,7 +19,7 @@ bool TaskFactory::registerTask(const String& type, Factory factory) {
 BaseTask* TaskFactory::startTask(const ServiceGetters& services,
                                  const JsonObjectConst& parameters) {
   JsonVariantConst type = parameters[type_key_];
-  if (type.isNull() || !type.is<char*>()) {
+  if (!type.is<const char*>()) {
     return new InvalidTask(scheduler_, type_key_error_);
   }
 

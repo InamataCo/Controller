@@ -72,6 +72,10 @@ ErrorResult BaseTask::getError() const {
 
 const utils::UUID& BaseTask::getTaskID() const { return task_id_; }
 
+bool BaseTask::isSystemTask() const {
+  return !task_id_.isValid();
+}
+
 void BaseTask::setTaskRemovalCallback(std::function<void(Task&)> callback) {
   task_removal_callback_ = callback;
 }

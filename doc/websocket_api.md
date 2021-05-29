@@ -72,6 +72,10 @@ Note: The I2C adapter has to have been added
       }
     ],
     status: True
+  },
+  update: {
+    url: "",
+    size: int
   }
 }
 ```
@@ -131,6 +135,10 @@ The server translates `run_until` parameters for task start commands to `duratio
         <detail: "...">
       }
     ]
+  },
+  update: {
+    status: <"fail", "updating", "finish", "success">,
+    detail: "..."
   }
 }
 ```
