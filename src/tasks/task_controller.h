@@ -83,7 +83,6 @@ class TaskController {
   Scheduler& scheduler_;
   TaskFactory& factory_;
   ServiceGetters services_;
-  std::shared_ptr<Server> server_;
 
   static const __FlashStringHelper* task_command_key_;
   static const __FlashStringHelper* start_command_key_;

@@ -68,8 +68,9 @@ void TaskController::handleCallback(const JsonObjectConst& message) {
   }
 
   // Send the command results
-  if (server_ != nullptr) {
-    server_->sendResults(result_doc.as<JsonObject>());
+  std::shared_ptr<Server> server = services_.getServer();
+  if (server != nullptr) {
+    server->sendResults(result_doc.as<JsonObject>());
   } else {
     Serial.println(
         ErrorResult(type(), services_.server_nullptr_error_).toString());
@@ -138,8 +139,9 @@ void TaskController::sendStatus() {
       task_object["type"] = base_task->getType().c_str();
     }
   }
-  if (server_ != nullptr) {
-    server_->send(type(), doc);
+  std::shared_ptr<Server> server = services_.getServer();
+  if (server != nullptr) {
+    server->send(type(), doc);
   } else {
     Serial.println(
         ErrorResult(type(), services_.server_nullptr_error_).toString());

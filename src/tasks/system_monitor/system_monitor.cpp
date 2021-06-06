@@ -25,7 +25,7 @@ void SystemMonitor::SetInterval(std::chrono::milliseconds interval) {
 }
 
 bool SystemMonitor::OnTaskEnable() {
-  server_ = services_.get_server();
+  server_ = services_.getServer();
   if (server_ == nullptr) {
     setInvalid(services_.network_nullptr_error_);
     return false;

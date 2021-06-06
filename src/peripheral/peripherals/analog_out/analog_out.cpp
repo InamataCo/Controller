@@ -9,7 +9,7 @@ namespace analog_out {
 
 AnalogOut::AnalogOut(const ServiceGetters& services,
                      const JsonObjectConst& parameters) {
-  server_ = services.get_server();
+  server_ = services.getServer();
   if (server_ == nullptr) {
     setInvalid(services.server_nullptr_error_);
     return;

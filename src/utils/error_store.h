@@ -7,6 +7,7 @@ class ErrorStore {
     kUUID,
     kUint32t,
     kString,
+    kBool,
   };
 
   static String genMissingProperty(String key, KeyType key_type);
@@ -28,5 +29,6 @@ class ErrorStore {
   static const __FlashStringHelper* uuid_type_;
   static const __FlashStringHelper* uint32_t_type_;
   static const __FlashStringHelper* string_type_;
+  static const __FlashStringHelper* bool_type_;
 };
 }  // namespace bernd_box

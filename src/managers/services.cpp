@@ -5,8 +5,12 @@
 namespace bernd_box {
 
 Services::Services() {
-  peripheral_controller_.setServices(getGetters());
-  task_controller_.setServices(getGetters());
+  ServiceGetters getters = getGetters();
+  
+  peripheral_controller_.setServices(getters);
+  task_controller_.setServices(getters);
+  task_removal_task_.setServices(getters);
+  ota_updater_.setServices(getters);
 }
 
 std::shared_ptr<Network> Services::getNetwork() { return network_; }
@@ -27,12 +31,13 @@ tasks::TaskController& Services::getTaskController() {
   return task_controller_;
 }
 
+OtaUpdater& Services::getOtaUpdater() { return ota_updater_; }
+
 Scheduler& Services::getScheduler() { return scheduler_; }
 
 ServiceGetters Services::getGetters() {
-  ServiceGetters getters = {
-      .get_network = std::bind(&Services::getNetwork, this),
-      .get_server = std::bind(&Services::getServer, this)};
+  ServiceGetters getters(std::bind(&Services::getNetwork, this),
+                         std::bind(&Services::getServer, this));
   return getters;
 }
 
@@ -48,5 +53,7 @@ tasks::TaskFactory Services::task_factory_{scheduler_};
 tasks::TaskController Services::task_controller_{scheduler_, task_factory_};
 
 tasks::TaskRemovalTask Services::task_removal_task_{scheduler_};
+
+OtaUpdater Services::ota_updater_{scheduler_};
 
 }  // namespace bernd_box

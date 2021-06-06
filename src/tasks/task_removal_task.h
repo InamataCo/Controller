@@ -24,7 +24,7 @@ class TaskRemovalTask : public Task {
 
   static const String& type();
 
-  void setServices(const ServiceGetters& services);
+  void setServices(ServiceGetters services);
 
   /**
    * Adds a task to the task removal queue
@@ -42,7 +42,7 @@ class TaskRemovalTask : public Task {
   bool Callback();
 
   /// Interface to send data to the server
-  std::shared_ptr<Server> server_;
+  ServiceGetters services_;
 
   /// Queued tasks to be removed
   std::set<Task*> tasks_;

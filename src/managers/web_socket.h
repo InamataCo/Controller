@@ -23,17 +23,26 @@ using namespace std::placeholders;
  */
 class WebSocket : public Server, private WebSocketsClient {
  public:
+  struct Config {
+    std::function<std::vector<utils::UUID>()> get_peripheral_ids;
+    Server::Callback peripheral_controller_callback;
+    std::function<std::vector<utils::UUID>()> get_task_ids;
+    Server::Callback task_controller_callback;
+    Server::Callback ota_update_callback;
+    const char* core_domain;
+    const char* ws_token;
+    bool secure_url;
+  };
+
   /**
    * Connection to the SDG server over websockets.
    *
    * This enables bi-directional communication between the controller and the
    * server while removing the intermediate such as the Coordinator over MQTT.
+   *
+   * \param config Copies out the config values to perform its initialization
    */
-  WebSocket(std::function<std::vector<utils::UUID>()> get_peripheral_ids,
-            Server::Callback peripheral_controller_callback,
-            std::function<std::vector<utils::UUID>()> get_task_ids,
-            Server::Callback task_controller_callback, const char* core_domain,
-            const char* ws_token, const char* root_cas = "");
+  WebSocket(const Config& config, String&& root_cas);
   virtual ~WebSocket() = default;
 
   const String& type();
@@ -57,10 +66,15 @@ class WebSocket : public Server, private WebSocketsClient {
   void sendResults(JsonObjectConst results) final;
   void sendSystem(JsonObject data) final;
 
+  const String& getRootCas() const final;
+
+  static const __FlashStringHelper* firmware_version_;
+
  private:
   void handleEvent(WStype_t type, uint8_t* payload, size_t length);
   void handleData(const uint8_t* payload, size_t length);
-  void hexdump(const void* mem, uint32_t len, uint8_t cols = 16);
+
+  void restartOnUnimplementedFunction();
 
   bool is_setup_ = false;
 
@@ -68,8 +82,10 @@ class WebSocket : public Server, private WebSocketsClient {
   Callback peripheral_controller_callback_;
   std::function<std::vector<utils::UUID>()> get_task_ids_;
   Callback task_controller_callback_;
+  Callback ota_update_callback_;
 
   String core_domain_;
+  bool secure_url_;
   const char* controller_path_ = "/ws-api/v1/farms/controllers/";
   String ws_token_;
   String root_cas_;

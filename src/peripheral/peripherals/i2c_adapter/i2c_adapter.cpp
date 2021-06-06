@@ -12,7 +12,7 @@ bool I2CAdapter::wire1_taken = false;
 
 I2CAdapter::I2CAdapter(const ServiceGetters& services,
                        const JsonObjectConst& parameter) {
-  server_ = services.get_server();
+  server_ = services.getServer();
   if (server_ == nullptr) {
     setInvalid(services.server_nullptr_error_);
     return;

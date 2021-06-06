@@ -29,44 +29,65 @@ bool loadWebsocket(Services& services, JsonObjectConst secrets) {
   using namespace std::placeholders;
 
   // Get the required data from the secrets file
-  JsonVariantConst ws_token = secrets[F("ws_token")];
+  const __FlashStringHelper* ws_token_key = F("ws_token");
+  JsonVariantConst ws_token = secrets[ws_token_key];
   if (!ws_token.is<const char*>()) {
-    Serial.println(F("Empty/no ws_token in secrets"));
-    return false;
-  }
-  JsonVariantConst core_domain = secrets[F("core_domain")];
-  if (!core_domain.is<const char*>()) {
-    Serial.println(F("Empty/no core_domain in secrets"));
+    Serial.println(ErrorStore::genMissingProperty(
+        ws_token_key, ErrorStore::KeyType::kString));
     return false;
   }
 
-  JsonVariantConst force_insecure = secrets["force_insecure"];
-  String root_cas;
-  if (!(force_insecure.is<bool>() && force_insecure == true)) {
-    // Load the root certificate authority files for TLS encryption
-    fs::File root_cas_file = SPIFFS.open("/root_cas.pem", FILE_READ);
-    if (root_cas_file) {
-      root_cas.reserve(root_cas_file.size());
-      while (root_cas_file.available()) {
-        root_cas += char(root_cas_file.read());
-      }
-    }
-    root_cas_file.close();
+  const __FlashStringHelper* core_domain_key = F("core_domain");
+  JsonVariantConst core_domain = secrets[core_domain_key];
+  if (!core_domain.is<const char*>()) {
+    Serial.println(ErrorStore::genMissingProperty(
+        core_domain_key, ErrorStore::KeyType::kString));
+    return false;
   }
+
+  const __FlashStringHelper* secure_url_key = F("secure_url");
+  JsonVariantConst secure_url = secrets[secure_url_key];
+  if (!secure_url.is<bool>()) {
+    Serial.println(ErrorStore::genMissingProperty(
+        secure_url_key, ErrorStore::KeyType::kString));
+    return false;
+  }
+
+  // Load the root certificate authority files for TLS encryption
+  String root_cas;
+  fs::File root_cas_file = SPIFFS.open("/root_cas.pem", FILE_READ);
+  if (root_cas_file) {
+    root_cas.reserve(root_cas_file.size());
+    while (root_cas_file.available()) {
+      root_cas += char(root_cas_file.read());
+    }
+  }
+  root_cas_file.close();
+
   // Get the peripheral and task controllers
   peripheral::PeripheralController& peripheral_controller =
       services.getPeripheralController();
   tasks::TaskController& task_controller = services.getTaskController();
+  OtaUpdater& ota_updater = services.getOtaUpdater();
 
   // Create a websocket instance as the server interface
-  services.setServer(std::make_shared<WebSocket>(
-      std::bind(&peripheral::PeripheralController::getPeripheralIDs,
-                &peripheral_controller),
-      std::bind(&peripheral::PeripheralController::handleCallback,
-                &peripheral_controller, _1),
-      std::bind(&tasks::TaskController::getTaskIDs, &task_controller),
-      std::bind(&tasks::TaskController::handleCallback, &task_controller, _1),
-      core_domain.as<const char*>(), ws_token.as<const char*>(), root_cas.c_str()));
+  WebSocket::Config config{
+      .get_peripheral_ids =
+          std::bind(&peripheral::PeripheralController::getPeripheralIDs,
+                    &peripheral_controller),
+      .peripheral_controller_callback =
+          std::bind(&peripheral::PeripheralController::handleCallback,
+                    &peripheral_controller, _1),
+      .get_task_ids =
+          std::bind(&tasks::TaskController::getTaskIDs, &task_controller),
+      .task_controller_callback = std::bind(
+          &tasks::TaskController::handleCallback, &task_controller, _1),
+      .ota_update_callback =
+          std::bind(&OtaUpdater::handleCallback, &ota_updater, _1),
+      .core_domain = core_domain.as<const char*>(),
+      .ws_token = ws_token.as<const char*>(),
+      .secure_url = secure_url};
+  services.setServer(std::make_shared<WebSocket>(config, std::move(root_cas)));
   return true;
 }
 
@@ -101,7 +122,8 @@ bool setupNode(Services& services) {
 
   // Enable serial communication and prints
   Serial.begin(115200);
-  Serial.println(F("Setup started"));
+  Serial.print(F("Fimware version: "));
+  Serial.println(WebSocket::firmware_version_);
   WiFi.begin();
 
   // Initialize the file system

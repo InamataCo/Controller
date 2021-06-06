@@ -58,12 +58,12 @@ void PeripheralController::handleCallback(const JsonObjectConst& message) {
   }
 
   // Send the command results
-  std::shared_ptr<Server> server = services_.get_server();
+  std::shared_ptr<Server> server = services_.getServer();
   if (server) {
     server->sendResults(result_doc.as<JsonObject>());
   } else {
     Serial.println(
-        ErrorResult(type(), ServiceGetters::nullptr_error_).toString());
+        ErrorResult(type(), ServiceGetters::server_nullptr_error_).toString());
   }
 }
 

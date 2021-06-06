@@ -31,7 +31,7 @@ BaseTask* TaskFactory::startTask(const ServiceGetters& services,
   } else {
     // Factory type not found, so return an invalid task
     return new InvalidTask(scheduler_,
-                           invalidFactoryTypeError(type.as<char*>()));
+                           invalidFactoryTypeError(type.as<const char*>()));
   }
 }
 

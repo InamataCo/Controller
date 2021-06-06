@@ -24,12 +24,12 @@ const String& CheckConnectivity::type() {
 }
 
 bool CheckConnectivity::OnTaskEnable() {
-  network_ = services_.get_network();
+  network_ = services_.getNetwork();
   if (network_ == nullptr) {
     setInvalid(services_.network_nullptr_error_);
     return false;
   }
-  server_ = services_.get_server();
+  server_ = services_.getServer();
   if (server_ == nullptr) {
     setInvalid(services_.server_nullptr_error_);
     return false;

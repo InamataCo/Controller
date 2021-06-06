@@ -25,7 +25,7 @@ std::shared_ptr<Peripheral> PeripheralFactory::createPeripheral(
     return factory->second(services, parameter);
   } else {
     return std::make_shared<InvalidPeripheral>(
-        unknownTypeError(type.as<char*>()));
+        unknownTypeError(type.as<const char*>()));
   }
 }
 

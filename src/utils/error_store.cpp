@@ -10,6 +10,9 @@ String ErrorStore::genMissingProperty(String key, KeyType key_type) {
     case KeyType::kString:
       key_type_string = string_type_;
       break;
+    case KeyType::kBool:
+      key_type_string = bool_type_;
+      break;
     default:
       break;
   }
@@ -33,4 +36,6 @@ const __FlashStringHelper* ErrorStore::missing_property_prefix_ =
 const __FlashStringHelper* ErrorStore::uuid_type_ = F("uuid");
 const __FlashStringHelper* ErrorStore::uint32_t_type_ = F("uint32_t");
 const __FlashStringHelper* ErrorStore::string_type_ = F("string");
+const __FlashStringHelper* ErrorStore::bool_type_ = F("bool");
+
 }  // namespace bernd_box

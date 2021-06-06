@@ -9,7 +9,7 @@ namespace digital_out {
 
 DigitalOut::DigitalOut(const ServiceGetters& services,
                        const JsonObjectConst& parameters) {
-  server_ = services.get_server();
+  server_ = services.getServer();
   if (server_ == nullptr) {
     setInvalid(ServiceGetters::server_nullptr_error_);
     return;

@@ -21,8 +21,6 @@ extern const std::chrono::seconds wifi_connect_timeout;
 
 // Server certificate authorities TLS certificates
 extern const std::chrono::seconds server_connect_timeout;
-// extern const char* core_domain;
-// extern const char* ws_token;
-// extern const char* root_cas;
+
 
 }  // namespace bernd_box

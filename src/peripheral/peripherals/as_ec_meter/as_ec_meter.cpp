@@ -26,7 +26,7 @@ AsEcMeterI2C::AsEcMeterI2C(const JsonObjectConst& parameters)
     setInvalid(probe_type_key_error_);
     return;
   }
-  if (atof(probe_type.as<char*>()) == 0) {
+  if (atof(probe_type.as<const char*>()) == 0) {
     setInvalid(probe_type_cast_error_);
     return;
   }
@@ -49,7 +49,7 @@ AsEcMeterI2C::AsEcMeterI2C(const JsonObjectConst& parameters)
   wire = getWire();
 
   // Configure probe type (range from K0.010 to K10.000)
-  send_cmd((String(probe_type_code_) + probe_type.as<char*>()).c_str());
+  send_cmd((String(probe_type_code_) + probe_type.as<const char*>()).c_str());
 
   // Set to sleep mode
   send_cmd(String(sleep_code_).c_str());

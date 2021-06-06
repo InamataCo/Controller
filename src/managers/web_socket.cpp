@@ -4,22 +4,17 @@
 
 namespace bernd_box {
 
-WebSocket::WebSocket(
-    std::function<std::vector<utils::UUID>()> get_peripheral_ids,
-    Server::Callback peripheral_controller_callback,
-    std::function<std::vector<utils::UUID>()> get_task_ids,
-    Server::Callback task_controller_callback, const char* core_domain,
-    const char* ws_token, const char* root_cas)
-    : get_peripheral_ids_(get_peripheral_ids),
-      peripheral_controller_callback_(peripheral_controller_callback),
-      get_task_ids_(get_task_ids),
-      task_controller_callback_(task_controller_callback),
-      core_domain_(core_domain),
+WebSocket::WebSocket(const WebSocket::Config& config, String&& root_cas)
+    : get_peripheral_ids_(config.get_peripheral_ids),
+      peripheral_controller_callback_(config.peripheral_controller_callback),
+      get_task_ids_(config.get_task_ids),
+      task_controller_callback_(config.task_controller_callback),
+      ota_update_callback_(config.ota_update_callback),
+      core_domain_(config.core_domain),
+      secure_url_(config.secure_url),
       root_cas_(root_cas) {
   ws_token_ = F("token_");
-  ws_token_ += ws_token;
-  esp_tls_init_global_ca_store();
-  esp_tls_set_global_ca_store((const unsigned char*) root_cas_.c_str(), root_cas_.length());
+  ws_token_ += config.ws_token;
 }
 
 const String& WebSocket::type() {
@@ -34,7 +29,7 @@ bool WebSocket::connect(std::chrono::seconds timeout) {
   // reconnect interval
   if (!is_setup_) {
     is_setup_ = true;
-    if (root_cas_.length()) {
+    if (secure_url_) {
       beginSslWithCA(core_domain_.c_str(), 443, controller_path_,
                      root_cas_.c_str(), ws_token_.c_str());
     } else {
@@ -59,22 +54,13 @@ bool WebSocket::connect(std::chrono::seconds timeout) {
 void WebSocket::handle() { loop(); }
 
 void WebSocket::send(const String& name, double value) {
-  Serial.print(F("Unimplemented Function: "));
-  Serial.println(F(__PRETTY_FUNCTION__));
-  delay(10000);
-  ESP.restart();
+  restartOnUnimplementedFunction();
 }
 void WebSocket::send(const String& name, int value) {
-  Serial.print(F("Unimplemented Function: "));
-  Serial.println(F(__PRETTY_FUNCTION__));
-  delay(10000);
-  ESP.restart();
+  restartOnUnimplementedFunction();
 }
 void WebSocket::send(const String& name, bool value) {
-  Serial.print(F("Unimplemented Function: "));
-  Serial.println(F(__PRETTY_FUNCTION__));
-  delay(10000);
-  ESP.restart();
+  restartOnUnimplementedFunction();
 }
 
 void WebSocket::send(const String& name, DynamicJsonDocument& doc) {
@@ -91,10 +77,7 @@ void WebSocket::send(const String& name, DynamicJsonDocument& doc) {
 }
 
 void WebSocket::send(const String& name, const char* value, size_t length) {
-  Serial.print(F("Unimplemented Function: "));
-  Serial.println(F(__PRETTY_FUNCTION__));
-  delay(10000);
-  ESP.restart();
+  restartOnUnimplementedFunction();
 }
 
 void WebSocket::sendTelemetry(const utils::UUID& task_id, JsonObject data) {
@@ -111,8 +94,11 @@ void WebSocket::sendTelemetry(const utils::UUID& task_id, JsonObject data) {
 void WebSocket::sendRegister() {
   DynamicJsonDocument doc(BB_JSON_PAYLOAD_SIZE);
 
-  // Use ther register message type
+  // Use the register message type
   doc["type"] = "reg";
+
+  // Set the firmware version number
+  doc["version"] = firmware_version_;
 
   // Collect all added peripheral ids and write them to a JSON doc
   std::vector<utils::UUID> peripheral_ids = get_peripheral_ids_();
@@ -128,7 +114,9 @@ void WebSocket::sendRegister() {
   if (!task_ids.empty()) {
     JsonArray tasks = doc.createNestedArray(F("tasks"));
     for (const auto& task_id : task_ids) {
-      tasks.add(task_id.toString());
+      if (task_id.isValid()) {
+        tasks.add(task_id.toString());
+      }
     }
   }
 
@@ -198,26 +186,26 @@ void WebSocket::sendSystem(JsonObject data) {
   sendTXT(data_buf.data(), n);
 }
 
+const String& WebSocket::getRootCas() const { return root_cas_; }
+
 void WebSocket::handleEvent(WStype_t type, uint8_t* payload, size_t length) {
+  // Print class type before the printing the message type
+  Serial.print(this->type());
   switch (type) {
     case WStype_DISCONNECTED: {
       _lastConnectionFail = millis();
-      Serial.printf("WebSocket::HandleEvent: Disconnected!\n");
+      Serial.println(F(": Disconnected!"));
     } break;
     case WStype_CONNECTED: {
-      Serial.printf("WebSocket::HandleEvent: Connected to url: %s\n", payload);
+      Serial.print(F("Connected to: "));
+      Serial.println(reinterpret_cast<char*>(payload));
     } break;
     case WStype_TEXT: {
-      Serial.printf("WebSocket::HandleEvent: get text: %s\n", payload);
+      Serial.print(F("Got text: "));
+      Serial.println(reinterpret_cast<char*>(payload));
       handleData(payload, length);
     } break;
-    case WStype_BIN: {
-      Serial.printf("WebSocket::HandleEvent: get binary length: %u\n", length);
-      hexdump(payload, length);
-
-      // send data to server
-      // webSocket.sendBIN(payload, length);
-    } break;
+    case WStype_BIN:
     case WStype_ERROR:
     case WStype_FRAGMENT_TEXT_START:
     case WStype_FRAGMENT_BIN_START:
@@ -225,38 +213,34 @@ void WebSocket::handleEvent(WStype_t type, uint8_t* payload, size_t length) {
     case WStype_FRAGMENT_FIN:
     case WStype_PING:
     case WStype_PONG:
+      Serial.print(F("Unhandled message type: "));
+      Serial.println(type);
       break;
   }
 }
 
 void WebSocket::handleData(const uint8_t* payload, size_t length) {
-  const __FlashStringHelper* who = F(__PRETTY_FUNCTION__);
-
   // Deserialize the JSON object into allocated memory
   DynamicJsonDocument doc(BB_JSON_PAYLOAD_SIZE);
   const DeserializationError error = deserializeJson(doc, payload, length);
   if (error) {
-    sendError(who, String(F("Deserialize failed: ")) + error.c_str());
+    sendError(type(), String(F("Deserialize failed: ")) + error.c_str());
     return;
   }
 
   // Pass the message to the peripheral and task handlers
   peripheral_controller_callback_(doc.as<JsonObjectConst>());
   task_controller_callback_(doc.as<JsonObjectConst>());
+  ota_update_callback_(doc.as<JsonObjectConst>());
 }
 
-void WebSocket::hexdump(const void* mem, uint32_t len, uint8_t cols) {
-  const uint8_t* src = (const uint8_t*)mem;
-  Serial.printf("\nWebSocket::Hexdump: Address: 0x%08X len: 0x%X (%d)",
-                (ptrdiff_t)src, len, len);
-  for (uint32_t i = 0; i < len; i++) {
-    if (i % cols == 0) {
-      Serial.printf("\n[0x%08X] 0x%08X: ", (ptrdiff_t)src, i);
-    }
-    Serial.printf("%02X ", *src);
-    src++;
-  }
-  Serial.printf("\n");
+void WebSocket::restartOnUnimplementedFunction() {
+  Serial.print(type());
+  Serial.print(F(": Unimplemented Function"));
+  delay(10000);
+  abort();
 }
+
+const __FlashStringHelper* WebSocket::firmware_version_ = F(FIRMWARE_VERSION);
 
 }  // namespace bernd_box

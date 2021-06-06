@@ -5,6 +5,7 @@
 #include "managers/service_getters.h"
 #include "managers/network.h"
 #include "managers/server.h"
+#include "managers/ota_updater.h"
 #include "peripheral/peripheral_controller.h"
 #include "peripheral/peripheral_factory.h"
 #include "tasks/task_controller.h"
@@ -23,6 +24,10 @@ namespace bernd_box {
  */
 class Services {
  public:
+  /**
+   * Set the service getters for the static services (task and peripheral
+   * controller as well as task removal task).
+   */
   Services();
   virtual ~Services() = default;
 
@@ -34,6 +39,7 @@ class Services {
 
   static peripheral::PeripheralController& getPeripheralController();
   static tasks::TaskController& getTaskController();
+  static OtaUpdater& getOtaUpdater();
 
   static Scheduler& getScheduler();
 
@@ -61,6 +67,8 @@ class Services {
   static tasks::TaskController task_controller_;
   /// Singleton to delete stopped tasks and inform the server
   static tasks::TaskRemovalTask task_removal_task_;
+  /// Singleton to perform OTA updates
+  static OtaUpdater ota_updater_;
 };
 
 }  // namespace bernd_box

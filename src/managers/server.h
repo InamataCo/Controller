@@ -41,6 +41,8 @@ class Server {
   virtual void sendResults(JsonObjectConst results) = 0;
   virtual void sendSystem(JsonObject data) = 0;
 
+  virtual const String& getRootCas() const = 0;
+
   static const __FlashStringHelper* request_id_key_;
   static const __FlashStringHelper* type_key_;
   static const __FlashStringHelper* result_type_;

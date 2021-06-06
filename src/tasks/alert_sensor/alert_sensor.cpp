@@ -14,7 +14,7 @@ AlertSensor::AlertSensor(const ServiceGetters& services,
     return;
   }
 
-  server_ = services.get_server();
+  server_ = services.getServer();
   if (server_ == nullptr) {
     setInvalid(services.server_nullptr_error_);
     return;

@@ -20,8 +20,8 @@ const String& TaskRemovalTask::type() {
   return name;
 }
 
-void TaskRemovalTask::setServices(const ServiceGetters& services) {
-  server_ = services.get_server();
+void TaskRemovalTask::setServices(ServiceGetters services) {
+  services_ = services;
 }
 
 void TaskRemovalTask::add(Task& pt) {
@@ -45,20 +45,26 @@ bool TaskRemovalTask::Callback() {
   for (auto it = tasks_.begin(); it != tasks_.end();) {
     Task* task = *it;
     BaseTask* base_task = dynamic_cast<BaseTask*>(task);
+    Serial.print("Deleting: ");
+    Serial.println(base_task->getType());
+
+    // If it is not a system task, delete the task and free the memory
+    // System tasks have a static memory lifetime and should not be deleted
     if (base_task && !base_task->isSystemTask()) {
       TaskController::addResultEntry(base_task->getTaskID(),
                                      base_task->getError(), stop_results);
       delete base_task;
-      it = tasks_.erase(it);
     }
+    it = tasks_.erase(it);
   }
   tasks_.clear();
   if (stop_results.size()) {
-    if (server_ != nullptr) {
-      server_->sendResults(result_doc.as<JsonObject>());
+    std::shared_ptr<Server> server = services_.getServer();
+    if (server != nullptr) {
+      server->sendResults(result_doc.as<JsonObject>());
     } else {
-      Serial.println(
-          ErrorResult(type(), ServiceGetters::server_nullptr_error_).toString());
+      Serial.println(ErrorResult(type(), ServiceGetters::server_nullptr_error_)
+                         .toString());
     }
   }
 

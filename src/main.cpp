@@ -2,7 +2,6 @@
 #include <TaskScheduler.h>
 
 #include "managers/services.h"
-// #include "utils/ota.h"
 #include "utils/setup_node.h"
 
 //----------------------------------------------------------------------------
@@ -21,10 +20,8 @@ void setup() {
     delay(10000);
     ESP.restart();
   }
-  // sdg::setup_ota("bernd_box_a", "sdg");
 }
 
 void loop() {
-  // sdg::handle_ota();
   scheduler.execute();
 }

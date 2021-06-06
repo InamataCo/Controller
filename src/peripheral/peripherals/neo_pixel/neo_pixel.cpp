@@ -26,9 +26,9 @@ NeoPixel::NeoPixel(const JsonObjectConst& parameters) {
     return;
   }
 
-  uint8_t color_encoding_int = getColorEncoding(color_encoding_str.as<char*>());
+  uint8_t color_encoding_int = getColorEncoding(color_encoding_str.as<const char*>());
   if (color_encoding_int == 0) {
-    setInvalid(invalidColorEncodingError(color_encoding_str.as<char*>()));
+    setInvalid(invalidColorEncodingError(color_encoding_str.as<const char*>()));
     return;
   }
 
