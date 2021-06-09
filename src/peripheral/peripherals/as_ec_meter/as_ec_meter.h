@@ -215,6 +215,8 @@ class AsEcMeterI2C : public peripherals::i2c_adapter::I2CAbstractPeripheral,
                                              const JsonObjectConst& parameters);
   static bool registered_;
   static bool capability_get_values_;
+  static bool capability_calibrate_;
+  static bool capability_start_measurement_;
 
   utils::UUID data_point_type_{nullptr};
 

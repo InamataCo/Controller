@@ -1,20 +1,20 @@
-#include "as_rtd_meter.h"
+#include "as_ph_meter.h"
 
 #include "peripheral/peripheral_factory.h"
 
 namespace bernd_box {
 namespace peripheral {
 namespace peripherals {
-namespace as_rtd_meter {
+namespace as_ph_meter {
 
-AsRtdMeterI2C::AsRtdMeterI2C(const JsonVariantConst& parameters)
+AsPhMeterI2C::AsPhMeterI2C(const JsonVariantConst& parameters)
     : I2CAbstractPeripheral(parameters), Ezo_board(0) {
   // If the base class constructor failed, abort the constructor
   if (!isValid()) {
     return;
   }
 
-  // Get and check the data point type for temperature readings
+  // Get and check the data point type for EC readings
   data_point_type_ = utils::UUID(parameters[data_point_type_key_]);
   if (!data_point_type_.isValid()) {
     setInvalid(data_point_type_key_error_);
@@ -42,17 +42,31 @@ AsRtdMeterI2C::AsRtdMeterI2C(const JsonVariantConst& parameters)
   send_cmd(String(sleep_code_).c_str());
 }
 
-const String& AsRtdMeterI2C::getType() const { return type(); }
+const String& AsPhMeterI2C::getType() const { return type(); }
 
-const String& AsRtdMeterI2C::type() {
-  static const String name{"AsRtdMeterI2C"};
+const String& AsPhMeterI2C::type() {
+  static const String name{"AsPhMeterI2C"};
   return name;
 }
 
-capabilities::StartMeasurement::Result AsRtdMeterI2C::startMeasurement(
+capabilities::StartMeasurement::Result AsPhMeterI2C::startMeasurement(
     const JsonVariantConst& parameters) {
-  // Request a reading
-  send_read_cmd();
+  // Check if temperature compensation is enabled
+  JsonVariantConst temperature_c = parameters[temperature_c_key_];
+  if (temperature_c.is<float>()) {
+    temperature_c_ = temperature_c;
+  } else if (temperature_c.isNull()) {
+    temperature_c_ = NAN;
+  } else {
+    return {.wait = {}, .error = ErrorResult(type(), temperature_c_key_error_)};
+  }
+
+  // Start reading type depending on whether temperature compoensation is set
+  if (std::isnan(temperature_c_)) {
+    send_read_cmd();
+  } else {
+    send_read_with_temp_comp(temperature_c_);
+  }
 
   // Invalidate the last reading
   last_reading_ = NAN;
@@ -60,14 +74,23 @@ capabilities::StartMeasurement::Result AsRtdMeterI2C::startMeasurement(
   return {.wait = reading_duration_};
 }
 
-capabilities::StartMeasurement::Result AsRtdMeterI2C::handleMeasurement() {
+capabilities::StartMeasurement::Result AsPhMeterI2C::handleMeasurement() {
   // Receive reading values, check if errors occured, check if measurement has
   // stabilized. Repeat if not stable.
   Ezo_board::errors error = receive_read_cmd();
   if (error == Ezo_board::errors::SUCCESS) {
-    // On success, store the reading an end the measurement process
     last_reading_ = reading;
-    return {.wait = {}};
+    if (isReadingStable()) {
+      return {.wait = {}};
+    } else {
+      // Start reading type depending if temperature compoensation is set
+      if (std::isnan(temperature_c_)) {
+        send_read_cmd();
+      } else {
+        send_read_with_temp_comp(temperature_c_);
+      }
+      return {.wait = reading_duration_};
+    }
   } else if (error == Ezo_board::errors::NOT_READY) {
     // Be conservative. Wait another complete reading cycle
     return {.wait = reading_duration_};
@@ -80,9 +103,9 @@ capabilities::StartMeasurement::Result AsRtdMeterI2C::handleMeasurement() {
   }
 }
 
-capabilities::GetValues::Result AsRtdMeterI2C::getValues() {
-  // Use temperature reading of last reading. Use startMeasurement capability.
-  // Invalidate reading after returning it.
+capabilities::GetValues::Result AsPhMeterI2C::getValues() {
+  // Use EC reading of last reading. Use startMeasurement capability. Invalidate
+  // reading after returning it.
   if (!std::isnan(last_reading_)) {
     capabilities::GetValues::Result result = {
         .values = {utils::ValueUnit{.value = reading,
@@ -94,23 +117,40 @@ capabilities::GetValues::Result AsRtdMeterI2C::getValues() {
   }
 }
 
-std::shared_ptr<Peripheral> AsRtdMeterI2C::factory(
-    const ServiceGetters& services, const JsonObjectConst& parameters) {
-  return std::make_shared<AsRtdMeterI2C>(parameters);
+bool AsPhMeterI2C::isReadingStable() const {
+  if (std::isnan(last_reading_)) {
+    return false;
+  }
+  if (fabsf(last_reading_ - reading) / reading < stabalized_threshold_) {
+    return true;
+  } else {
+    return false;
+  }
 }
 
-bool AsRtdMeterI2C::registered_ =
+std::shared_ptr<Peripheral> AsPhMeterI2C::factory(
+    const ServiceGetters& services, const JsonObjectConst& parameters) {
+  return std::make_shared<AsPhMeterI2C>(parameters);
+}
+
+bool AsPhMeterI2C::registered_ =
     PeripheralFactory::registerFactory(type(), factory);
 
-bool AsRtdMeterI2C::capability_get_values_ =
+bool AsPhMeterI2C::capability_get_values_ =
     capabilities::GetValues::registerType(type());
 
-bool AsRtdMeterI2C::capability_start_measurement_ =
+bool AsPhMeterI2C::capability_start_measurement_ =
     capabilities::StartMeasurement::registerType(type());
 
-const __FlashStringHelper* AsRtdMeterI2C::sleep_code_ = F("Sleep");
+const __FlashStringHelper* AsPhMeterI2C::temperature_c_key_ =
+    F("temperature_c");
 
-}  // namespace as_rtd_meter
+const __FlashStringHelper* AsPhMeterI2C::temperature_c_key_error_ =
+    F("Wrong property: temperature_c (float)");
+
+const __FlashStringHelper* AsPhMeterI2C::sleep_code_ = F("Sleep");
+
+}  // namespace as_ph_meter
 }  // namespace peripherals
 }  // namespace peripheral
 }  // namespace bernd_box

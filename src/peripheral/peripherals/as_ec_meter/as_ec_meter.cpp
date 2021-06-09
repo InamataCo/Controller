@@ -437,6 +437,12 @@ bool AsEcMeterI2C::registered_ =
 bool AsEcMeterI2C::capability_get_values_ =
     capabilities::GetValues::registerType(type());
 
+bool AsEcMeterI2C::capability_calibrate_ =
+    capabilities::Calibrate::registerType(type());
+
+bool AsEcMeterI2C::capability_start_measurement_ =
+    capabilities::StartMeasurement::registerType(type());
+
 const __FlashStringHelper* AsEcMeterI2C::probe_type_key_ = F("probe_type");
 
 const __FlashStringHelper* AsEcMeterI2C::probe_type_key_error_ =

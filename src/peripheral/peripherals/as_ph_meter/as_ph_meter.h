@@ -10,25 +10,25 @@
 namespace bernd_box {
 namespace peripheral {
 namespace peripherals {
-namespace as_rtd_meter {
+namespace as_ph_meter {
 
-class AsRtdMeterI2C : public peripherals::i2c_adapter::I2CAbstractPeripheral,
-                      public capabilities::GetValues,
-                      public capabilities::StartMeasurement,
-                      private Ezo_board {
+class AsPhMeterI2C : public peripherals::i2c_adapter::I2CAbstractPeripheral,
+                     public capabilities::GetValues,
+                     public capabilities::StartMeasurement,
+                     private Ezo_board {
  public:
-  AsRtdMeterI2C(const JsonVariantConst& parameters);
-  virtual ~AsRtdMeterI2C() = default;
+  AsPhMeterI2C(const JsonVariantConst& parameters);
+  virtual ~AsPhMeterI2C() = default;
 
   // Type registration in the peripheral factory
   const String& getType() const final;
   static const String& type();
 
   /**
-   * Start an temperature measurement
+   * Start a pH measurement
    *
-   * \param parameters data point type and I2C address needed
-   * \return The time until the result is ready to be read (~600ms)
+   * \param parameters
+   * \return The time until the result is ready to be read (~900ms)
    */
   capabilities::StartMeasurement::Result startMeasurement(
       const JsonVariantConst& parameters) final;
@@ -44,7 +44,7 @@ class AsRtdMeterI2C : public peripherals::i2c_adapter::I2CAbstractPeripheral,
   capabilities::StartMeasurement::Result handleMeasurement() final;
 
   /**
-   * Reads the temperature value generated from the startMeasurement capability
+   * Reads the pH value generated from the startMeasurement capability
    *
    * Invalidates the reading after returning it. Repeat startMeasurement for
    * new readings
@@ -54,6 +54,15 @@ class AsRtdMeterI2C : public peripherals::i2c_adapter::I2CAbstractPeripheral,
   capabilities::GetValues::Result getValues() final;
 
  private:
+  /**
+   * Checks if the reading has stabilizied within a specified range
+   *
+   * Uses the reading member set by Ezo_board after calling receive_read_cmd()
+   *
+   * \return True if stable
+   */
+  bool isReadingStable() const;
+
   static std::shared_ptr<Peripheral> factory(const ServiceGetters& services,
                                              const JsonObjectConst& parameters);
   static bool registered_;
@@ -62,9 +71,16 @@ class AsRtdMeterI2C : public peripherals::i2c_adapter::I2CAbstractPeripheral,
 
   utils::UUID data_point_type_{nullptr};
 
+  float stabalized_threshold_{0.1};
+
   // Reading
-  const std::chrono::milliseconds reading_duration_{600};
+  const std::chrono::milliseconds reading_duration_{900};
   float last_reading_ = NAN;
+
+  // Temperature compensation
+  float temperature_c_;
+  static const __FlashStringHelper* temperature_c_key_;
+  static const __FlashStringHelper* temperature_c_key_error_;
 
   static const __FlashStringHelper* sleep_code_;
 };
