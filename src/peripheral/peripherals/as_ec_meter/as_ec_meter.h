@@ -228,7 +228,7 @@ class AsEcMeterI2C : public peripherals::i2c_adapter::I2CAbstractPeripheral,
   // Reading
   std::chrono::steady_clock::time_point reading_start_;
   const std::chrono::seconds reading_duration_{1};
-  float last_reading_;
+  float last_reading_ = NAN;
 
   // Calibration
   /// Calibration temperature

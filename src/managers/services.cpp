@@ -6,7 +6,7 @@ namespace bernd_box {
 
 Services::Services() {
   ServiceGetters getters = getGetters();
-  
+
   peripheral_controller_.setServices(getters);
   task_controller_.setServices(getters);
   task_removal_task_.setServices(getters);
