@@ -9,10 +9,6 @@ The add command creates a new peripheral. It has to be called before the execute
 | uuid      | unique ID of the peripheral |
 | type      | type of the peripheral      |
 
-### Dummy Peripheral
-
-No extra parameters required
-
 ### LED Peripheral
 
 The peripheral supports the *SetValue* capability for which *WriteActuator* is the simplest task to set a value. Expects a value between 0 and 1.
@@ -37,6 +33,17 @@ The peripheral supports the *SetValue* capability for which *WriteActuator* is t
 | address     | address of the BH1750 sensor       |
 
 Note: The I2C adapter has to have been added
+
+### Atlas Scientific EC Meter (I2C)
+
+| parameter     | Required | content                                 |
+| ------------- | -------- | --------------------------------------- |
+| i2c_adapter   | ✔️        | name of the I2C adapter peripheral      |
+| address       | ✔️        | address of the BH1750 sensor            |
+| probe_type    | ❌        | the type of probe used 10 - 0.01        |
+| enable_pin    | ❌        | A pin to pull high to enable the sensor |
+| invert_enable | ❌        | Invert enable pin to pull low to enable |
+
 
 ## Controller Messages
 

@@ -1,4 +1,4 @@
-# SmartDigitalGarden / Togayo Controller
+# ![Togayo Controller](./doc/images/header-logo.png)
 
 This firmware interfaces with sensors and peripherals and connects to the server. It allows users to dynamically add and remove connected peripherals. The created peripherals can then be read from and commanded via the server. A dashboard for this is currently implemented in a [Node-RED flow][1].
 
