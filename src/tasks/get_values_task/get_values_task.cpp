@@ -49,6 +49,7 @@ const utils::UUID& GetValuesTask::getPeripheralUUID() const {
   return peripheral_uuid_;
 }
 
+// TODO: Rename to packageValues?
 ErrorResult GetValuesTask::makeTelemetryJson(JsonObject& telemetry) {
   // Create an array for the value units and get them from the peripheral
   JsonArray value_units_doc =

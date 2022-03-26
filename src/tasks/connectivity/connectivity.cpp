@@ -61,8 +61,9 @@ bool CheckConnectivity::checkNetwork() {
 }
 
 bool CheckConnectivity::checkInternetTime() {
-  if (millis() - last_time_check_ms > time_check_duration_ms) {
-    last_time_check_ms = millis();
+  if (utils::chrono_abs(std::chrono::steady_clock::now() - last_time_check_) >
+      time_check_duration_) {
+    last_time_check_ = std::chrono::steady_clock::now();
 
     int error = network_->setClock(std::chrono::seconds(30));
     if (error) {
@@ -73,7 +74,6 @@ bool CheckConnectivity::checkInternetTime() {
       ESP.restart();
     }
   }
-
   return true;
 }
 

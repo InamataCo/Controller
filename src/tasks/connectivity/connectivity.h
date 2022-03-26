@@ -6,6 +6,7 @@
 
 #include "managers/service_getters.h"
 #include "tasks/base_task.h"
+#include "utils/chrono_abs.h"
 
 namespace bernd_box {
 namespace tasks {
@@ -57,9 +58,10 @@ class CheckConnectivity : public BaseTask {
   std::shared_ptr<Server> server_;
 
   /// Last time the internet time was checked
-  long last_time_check_ms = std::numeric_limits<long>::max();
-  /// Check the internet time every 24 hours
-  long time_check_duration_ms = 24 * 60 * 60 * 1000;
+  std::chrono::steady_clock::time_point last_time_check_ =
+      std::chrono::steady_clock::time_point::max();
+  const std::chrono::steady_clock::duration time_check_duration_ =
+      std::chrono::hours(24);
 };
 
 }  // namespace connectivity

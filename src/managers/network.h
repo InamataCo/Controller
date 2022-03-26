@@ -31,7 +31,7 @@ class Network {
    * \param timeout The length of time to wait until aborting
    * \return True if successful
    */
-  bool connect(std::chrono::duration<int> timeout);
+  bool connect(std::chrono::steady_clock::duration timeout);
 
   /**
    * Prints the current WiFi state to the serial terminal

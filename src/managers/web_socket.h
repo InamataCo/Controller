@@ -74,9 +74,32 @@ class WebSocket : public Server, private WebSocketsClient {
   void handleEvent(WStype_t type, uint8_t* payload, size_t length);
   void handleData(const uint8_t* payload, size_t length);
 
+  /**
+   * Save the up/down durations and timepoints when the connection state changes
+   * 
+   * @param is_connected True if the connection is currently connected
+   */
+  void updateUpDownTime(const bool is_connected);
+  void sendUpDownTimeData();
+
   void restartOnUnimplementedFunction();
 
   bool is_setup_ = false;
+
+  /// Whether the WebSocket was connected during the last check
+  bool was_connected_ = false;
+  /// The timepoint when the connection last went up
+  std::chrono::steady_clock::time_point last_connect_up_ =
+      std::chrono::steady_clock::time_point::min();
+  /// The timepoint when the connection last went down
+  std::chrono::steady_clock::time_point last_connect_down_ =
+      std::chrono::steady_clock::time_point::min();
+  /// The duration of the last WebSocket connection uptime
+  std::chrono::steady_clock::duration last_up_duration_ =
+      std::chrono::steady_clock::duration::min();
+  /// The duration of the last WebSocket connection downtime
+  std::chrono::steady_clock::duration last_down_duration_ =
+      std::chrono::steady_clock::duration::min();
 
   std::function<std::vector<utils::UUID>()> get_peripheral_ids_;
   Callback peripheral_controller_callback_;

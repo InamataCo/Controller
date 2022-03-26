@@ -9,15 +9,15 @@ Network::Network(std::vector<WiFiAP>& wifi_aps)
   }
 }
 
-bool Network::connect(std::chrono::duration<int> timeout) {
+bool Network::connect(std::chrono::steady_clock::duration timeout) {
   Serial.println(F("Network::connect: Searching for the following networks:"));
   for (const WiFiAP& wifi_ap : wifi_aps_) {
     Serial.printf("\t%s\n", wifi_ap.ssid.c_str());
   }
 
-  const std::chrono::milliseconds wifi_connect_start(millis());
+  const auto wifi_connect_start = std::chrono::steady_clock::now();
   while (wiFiMulti_.run() != WL_CONNECTED) {
-    if (std::chrono::milliseconds(millis()) - wifi_connect_start > timeout) {
+    if (std::chrono::steady_clock::now() - wifi_connect_start > timeout) {
       return false;
     }
   }

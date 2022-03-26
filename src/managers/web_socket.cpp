@@ -22,7 +22,11 @@ const String& WebSocket::type() {
   return name;
 }
 
-bool WebSocket::isConnected() { return WebSocketsClient::isConnected(); }
+bool WebSocket::isConnected() {
+  const bool is_connected = WebSocketsClient::isConnected();
+  updateUpDownTime(is_connected);
+  return is_connected;
+}
 
 bool WebSocket::connect(std::chrono::seconds timeout) {
   // Configure the WebSocket interface with the server, TLS certificate and the
@@ -39,13 +43,16 @@ bool WebSocket::connect(std::chrono::seconds timeout) {
     setReconnectInterval(5000);
   }
 
-  // Attempt to connect to the server until connected or it times out
-  std::chrono::milliseconds connect_start(millis());
-  while (!isConnected()) {
-    if (std::chrono::milliseconds(millis()) - connect_start > timeout) {
-      return false;
+  if (!isConnected()) {
+    // Attempt to connect to the server until connected or it times out
+    const auto connect_start = std::chrono::steady_clock::now();
+    while (!isConnected()) {
+      if (std::chrono::steady_clock::now() - connect_start > timeout) {
+        return false;
+      }
+      loop();
     }
-    loop();
+    sendUpDownTimeData();
   }
 
   return true;
@@ -193,7 +200,6 @@ void WebSocket::handleEvent(WStype_t type, uint8_t* payload, size_t length) {
   Serial.print(this->type());
   switch (type) {
     case WStype_DISCONNECTED: {
-      _lastConnectionFail = millis();
       Serial.println(F(": Disconnected!"));
     } break;
     case WStype_CONNECTED: {
@@ -205,13 +211,15 @@ void WebSocket::handleEvent(WStype_t type, uint8_t* payload, size_t length) {
       Serial.println(reinterpret_cast<char*>(payload));
       handleData(payload, length);
     } break;
+    case WStype_PING:
+      Serial.println(F("Received ping"));
+      break;
     case WStype_BIN:
     case WStype_ERROR:
     case WStype_FRAGMENT_TEXT_START:
     case WStype_FRAGMENT_BIN_START:
     case WStype_FRAGMENT:
     case WStype_FRAGMENT_FIN:
-    case WStype_PING:
     case WStype_PONG:
       Serial.print(F("Unhandled message type: "));
       Serial.println(type);
@@ -232,6 +240,57 @@ void WebSocket::handleData(const uint8_t* payload, size_t length) {
   peripheral_controller_callback_(doc.as<JsonObjectConst>());
   task_controller_callback_(doc.as<JsonObjectConst>());
   ota_update_callback_(doc.as<JsonObjectConst>());
+}
+
+void WebSocket::updateUpDownTime(const bool is_connected) {
+  if (is_connected != was_connected_) {
+    was_connected_ = is_connected;
+    const auto now = std::chrono::steady_clock::now();
+    if (is_connected) {
+      // Connection went up
+      if (last_connect_down_ != std::chrono::steady_clock::time_point::min()) {
+        // Only update if last_connect_down_ has been set
+        last_down_duration_ = now - last_connect_down_;
+      }
+      last_connect_up_ = now;
+    } else {
+      // Connection went down
+      if (last_connect_up_ != std::chrono::steady_clock::time_point::min()) {
+        // Only update if last_connect_up_ has been set
+        last_up_duration_ = now - last_connect_up_;
+      }
+      last_connect_down_ = now;
+    }
+  }
+}
+
+void WebSocket::sendUpDownTimeData() {
+  // Only send after valid times have been recorded
+  if (last_up_duration_ != std::chrono::steady_clock::duration::min() &&
+      last_down_duration_ != std::chrono::steady_clock::duration::min()) {
+    DynamicJsonDocument doc(BB_JSON_PAYLOAD_SIZE);
+    if (last_up_duration_ != std::chrono::steady_clock::duration::min()) {
+      // If the up duration is valid, print and send the data
+      int64_t last_up_duration_s =
+          std::chrono::duration_cast<std::chrono::seconds>(last_up_duration_)
+              .count();
+      Serial.printf("Last WS up duration: %llds\n", last_up_duration_s);
+      doc[F("last_ws_up_duration_s")] =
+          std::chrono::duration_cast<std::chrono::seconds>(last_up_duration_)
+              .count();
+    }
+    if (last_down_duration_ != std::chrono::steady_clock::duration::min()) {
+      // If the down duration is valid, print and send the data
+      int64_t last_down_duration_s =
+          std::chrono::duration_cast<std::chrono::seconds>(last_down_duration_)
+              .count();
+      Serial.printf("Last WS down duration: %llds\n", last_down_duration_s);
+      doc[F("last_ws_down_duration_s")] =
+          std::chrono::duration_cast<std::chrono::seconds>(last_down_duration_)
+              .count();
+    }
+    sendSystem(doc.as<JsonObject>());
+  }
 }
 
 void WebSocket::restartOnUnimplementedFunction() {
