@@ -13,6 +13,17 @@ ErrorResult Peripheral::getError() const {
   }
 }
 
+int Peripheral::toPin(JsonVariantConst pin) {
+  if (!pin.is<float>()) {
+    return -1;
+  }
+  int pin_number = roundf(pin.as<float>());
+  if (pin_number < 0 || pin_number > 255) {
+    return -1;
+  }
+  return pin_number;
+}
+
 void Peripheral::setInvalid() { valid_ = false; }
 
 void Peripheral::setInvalid(const String& error_message) {

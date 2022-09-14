@@ -5,6 +5,7 @@
 #include <WebSocketsClient.h>
 
 #include <map>
+#include <vector>
 
 #include "configuration.h"
 #include "server.h"
@@ -109,7 +110,7 @@ class WebSocket : public Server, private WebSocketsClient {
 
   String core_domain_;
   bool secure_url_;
-  const char* controller_path_ = "/ws-api/v1/farms/controllers/";
+  const char* controller_path_ = "/controller-ws/v1/";
   String ws_token_;
   String root_cas_;
 };

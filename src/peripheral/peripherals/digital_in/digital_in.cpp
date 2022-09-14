@@ -9,8 +9,8 @@ namespace digital_in {
 
 DigitalIn::DigitalIn(const JsonObjectConst& parameters) {
   // Get the pin # for the GPIO output and validate data. Invalidate on error
-  JsonVariantConst pin = parameters[pin_key_];
-  if (!pin.is<unsigned int>()) {
+  int pin = toPin(parameters[pin_key_]);
+  if (pin < 0) {
     setInvalid(pin_key_error_);
     return;
   }

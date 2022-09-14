@@ -45,7 +45,7 @@ I2CAdapter::I2CAdapter(const ServiceGetters& services,
   }
 
   *taken_variable = true;
-  wire_->begin(data_pin, clock_pin);
+  wire_->begin(data_pin, clock_pin, 0);
 }
 
 I2CAdapter::~I2CAdapter() { *taken_variable = false; }

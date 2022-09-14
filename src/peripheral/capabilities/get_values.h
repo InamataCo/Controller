@@ -4,6 +4,7 @@
 
 #include <memory>
 #include <set>
+#include <vector>
 
 #include "peripheral/peripheral.h"
 #include "utils/uuid.h"

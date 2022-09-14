@@ -40,6 +40,13 @@ class Peripheral {
    */
   ErrorResult getError() const;
 
+  /**
+   * Converts JsonVariant pin number to int
+   * 
+   * \return Pin number on valid pin or -1 on error
+   */
+  static int toPin(JsonVariantConst pin);
+
  protected:
   /**
    * Mark the peripheral as invalid and should therefore not be used
