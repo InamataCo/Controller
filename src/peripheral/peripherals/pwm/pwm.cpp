@@ -1,8 +1,9 @@
+#ifdef ESP32
 #include "pwm.h"
 
 #include "peripheral/peripheral_factory.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace peripheral {
 namespace peripherals {
 namespace pwm {
@@ -99,11 +100,11 @@ void Pwm::freeResources() {
   resolution_ = -1;
 }
 
-const __FlashStringHelper* Pwm::pin_key_ = F("pin");
+const __FlashStringHelper* Pwm::pin_key_ = FPSTR("pin");
 const __FlashStringHelper* Pwm::pin_key_error_ =
-    F("Missing property: pin (unsigned int)");
+    FPSTR("Missing property: pin (unsigned int)");
 const __FlashStringHelper* Pwm::no_channels_available_error_ =
-    F("No remaining PWM channels available");
+    FPSTR("No remaining PWM channels available");
 
 std::shared_ptr<Peripheral> Pwm::factory(const ServiceGetters& services,
                                          const JsonObjectConst& parameters) {
@@ -119,4 +120,6 @@ std::bitset<16> Pwm::busy_channels_;
 }  // namespace pwm
 }  // namespace peripherals
 }  // namespace peripheral
-}  // namespace bernd_box
+}  // namespace inamata
+
+#endif

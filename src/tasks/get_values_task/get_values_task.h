@@ -8,7 +8,7 @@
 #include "tasks/base_task.h"
 #include "utils/uuid.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace tasks {
 namespace get_values_task {
 
@@ -48,4 +48,4 @@ class GetValuesTask : public BaseTask {
 
 }  // namespace get_values_task
 }  // namespace tasks
-}  // namespace bernd_box
+}  // namespace inamata

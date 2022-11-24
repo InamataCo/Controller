@@ -6,7 +6,7 @@
 
 #include "configuration.h"
 
-namespace bernd_box {
+namespace inamata {
 
 // Check Connectivity Task
 const std::chrono::milliseconds check_connectivity_period{200};
@@ -17,4 +17,4 @@ const std::chrono::seconds wifi_connect_timeout(30);
 // Server certificate authorities TLS certificates
 const std::chrono::seconds server_connect_timeout{30};
 
-}  // namespace bernd_box
+}  // namespace inamata

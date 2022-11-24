@@ -10,7 +10,7 @@
 #include "utils/uuid.h"
 #include "utils/value_unit.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace peripheral {
 namespace capabilities {
 
@@ -20,10 +20,10 @@ class GetValues {
     std::vector<utils::ValueUnit> values;
     ErrorResult error;
   };
-  
+
   /**
    * Interface to get ValueUnits
-   * 
+   *
    * \return On success, a vector with ValueUnits. On error, true for isError()
    */
   virtual Result getValues() = 0;
@@ -52,4 +52,4 @@ class GetValues {
 
 }  // namespace capabilities
 }  // namespace peripheral
-}  // namespace bernd_box
+}  // namespace inamata

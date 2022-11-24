@@ -5,7 +5,7 @@
 #include "peripheral/peripheral.h"
 #include "peripheral/peripherals/i2c_adapter/i2c_adapter.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace peripheral {
 namespace peripherals {
 namespace i2c_adapter {
@@ -42,4 +42,4 @@ class I2CAbstractPeripheral : public Peripheral {
 }  // namespace i2c_adapter
 }  // namespace peripherals
 }  // namespace peripheral
-}  // namespace bernd_box
+}  // namespace inamata

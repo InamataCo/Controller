@@ -9,7 +9,7 @@
 #include "utils/color.h"
 #include "utils/uuid.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace peripheral {
 namespace capabilities {
 
@@ -46,4 +46,4 @@ class LedStrip {
 
 }  // namespace capabilities
 }  // namespace peripheral
-}  // namespace bernd_box
+}  // namespace inamata

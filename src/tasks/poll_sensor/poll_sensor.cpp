@@ -2,7 +2,7 @@
 
 #include "tasks/task_factory.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace tasks {
 namespace poll_sensor {
 
@@ -123,4 +123,4 @@ BaseTask* PollSensor::factory(const ServiceGetters& services,
 
 }  // namespace poll_sensor
 }  // namespace tasks
-}  // namespace bernd_box
+}  // namespace inamata

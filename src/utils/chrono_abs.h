@@ -2,7 +2,7 @@
 
 #include <chrono>
 
-namespace bernd_box {
+namespace inamata {
 namespace utils {
 
 template <class Rep, class Period,
@@ -15,4 +15,4 @@ constexpr inline std::chrono::duration<Rep, Period> chrono_abs(
 }
 
 }  // namespace utils
-}  // namespace bernd_box
+}  // namespace inamata

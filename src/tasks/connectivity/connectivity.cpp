@@ -2,7 +2,7 @@
 
 #include "configuration.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace tasks {
 namespace connectivity {
 
@@ -39,22 +39,11 @@ bool CheckConnectivity::OnTaskEnable() {
 }
 
 bool CheckConnectivity::TaskCallback() {
-  checkNetwork();
-  checkInternetTime();
-  handleServer();
+  bool connected = network_->connect();
 
-  return true;
-}
-
-bool CheckConnectivity::checkNetwork() {
-  if (!network_->isConnected()) {
-    if (network_->connect(wifi_connect_timeout) == false) {
-      Serial.println(
-          F("CheckConnectivity::Callback: Failed to connect to WiFi.\n"
-            "Restarting in 10s"));
-      delay(10000);
-      ESP.restart();
-    }
+  if (connected) {
+    checkInternetTime();
+    handleServer();
   }
 
   return true;
@@ -95,4 +84,4 @@ bool CheckConnectivity::handleServer() {
 
 }  // namespace connectivity
 }  // namespace tasks
-}  // namespace bernd_box
+}  // namespace inamata

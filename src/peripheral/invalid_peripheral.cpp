@@ -2,7 +2,7 @@
 
 #include "peripheral/peripheral_factory.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace peripheral {
 
 InvalidPeripheral::InvalidPeripheral() { setInvalid(); }
@@ -25,4 +25,4 @@ bool InvalidPeripheral::registered_ =
     PeripheralFactory::registerFactory(type(), factory);
 
 }  // namespace peripheral
-}  // namespace bernd_box
+}  // namespace inamata

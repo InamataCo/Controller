@@ -9,7 +9,7 @@
 #include "peripheral/capabilities/set_value.h"
 #include "peripheral/peripheral.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace peripheral {
 namespace peripherals {
 namespace pwm {
@@ -72,4 +72,4 @@ class Pwm : public Peripheral, public capabilities::SetValue {
 }  // namespace pwm
 }  // namespace peripherals
 }  // namespace peripheral
-}  // namespace bernd_box
+}  // namespace inamata

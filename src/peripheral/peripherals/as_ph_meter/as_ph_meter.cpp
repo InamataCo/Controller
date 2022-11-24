@@ -1,8 +1,9 @@
+#ifndef MINIMAL_BUILD
 #include "as_ph_meter.h"
 
 #include "peripheral/peripheral_factory.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace peripheral {
 namespace peripherals {
 namespace as_ph_meter {
@@ -143,14 +144,16 @@ bool AsPhMeterI2C::capability_start_measurement_ =
     capabilities::StartMeasurement::registerType(type());
 
 const __FlashStringHelper* AsPhMeterI2C::temperature_c_key_ =
-    F("temperature_c");
+    FPSTR("temperature_c");
 
 const __FlashStringHelper* AsPhMeterI2C::temperature_c_key_error_ =
-    F("Wrong property: temperature_c (float)");
+    FPSTR("Wrong property: temperature_c (float)");
 
-const __FlashStringHelper* AsPhMeterI2C::sleep_code_ = F("Sleep");
+const __FlashStringHelper* AsPhMeterI2C::sleep_code_ = FPSTR("Sleep");
 
 }  // namespace as_ph_meter
 }  // namespace peripherals
 }  // namespace peripheral
-}  // namespace bernd_box
+}  // namespace inamata
+
+#endif

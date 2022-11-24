@@ -4,7 +4,7 @@
 #include "managers/network.h"
 #include "managers/server.h"
 
-namespace bernd_box {
+namespace inamata {
 /**
  * Struct with callbacks to get dynamic system services
  */
@@ -22,4 +22,4 @@ struct ServiceGetters {
   static const __FlashStringHelper* network_nullptr_error_;
   static const __FlashStringHelper* server_nullptr_error_;
 };
-}  // namespace bernd_box
+}  // namespace inamata

@@ -1,6 +1,7 @@
+#ifdef ESP32
 #include "ota.h"
 
-namespace sdg {
+namespace inamata {
 void setup_ota(const char* hostname, const char* password = nullptr) {
   if (hostname) {
     ArduinoOTA.setHostname(hostname);
@@ -50,4 +51,6 @@ void setup_ota(const char* hostname, const char* password = nullptr) {
 
 void handle_ota() { ArduinoOTA.handle(); }
 
-}  // namespace sdg
+}  // namespace inamata
+
+#endif

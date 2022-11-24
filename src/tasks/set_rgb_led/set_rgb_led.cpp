@@ -1,9 +1,10 @@
+#ifdef ESP32
 #include "set_rgb_led.h"
 
 #include "managers/services.h"
 #include "tasks/task_factory.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace tasks {
 namespace set_rgb_led {
 
@@ -127,4 +128,6 @@ const __FlashStringHelper* SetRgbLed::white_key_error_ =
 
 }  // namespace set_rgb_led
 }  // namespace tasks
-}  // namespace bernd_box
+}  // namespace inamata
+
+#endif

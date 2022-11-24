@@ -3,7 +3,7 @@
 #include "managers/services.h"
 #include "tasks/task_factory.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace tasks {
 namespace set_value {
 
@@ -82,4 +82,4 @@ BaseTask* SetValue::factory(const ServiceGetters& services,
 
 }  // namespace set_value
 }  // namespace tasks
-}  // namespace bernd_box
+}  // namespace inamata

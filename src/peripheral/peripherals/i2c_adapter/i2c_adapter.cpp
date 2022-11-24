@@ -1,8 +1,10 @@
+#ifdef ESP32
+
 #include "i2c_adapter.h"
 
 #include "peripheral/peripheral_factory.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace peripheral {
 namespace peripherals {
 namespace util {
@@ -70,4 +72,6 @@ bool I2CAdapter::registered_ =
 }  // namespace util
 }  // namespace peripherals
 }  // namespace peripheral
-}  // namespace bernd_box
+}  // namespace inamata
+
+#endif

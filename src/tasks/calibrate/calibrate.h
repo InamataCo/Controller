@@ -6,7 +6,7 @@
 #include "peripheral/capabilities/calibrate.h"
 #include "tasks/base_task.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace tasks {
 namespace calibrate {
 
@@ -30,4 +30,4 @@ class Calibrate : public BaseTask {
 
 }  // namespace calibrate
 }  // namespace tasks
-}  // namespace bernd_box
+}  // namespace inamata

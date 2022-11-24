@@ -8,7 +8,7 @@
 #include "peripheral/peripheral.h"
 #include "peripheral/peripherals/i2c_adapter/i2c_abstract_peripheral.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace peripheral {
 namespace peripherals {
 namespace bme280 {
@@ -65,4 +65,4 @@ class BME280 : public peripherals::i2c_adapter::I2CAbstractPeripheral,
 }  // namespace bme280
 }  // namespace peripherals
 }  // namespace peripheral
-}  // namespace bernd_box
+}  // namespace inamata

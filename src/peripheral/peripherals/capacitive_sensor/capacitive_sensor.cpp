@@ -1,9 +1,10 @@
+#ifdef ESP32
 #include "capacitive_sensor.h"
 
 #include "peripheral/peripheral_factory.h"
 #include "utils/value_unit.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace peripheral {
 namespace peripherals {
 namespace capacative_sensor {
@@ -37,9 +38,9 @@ capabilities::GetValues::Result CapacitiveSensor::getValues() {
               .data_point_type = data_point_type_}}};
 }
 
-const __FlashStringHelper* CapacitiveSensor::sense_pin_key_ = F("sense_pin");
+const __FlashStringHelper* CapacitiveSensor::sense_pin_key_ = FPSTR("sense_pin");
 const __FlashStringHelper* CapacitiveSensor::sense_pin_key_error_ =
-    F("Missing property: sense_pin (unsigned int)");
+    FPSTR("Missing property: sense_pin (unsigned int)");
 
 std::shared_ptr<Peripheral> CapacitiveSensor::factory(
     const ServiceGetters& services, const JsonObjectConst& parameters) {
@@ -55,4 +56,6 @@ bool CapacitiveSensor::capability_get_value_ =
 }  // namespace capacative_sensor
 }  // namespace peripherals
 }  // namespace peripheral
-}  // namespace bernd_box
+}  // namespace inamata
+
+#endif

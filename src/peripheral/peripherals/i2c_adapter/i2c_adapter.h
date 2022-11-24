@@ -5,7 +5,7 @@
 #include "managers/service_getters.h"
 #include "peripheral/peripheral.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace peripheral {
 namespace peripherals {
 namespace util {
@@ -41,4 +41,4 @@ class I2CAdapter : public Peripheral {
 }  // namespace util
 }  // namespace peripherals
 }  // namespace peripheral
-}  // namespace bernd_box
+}  // namespace inamata

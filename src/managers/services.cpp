@@ -2,7 +2,7 @@
 
 #include "configuration.h"
 
-namespace bernd_box {
+namespace inamata {
 
 Services::Services() {
   ServiceGetters getters = getGetters();
@@ -10,7 +10,9 @@ Services::Services() {
   peripheral_controller_.setServices(getters);
   task_controller_.setServices(getters);
   task_removal_task_.setServices(getters);
+  #ifdef ESP32
   ota_updater_.setServices(getters);
+  #endif
 }
 
 std::shared_ptr<Network> Services::getNetwork() { return network_; }
@@ -31,7 +33,9 @@ tasks::TaskController& Services::getTaskController() {
   return task_controller_;
 }
 
+#ifdef ESP32
 OtaUpdater& Services::getOtaUpdater() { return ota_updater_; }
+#endif
 
 Scheduler& Services::getScheduler() { return scheduler_; }
 
@@ -54,6 +58,8 @@ tasks::TaskController Services::task_controller_{scheduler_, task_factory_};
 
 tasks::TaskRemovalTask Services::task_removal_task_{scheduler_};
 
+#ifdef ESP32
 OtaUpdater Services::ota_updater_{scheduler_};
+#endif
 
-}  // namespace bernd_box
+}  // namespace inamata

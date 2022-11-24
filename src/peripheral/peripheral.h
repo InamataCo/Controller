@@ -1,12 +1,13 @@
 #pragma once
 
 #include <Arduino.h>
+#include <ArduinoJson.h>
 
 #include <array>
 
-#include "managers/io_types.h"
+#include "managers/types.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace peripheral {
 
 class TaskFactory;
@@ -21,7 +22,7 @@ class Peripheral {
    *
    * Overwritten by each concrete peripheral instantiation and used by the
    * peripheral polymorphism system.
-   * 
+   *
    * \return The name of the type
    */
   virtual const String& getType() const = 0;
@@ -42,7 +43,7 @@ class Peripheral {
 
   /**
    * Converts JsonVariant pin number to int
-   * 
+   *
    * \return Pin number on valid pin or -1 on error
    */
   static int toPin(JsonVariantConst pin);
@@ -78,4 +79,4 @@ class Peripheral {
 };
 
 }  // namespace peripheral
-}  // namespace bernd_box
+}  // namespace inamata

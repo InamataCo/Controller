@@ -9,7 +9,7 @@
 #include "utils/uuid.h"
 #include "utils/value_unit.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace peripheral {
 namespace capabilities {
 
@@ -39,4 +39,4 @@ class SetValue {
 
 }  // namespace capabilities
 }  // namespace peripheral
-}  // namespace bernd_box
+}  // namespace inamata

@@ -2,7 +2,7 @@
 
 #include "peripheral/peripherals/light_sensor/i2c_light_sensor.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace peripheral {
 namespace peripherals {
 namespace bh1750 {
@@ -15,4 +15,4 @@ class Bh1750Sensor : public light_sensor::I2CLightSensor {
 }
 }  // namespace peripherals
 }  // namespace peripheral
-}  // namespace bernd_box
+}  // namespace inamata

@@ -11,7 +11,7 @@
 #include "server.h"
 #include "utils/uuid.h"
 
-namespace bernd_box {
+namespace inamata {
 
 using namespace std::placeholders;
 
@@ -36,7 +36,7 @@ class WebSocket : public Server, private WebSocketsClient {
   };
 
   /**
-   * Connection to the SDG server over websockets.
+   * Connection to the Inamata server over websockets.
    *
    * This enables bi-directional communication between the controller and the
    * server while removing the intermediate such as the Coordinator over MQTT.
@@ -115,4 +115,4 @@ class WebSocket : public Server, private WebSocketsClient {
   String root_cas_;
 };
 
-}  // namespace bernd_box
+}  // namespace inamata

@@ -5,9 +5,13 @@
 
 #include <array>
 
+#ifdef ESP8266
+#include "esp8266_peri.h"
+#endif
+
 #include "managers/io_types.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace utils {
 
 /**
@@ -84,4 +88,4 @@ class UUID : public Printable {
 };
 
 }  // namespace utils
-}  // namespace bernd_box
+}  // namespace inamata

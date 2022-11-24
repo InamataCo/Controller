@@ -10,7 +10,7 @@
 #include "peripheral/peripheral.h"
 #include "utils/color.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace peripheral {
 namespace peripherals {
 namespace neo_pixel {
@@ -69,4 +69,4 @@ class NeoPixel : public Peripheral, public capabilities::LedStrip {
 }  // namespace neo_pixel
 }  // namespace peripherals
 }  // namespace peripheral
-}  // namespace bernd_box
+}  // namespace inamata

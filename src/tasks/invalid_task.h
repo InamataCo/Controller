@@ -2,7 +2,7 @@
 
 #include "base_task.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace tasks {
 
 class InvalidTask : public BaseTask {
@@ -33,4 +33,4 @@ class InvalidTask : public BaseTask {
 };
 
 }  // namespace tasks
-}  // namespace bernd_box
+}  // namespace inamata

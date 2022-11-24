@@ -1,6 +1,6 @@
 #include "start_measurement.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace peripheral {
 namespace capabilities {
 
@@ -33,4 +33,4 @@ std::set<String>& StartMeasurement::getSupportedTypes() {
 
 }  // namespace capabilities
 }  // namespace peripheral
-}  // namespace bernd_box
+}  // namespace inamata

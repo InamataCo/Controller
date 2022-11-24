@@ -8,7 +8,7 @@
 #include "tasks/get_values_task/get_values_task.h"
 #include "utils/value_unit.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace tasks {
 namespace alert_sensor {
 
@@ -90,4 +90,4 @@ class AlertSensor : public get_values_task::GetValuesTask {
 
 }  // namespace alert_sensor
 }  // namespace tasks
-}  // namespace bernd_box
+}  // namespace inamata

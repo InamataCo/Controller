@@ -2,7 +2,7 @@
 
 #include "peripheral/peripheral_factory.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace peripheral {
 namespace peripherals {
 namespace analog_out {
@@ -14,7 +14,7 @@ AnalogOut::AnalogOut(const ServiceGetters& services,
     setInvalid(services.server_nullptr_error_);
     return;
   }
-  
+
   // Get the pin # for the GPIO output and validate data. Invalidate on error
   int pin = toPin(parameters[pin_key_]);
   if (pin < 0) {
@@ -71,7 +71,11 @@ void AnalogOut::setValue(utils::ValueUnit value_unit) {
   const float clamped_value =
       std::fmax(0, std::fmin(value_unit.value, max_value));
   const float dac_value = clamped_value * 255.0 / max_value;
+#ifdef ESP32
   dacWrite(pin_, dac_value);
+#else
+  analogWrite(pin_, dac_value);
+#endif
 }
 
 std::shared_ptr<Peripheral> AnalogOut::factory(
@@ -85,20 +89,20 @@ bool AnalogOut::registered_ =
 bool AnalogOut::capability_set_value_ =
     capabilities::SetValue::registerType(type());
 
-const __FlashStringHelper* AnalogOut::pin_key_ = F("pin");
+const __FlashStringHelper* AnalogOut::pin_key_ = FPSTR("pin");
 const __FlashStringHelper* AnalogOut::pin_key_error_ =
-    F("Missing property: pin (unsigned int)");
+    FPSTR("Missing property: pin (unsigned int)");
 const __FlashStringHelper* AnalogOut::invalid_pin_error_ =
-    F("Pin # not valid (only 25, 26)");
+    FPSTR("Pin # not valid (only 25, 26)");
 
 const __FlashStringHelper* AnalogOut::voltage_data_point_type_key_ =
-    F("voltage_data_point_type");
+    FPSTR("voltage_data_point_type");
 const __FlashStringHelper* AnalogOut::percent_data_point_type_key_ =
-    F("percent_data_point_type");
+    FPSTR("percent_data_point_type");
 const __FlashStringHelper* AnalogOut::data_point_type_key_error_ =
-    F("Missing property: data_point_type (UUID)");
+    FPSTR("Missing property: data_point_type (UUID)");
 
 }  // namespace analog_out
 }  // namespace peripherals
 }  // namespace peripheral
-}  // namespace bernd_box
+}  // namespace inamata

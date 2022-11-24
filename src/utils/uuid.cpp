@@ -1,11 +1,16 @@
 #include "uuid.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace utils {
 
 UUID::UUID() {
   for (int i = 0; i < 16; i += 4) {
+#ifdef ESP32
     uint32_t random = esp_random();
+#elif ESP8266
+    uint32_t random = RANDOM_REG32;
+#endif
+
     memcpy(&buffer_[i], &random, 4);
   }
 
@@ -124,4 +129,4 @@ bool UUID::isValid() const {
 }
 
 }  // namespace utils
-}  // namespace bernd_box
+}  // namespace inamata

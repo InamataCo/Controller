@@ -5,7 +5,7 @@
 #include "managers/io.h"
 #include "managers/mqtt.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace tasks {
 
 class DissolvedOxygenSensor : public Task {
@@ -93,4 +93,4 @@ class DissolvedOxygenSensor : public Task {
 };
 
 }  // namespace tasks
-}  // namespace bernd_box
+}  // namespace inamata

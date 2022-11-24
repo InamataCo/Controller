@@ -11,7 +11,7 @@
 
 #include "managers/types.h"
 
-namespace bernd_box {
+namespace inamata {
 
 // Connectivity
 extern const std::chrono::milliseconds check_connectivity_period;
@@ -23,4 +23,4 @@ extern const std::chrono::seconds wifi_connect_timeout;
 extern const std::chrono::seconds server_connect_timeout;
 
 
-}  // namespace bernd_box
+}  // namespace inamata

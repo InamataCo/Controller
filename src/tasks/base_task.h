@@ -6,10 +6,10 @@
 #include <functional>
 #include <set>
 
-#include "managers/io_types.h"
+#include "managers/types.h"
 #include "utils/uuid.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace tasks {
 
 class BaseTask : public Task {
@@ -169,4 +169,4 @@ class BaseTask : public Task {
 };
 
 }  // namespace tasks
-}  // namespace bernd_box
+}  // namespace inamata

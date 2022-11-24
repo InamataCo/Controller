@@ -4,7 +4,7 @@
 
 #include "utils/uuid.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace utils {
 
 struct ValueUnit {
@@ -39,4 +39,4 @@ struct ValueUnit {
 };
 
 }  // namespace utils
-}  // namespace bernd_box
+}  // namespace inamata

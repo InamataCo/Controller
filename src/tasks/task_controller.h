@@ -8,7 +8,7 @@
 #include "managers/service_getters.h"
 #include "task_factory.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace tasks {
 
 /**
@@ -98,4 +98,4 @@ class TaskController {
   static const String task_type_system_task_;
 };
 }  // namespace tasks
-}  // namespace bernd_box
+}  // namespace inamata

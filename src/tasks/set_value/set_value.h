@@ -8,7 +8,7 @@
 #include "peripheral/capabilities/set_value.h"
 #include "tasks/base_task.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace tasks {
 namespace set_value {
 
@@ -35,4 +35,4 @@ class SetValue : public BaseTask {
 
 }  // namespace set_value
 }  // namespace tasks
-}  // namespace bernd_box
+}  // namespace inamata

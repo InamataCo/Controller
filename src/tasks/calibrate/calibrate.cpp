@@ -1,6 +1,6 @@
 #include "calibrate.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace tasks {
 namespace calibrate {
 
@@ -72,4 +72,4 @@ bool Calibrate::TaskCallback() {
 
 }  // namespace calibrate
 }  // namespace tasks
-}  // namespace bernd_box
+}  // namespace inamata

@@ -1,6 +1,6 @@
 #include "dissolved_oxygen_sensor.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace tasks {
 DissolvedOxygenSensor::DissolvedOxygenSensor(Scheduler* scheduler, Io& io,
                                              Mqtt& mqtt)
@@ -142,4 +142,4 @@ void DissolvedOxygenSensor::OnDisable() {
 }
 
 }  // namespace tasks
-}  // namespace bernd_box
+}  // namespace inamata

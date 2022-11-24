@@ -2,7 +2,7 @@
 
 #include "peripheral/peripheral_factory.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace peripheral {
 namespace peripherals {
 namespace digital_out {
@@ -96,19 +96,19 @@ bool DigitalOut::registered_ =
 bool DigitalOut::capability_set_value_ =
     capabilities::SetValue::registerType(type());
 
-const __FlashStringHelper* DigitalOut::pin_key_ = F("pin");
+const __FlashStringHelper* DigitalOut::pin_key_ = FPSTR("pin");
 const __FlashStringHelper* DigitalOut::pin_key_error_ =
-    F("Missing property: pin (unsigned int)");
+    FPSTR("Missing property: pin (unsigned int)");
 
-const __FlashStringHelper* DigitalOut::initial_state_key_ = F("initial_state");
+const __FlashStringHelper* DigitalOut::initial_state_key_ = FPSTR("initial_state");
 const __FlashStringHelper* DigitalOut::initial_state_key_error_ =
-    F("Wrong property: initial_state (bool)");
+    FPSTR("Wrong property: initial_state (bool)");
 
-const __FlashStringHelper* DigitalOut::active_low_key_ = F("active_low");
+const __FlashStringHelper* DigitalOut::active_low_key_ = FPSTR("active_low");
 const __FlashStringHelper* DigitalOut::active_low_key_error_ =
-    F("Wrong property: active_low (bool)");
+    FPSTR("Wrong property: active_low (bool)");
 
 }  // namespace digital_out
 }  // namespace peripherals
 }  // namespace peripheral
-}  // namespace bernd_box
+}  // namespace inamata

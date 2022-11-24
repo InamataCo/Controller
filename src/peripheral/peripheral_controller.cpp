@@ -1,6 +1,6 @@
 #include "peripheral_controller.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace peripheral {
 
 PeripheralController::PeripheralController(
@@ -147,13 +147,14 @@ void PeripheralController::addResultEntry(const JsonVariantConst& uuid,
 }
 
 const __FlashStringHelper* PeripheralController::peripheral_command_key_ =
-    F("peripheral");
-const __FlashStringHelper* PeripheralController::uuid_key_ = F("uuid");
+    FPSTR("peripheral");
+const __FlashStringHelper* PeripheralController::uuid_key_ = FPSTR("uuid");
 const __FlashStringHelper* PeripheralController::uuid_key_error_ =
-    F("Missing property: uuid (uuid)");
-const __FlashStringHelper* PeripheralController::add_command_key_ = F("add");
+    FPSTR("Missing property: uuid (uuid)");
+const __FlashStringHelper* PeripheralController::add_command_key_ =
+    FPSTR("add");
 const __FlashStringHelper* PeripheralController::remove_command_key_ =
-    F("remove");
+    FPSTR("remove");
 
 }  // namespace peripheral
-}  // namespace bernd_box
+}  // namespace inamata

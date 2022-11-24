@@ -2,7 +2,7 @@
 
 #include "tasks/task_factory.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace tasks {
 namespace read_sensor {
 
@@ -90,4 +90,4 @@ BaseTask* ReadSensor::factory(const ServiceGetters& services,
 
 }  // namespace read_sensor
 }  // namespace tasks
-}  // namespace bernd_box
+}  // namespace inamata

@@ -6,13 +6,13 @@
 
 //----------------------------------------------------------------------------
 // Global instances
-bernd_box::Services services;
+inamata::Services services;
 Scheduler& scheduler = services.getScheduler();
 
 //----------------------------------------------------------------------------
 // Setup and loop functions
 void setup() {
-  bool success = bernd_box::setupNode(services);
+  bool success = inamata::setupNode(services);
   if (success) {
     Serial.println(F("Setup finished"));
   } else {

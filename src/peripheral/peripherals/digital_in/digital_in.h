@@ -6,7 +6,7 @@
 #include "peripheral/capabilities/get_values.h"
 #include "peripheral/peripheral.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace peripheral {
 namespace peripherals {
 namespace digital_in {
@@ -55,4 +55,4 @@ class DigitalIn : public Peripheral, public capabilities::GetValues {
 }  // namespace digital_in
 }  // namespace peripherals
 }  // namespace peripheral
-}  // namespace bernd_box
+}  // namespace inamata

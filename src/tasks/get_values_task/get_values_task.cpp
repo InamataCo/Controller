@@ -3,7 +3,7 @@
 #include "managers/services.h"
 #include "peripheral/peripheral.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace tasks {
 namespace get_values_task {
 
@@ -72,19 +72,19 @@ ErrorResult GetValuesTask::makeTelemetryJson(JsonObject& telemetry) {
   return ErrorResult();
 }
 
-const __FlashStringHelper* GetValuesTask::threshold_key_ = F("threshold");
+const __FlashStringHelper* GetValuesTask::threshold_key_ = FPSTR("threshold");
 const __FlashStringHelper* GetValuesTask::threshold_key_error_ =
-    F("Missing property: threshold (int)");
-const __FlashStringHelper* GetValuesTask::trigger_type_key_ = F("trigger_type");
+    FPSTR("Missing property: threshold (int)");
+const __FlashStringHelper* GetValuesTask::trigger_type_key_ = FPSTR("trigger_type");
 const __FlashStringHelper* GetValuesTask::trigger_type_key_error_ =
-    F("Missing property: trigger_type (string)");
-const __FlashStringHelper* GetValuesTask::interval_ms_key_ = F("interval_ms");
+    FPSTR("Missing property: trigger_type (string)");
+const __FlashStringHelper* GetValuesTask::interval_ms_key_ = FPSTR("interval_ms");
 const __FlashStringHelper* GetValuesTask::interval_ms_key_error_ =
-    F("Missing property: interval_ms (unsigned int)");
-const __FlashStringHelper* GetValuesTask::duration_ms_key_ = F("duration_ms");
+    FPSTR("Missing property: interval_ms (unsigned int)");
+const __FlashStringHelper* GetValuesTask::duration_ms_key_ = FPSTR("duration_ms");
 const __FlashStringHelper* GetValuesTask::duration_ms_key_error_ =
-    F("Wrong type for optional property: duration_ms (unsigned int)");
+    FPSTR("Wrong type for optional property: duration_ms (unsigned int)");
 
 }  // namespace get_values_task
 }  // namespace tasks
-}  // namespace bernd_box
+}  // namespace inamata

@@ -1,6 +1,6 @@
 #include "error_store.h"
 
-namespace bernd_box {
+namespace inamata {
 
 String ErrorStore::genMissingProperty(String key, KeyType key_type) {
   String key_type_string;
@@ -32,10 +32,10 @@ String ErrorStore::genMissingProperty(String key, KeyType key_type) {
 }
 
 const __FlashStringHelper* ErrorStore::missing_property_prefix_ =
-    F("Missing property: ");
-const __FlashStringHelper* ErrorStore::uuid_type_ = F("uuid");
-const __FlashStringHelper* ErrorStore::uint32_t_type_ = F("uint32_t");
-const __FlashStringHelper* ErrorStore::string_type_ = F("string");
-const __FlashStringHelper* ErrorStore::bool_type_ = F("bool");
+    FPSTR("Missing property: ");
+const __FlashStringHelper* ErrorStore::uuid_type_ = FPSTR("uuid");
+const __FlashStringHelper* ErrorStore::uint32_t_type_ = FPSTR("uint32_t");
+const __FlashStringHelper* ErrorStore::string_type_ = FPSTR("string");
+const __FlashStringHelper* ErrorStore::bool_type_ = FPSTR("bool");
 
-}  // namespace bernd_box
+}  // namespace inamata

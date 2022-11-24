@@ -12,7 +12,7 @@
 #include "peripheral/peripheral_factory.h"
 #include "utils/uuid.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace peripheral {
 
 class PeripheralController {
@@ -76,4 +76,4 @@ class PeripheralController {
 };
 
 }  // namespace peripheral
-}  // namespace bernd_box
+}  // namespace inamata

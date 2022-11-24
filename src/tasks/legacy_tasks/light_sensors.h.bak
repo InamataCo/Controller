@@ -4,7 +4,7 @@
 #include "managers/mqtt.h"
 #include "TaskSchedulerDeclarations.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace tasks {
 
 /**
@@ -49,4 +49,4 @@ class LightSensors : public Task {
 };
 
 }  // namespace tasks
-}  // namespace bernd_box
+}  // namespace inamata

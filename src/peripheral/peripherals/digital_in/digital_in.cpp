@@ -2,7 +2,7 @@
 
 #include "peripheral/peripheral_factory.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace peripheral {
 namespace peripherals {
 namespace digital_in {
@@ -34,7 +34,11 @@ DigitalIn::DigitalIn(const JsonObjectConst& parameters) {
   } else if (input_type == input_type_pullup) {
     pinMode(pin_, INPUT_PULLUP);
   } else if (input_type == input_type_pulldown) {
+#ifdef ESP32
     pinMode(pin_, INPUT_PULLDOWN);
+#else
+    pinMode(pin_, INPUT_PULLDOWN_16);
+#endif
   } else {
     setInvalid(input_type_key_error_);
     return;
@@ -65,18 +69,18 @@ bool DigitalIn::registered_ =
 bool DigitalIn::capability_get_values_ =
     capabilities::GetValues::registerType(type());
 
-const __FlashStringHelper* DigitalIn::pin_key_ = F("pin");
+const __FlashStringHelper* DigitalIn::pin_key_ = FPSTR("pin");
 const __FlashStringHelper* DigitalIn::pin_key_error_ =
-    F("Missing property: pin (unsigned int)");
+    FPSTR("Missing property: pin (unsigned int)");
 
-const __FlashStringHelper* DigitalIn::input_type_key_ = F("input_type");
+const __FlashStringHelper* DigitalIn::input_type_key_ = FPSTR("input_type");
 const __FlashStringHelper* DigitalIn::input_type_key_error_ =
-    F("Missing property: input_type (str)");
-const __FlashStringHelper* DigitalIn::input_type_floating = F("floating");
-const __FlashStringHelper* DigitalIn::input_type_pullup = F("pullup");
-const __FlashStringHelper* DigitalIn::input_type_pulldown = F("pulldown");
+    FPSTR("Missing property: input_type (str)");
+const __FlashStringHelper* DigitalIn::input_type_floating = FPSTR("floating");
+const __FlashStringHelper* DigitalIn::input_type_pullup = FPSTR("pullup");
+const __FlashStringHelper* DigitalIn::input_type_pulldown = FPSTR("pulldown");
 
 }  // namespace digital_in
 }  // namespace peripherals
 }  // namespace peripheral
-}  // namespace bernd_box
+}  // namespace inamata

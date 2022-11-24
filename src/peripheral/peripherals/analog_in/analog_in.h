@@ -8,7 +8,7 @@
 #include "peripheral/capabilities/get_values.h"
 #include "peripheral/peripheral.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace peripheral {
 namespace peripherals {
 namespace analog_in {
@@ -58,4 +58,4 @@ class AnalogIn : public Peripheral, public capabilities::GetValues {
 }  // namespace analog_in
 }  // namespace peripherals
 }  // namespace peripheral
-}  // namespace bernd_box
+}  // namespace inamata

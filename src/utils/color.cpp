@@ -1,6 +1,6 @@
 #include "color.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace utils {
 
 size_t Color::printTo(Print& p) const {
@@ -31,4 +31,4 @@ uint8_t Color::getBlue() const { return wrgb_ & 0x000000FF; }
 uint8_t Color::getWhite() const { return (wrgb_ & 0xFF000000) >> 24; }
 
 }  // namespace utils
-}  // namespace bernd_box
+}  // namespace inamata

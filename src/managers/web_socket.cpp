@@ -1,8 +1,10 @@
 #include "web_socket.h"
 
+#ifdef ESP32
 #include <esp_tls.h>
+#endif
 
-namespace bernd_box {
+namespace inamata {
 
 WebSocket::WebSocket(const WebSocket::Config& config, String&& root_cas)
     : get_peripheral_ids_(config.get_peripheral_ids),
@@ -300,6 +302,6 @@ void WebSocket::restartOnUnimplementedFunction() {
   abort();
 }
 
-const __FlashStringHelper* WebSocket::firmware_version_ = F(FIRMWARE_VERSION);
+const __FlashStringHelper* WebSocket::firmware_version_ = FPSTR(FIRMWARE_VERSION);
 
-}  // namespace bernd_box
+}  // namespace inamata

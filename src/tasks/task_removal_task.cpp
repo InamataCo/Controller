@@ -7,7 +7,7 @@
 
 #include "tasks/task_controller.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace tasks {
 
 TaskRemovalTask::TaskRemovalTask(Scheduler& scheduler) : Task(&scheduler) {
@@ -72,4 +72,4 @@ bool TaskRemovalTask::Callback() {
 }
 
 }  // namespace tasks
-}  // namespace bernd_box
+}  // namespace inamata

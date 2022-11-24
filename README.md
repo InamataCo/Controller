@@ -1,6 +1,6 @@
-# ![Togayo Controller](./doc/images/header-logo.png)
+# ![Inamata Controller](./doc/images/header-logo.png)
 
-This firmware interfaces with sensors and peripherals and connects to the server. It allows users to dynamically add and remove connected peripherals. The created peripherals can then be read from and commanded via the server. A dashboard for this is currently implemented in a [Node-RED flow][1].
+This firmware interfaces with sensors and peripherals and connects to the server. It allows users to dynamically add and remove connected peripherals. The created peripherals can then be read from and commanded via the server.
 
 ## Supported Hardware
 
@@ -59,5 +59,3 @@ Commands to create an LED and turn it on:
 ## Formatting
 
 The Google C++ code style is used. It is recommended to use clang-format to automatically format your code with the provided `.clang-format` file.
-
-[1]: https://github.com/protohaus/sdg-server/tree/main/node-red-demo

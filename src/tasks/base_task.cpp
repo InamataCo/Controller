@@ -1,6 +1,6 @@
 #include "base_task.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace tasks {
 
 BaseTask::BaseTask(Scheduler& scheduler, utils::UUID task_id)
@@ -72,9 +72,7 @@ ErrorResult BaseTask::getError() const {
 
 const utils::UUID& BaseTask::getTaskID() const { return task_id_; }
 
-bool BaseTask::isSystemTask() const {
-  return !task_id_.isValid();
-}
+bool BaseTask::isSystemTask() const { return !task_id_.isValid(); }
 
 void BaseTask::setTaskRemovalCallback(std::function<void(Task&)> callback) {
   task_removal_callback_ = callback;
@@ -93,16 +91,16 @@ String BaseTask::peripheralNotFoundError(const utils::UUID& uuid) {
   return error;
 }
 
-const __FlashStringHelper* BaseTask::peripheral_key_ = F("peripheral");
+const __FlashStringHelper* BaseTask::peripheral_key_ = FPSTR("peripheral");
 const __FlashStringHelper* BaseTask::peripheral_key_error_ =
-    F("Missing property: peripheral (uuid)");
+    FPSTR("Missing property: peripheral (uuid)");
 const __FlashStringHelper* BaseTask::peripheral_not_found_error_ =
-    F("Could not find peripheral: ");
-const __FlashStringHelper* BaseTask::task_id_key_ = F("uuid");
+    FPSTR("Could not find peripheral: ");
+const __FlashStringHelper* BaseTask::task_id_key_ = FPSTR("uuid");
 const __FlashStringHelper* BaseTask::task_id_key_error_ =
-    F("Missing property: uuid (uuid)");
+    FPSTR("Missing property: uuid (uuid)");
 
 std::function<void(Task&)> BaseTask::task_removal_callback_ = nullptr;
 
 }  // namespace tasks
-}  // namespace bernd_box
+}  // namespace inamata

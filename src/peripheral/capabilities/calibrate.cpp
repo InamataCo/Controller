@@ -1,6 +1,6 @@
 #include "calibrate.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace peripheral {
 namespace capabilities {
 
@@ -31,4 +31,4 @@ std::set<String>& Calibrate::getSupportedTypes() {
 
 }  // namespace capabilities
 }  // namespace peripheral
-}  // namespace bernd_box
+}  // namespace inamata

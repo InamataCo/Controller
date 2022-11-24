@@ -7,7 +7,7 @@
 #include "managers/service_getters.h"
 #include "tasks/base_task.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace tasks {
 namespace system_monitor {
 
@@ -55,4 +55,4 @@ class SystemMonitor : public BaseTask {
 
 }  // namespace system_monitor
 }  // namespace tasks
-}  // namespace bernd_box
+}  // namespace inamata

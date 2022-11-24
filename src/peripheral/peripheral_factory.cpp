@@ -2,7 +2,7 @@
 
 #include "peripheral/invalid_peripheral.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace peripheral {
 
 bool PeripheralFactory::registerFactory(const String& name, Callback factory) {
@@ -49,9 +49,9 @@ String PeripheralFactory::unknownTypeError(const String& type) {
   return error;
 }
 
-const __FlashStringHelper* PeripheralFactory::type_key_ = F("type");
+const __FlashStringHelper* PeripheralFactory::type_key_ = FPSTR("type");
 const __FlashStringHelper* PeripheralFactory::type_key_error_ =
-    F("Missing property: type (string)");
+    FPSTR("Missing property: type (string)");
 
 }  // namespace peripheral
-}  // namespace bernd_box
+}  // namespace inamata

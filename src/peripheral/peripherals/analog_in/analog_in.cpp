@@ -2,7 +2,7 @@
 
 #include "peripheral/peripheral_factory.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace peripheral {
 namespace peripherals {
 namespace analog_in {
@@ -73,21 +73,21 @@ bool AnalogIn::capability_get_values_ =
 const std::array<uint8_t, 8> AnalogIn::valid_pins_ = {
     32, 33, 34, 35, 36, 37, 38, 39,
 };
-const __FlashStringHelper* AnalogIn::pin_key_ = F("pin");
+const __FlashStringHelper* AnalogIn::pin_key_ = FPSTR("pin");
 const __FlashStringHelper* AnalogIn::pin_key_error_ =
-    F("Missing property: pin (unsigned int)");
+    FPSTR("Missing property: pin (unsigned int)");
 const __FlashStringHelper* AnalogIn::invalid_pin_error_ =
-    F("Pin # not valid (only ADC1: 32 - 39)");
+    FPSTR("Pin # not valid (only ADC1: 32 - 39)");
 
 const __FlashStringHelper* AnalogIn::voltage_data_point_type_key_ =
-    F("voltage_data_point_type");
+    FPSTR("voltage_data_point_type");
 const __FlashStringHelper* AnalogIn::percent_data_point_type_key_ =
-    F("percent_data_point_type");
+    FPSTR("percent_data_point_type");
 const __FlashStringHelper* AnalogIn::data_point_type_key_error_ =
-    F("Missing property: voltage_data_point_type (UUID) or "
+    FPSTR("Missing property: voltage_data_point_type (UUID) or "
       "percent_data_point_type (UUID)");
 
 }  // namespace analog_in
 }  // namespace peripherals
 }  // namespace peripheral
-}  // namespace bernd_box
+}  // namespace inamata

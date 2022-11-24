@@ -5,7 +5,7 @@
 #include "managers/service_getters.h"
 #include "peripheral/peripheral.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace peripheral {
 
 class InvalidPeripheral : public Peripheral {
@@ -25,4 +25,4 @@ class InvalidPeripheral : public Peripheral {
 };
 
 }  // namespace peripheral
-}  // namespace bernd_box
+}  // namespace inamata

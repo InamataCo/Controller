@@ -2,13 +2,14 @@
 
 #include <TaskSchedulerDeclarations.h>
 
+#include <chrono>
 #include <limits>
 
 #include "managers/service_getters.h"
 #include "tasks/base_task.h"
 #include "utils/chrono_abs.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace tasks {
 namespace connectivity {
 
@@ -57,6 +58,9 @@ class CheckConnectivity : public BaseTask {
   std::shared_ptr<Network> network_;
   std::shared_ptr<Server> server_;
 
+  std::chrono::steady_clock::time_point wifi_connect_start_ =
+      std::chrono::steady_clock::time_point::min();
+
   /// Last time the internet time was checked
   std::chrono::steady_clock::time_point last_time_check_ =
       std::chrono::steady_clock::time_point::max();
@@ -66,4 +70,4 @@ class CheckConnectivity : public BaseTask {
 
 }  // namespace connectivity
 }  // namespace tasks
-}  // namespace bernd_box
+}  // namespace inamata

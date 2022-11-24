@@ -2,7 +2,7 @@
 
 #include "invalid_task.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace tasks {
 
 TaskFactory::TaskFactory(Scheduler& scheduler) : scheduler_(scheduler) {}
@@ -54,5 +54,9 @@ String TaskFactory::invalidFactoryTypeError(const String& type) {
   return error;
 }
 
+const __FlashStringHelper* TaskFactory::type_key_ = FPSTR("type");
+const __FlashStringHelper* TaskFactory::type_key_error_ =
+    FPSTR("Missing property: type (string)");
+
 }  // namespace tasks
-}  // namespace bernd_box
+}  // namespace inamata

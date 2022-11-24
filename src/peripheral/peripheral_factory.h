@@ -10,7 +10,7 @@
 #include "managers/service_getters.h"
 #include "peripheral/peripheral.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace peripheral {
 
 class PeripheralFactory {
@@ -38,4 +38,4 @@ class PeripheralFactory {
 };
 
 }  // namespace peripheral
-}  // namespace bernd_box
+}  // namespace inamata

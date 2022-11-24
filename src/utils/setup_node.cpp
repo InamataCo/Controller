@@ -1,13 +1,12 @@
 #include "setup_node.h"
 
-#include <FS.h>
-#include <SPIFFS.h>
-
 #include "managers/web_socket.h"
 #include "tasks/connectivity/connectivity.h"
+#ifdef ESP32
 #include "tasks/system_monitor/system_monitor.h"
+#endif
 
-namespace bernd_box {
+namespace inamata {
 
 bool loadNetwork(Services& services, JsonObjectConst secrets) {
   JsonArrayConst wifi_aps_doc = secrets[F("wifi_aps")];
@@ -17,11 +16,13 @@ bool loadNetwork(Services& services, JsonObjectConst secrets) {
   }
   std::vector<WiFiAP> wifi_aps;
   for (const JsonObjectConst i : wifi_aps_doc) {
-    wifi_aps.emplace_back(
-        WiFiAP{.ssid = i[F("ssid")].as<const char*>(),
-               .password = i[F("password")].as<const char*>()});
+    wifi_aps.emplace_back(WiFiAP{.ssid = i[F("ssid")].as<const char*>(),
+                                 .password = i[F("password")].as<const char*>(),
+                                 .id = -1,
+                                 .failed_connecting = false});
   }
-  services.setNetwork(std::make_shared<Network>(wifi_aps));
+  String controller_name = secrets[F("name")].as<const char*>();
+  services.setNetwork(std::make_shared<Network>(wifi_aps, controller_name));
   return true;
 }
 
@@ -55,7 +56,7 @@ bool loadWebsocket(Services& services, JsonObjectConst secrets) {
 
   // Load the root certificate authority files for TLS encryption
   String root_cas;
-  fs::File root_cas_file = SPIFFS.open("/root_cas.pem", FILE_READ);
+  fs::File root_cas_file = LittleFS.open("/root_cas.pem", "r");
   if (root_cas_file) {
     root_cas.reserve(root_cas_file.size());
     while (root_cas_file.available()) {
@@ -68,7 +69,9 @@ bool loadWebsocket(Services& services, JsonObjectConst secrets) {
   peripheral::PeripheralController& peripheral_controller =
       services.getPeripheralController();
   tasks::TaskController& task_controller = services.getTaskController();
+#ifdef ESP32
   OtaUpdater& ota_updater = services.getOtaUpdater();
+#endif
 
   // Create a websocket instance as the server interface
   WebSocket::Config config{
@@ -82,8 +85,10 @@ bool loadWebsocket(Services& services, JsonObjectConst secrets) {
           std::bind(&tasks::TaskController::getTaskIDs, &task_controller),
       .task_controller_callback = std::bind(
           &tasks::TaskController::handleCallback, &task_controller, _1),
+#ifdef ESP32
       .ota_update_callback =
           std::bind(&OtaUpdater::handleCallback, &ota_updater, _1),
+#endif
       .core_domain = core_domain.as<const char*>(),
       .ws_token = ws_token.as<const char*>(),
       .secure_url = secure_url};
@@ -98,8 +103,10 @@ bool createSystemTasks(Services& services) {
   // Create the system tasks
   tasks.push_back(new tasks::connectivity::CheckConnectivity(
       services.getGetters(), services.getScheduler()));
+#ifdef ESP32
   tasks.push_back(new tasks::system_monitor::SystemMonitor(
       services.getGetters(), services.getScheduler()));
+#endif
 
   // Check if they were created, enable them and check if they started
   for (tasks::BaseTask* task : tasks) {
@@ -118,8 +125,6 @@ bool createSystemTasks(Services& services) {
 }
 
 bool setupNode(Services& services) {
-  bool format_spiffs_if_failed = false;
-
   // Enable serial communication and prints
   Serial.begin(115200);
   Serial.print(F("Fimware version: "));
@@ -127,13 +132,13 @@ bool setupNode(Services& services) {
   WiFi.begin();
 
   // Initialize the file system
-  if (!SPIFFS.begin(format_spiffs_if_failed)) {
+  if (!LittleFS.begin()) {
     Serial.println(F("Failed mounting SPIFFS"));
     return false;
   }
 
   // Load a common config file for the subsystems
-  fs::File secrets_file = SPIFFS.open("/secrets.json", FILE_READ);
+  fs::File secrets_file = LittleFS.open("/secrets.json", "r");
   if (!secrets_file) {
     Serial.println(F("Failed opening secrets.json"));
     return false;
@@ -162,4 +167,4 @@ bool setupNode(Services& services) {
   return true;
 }
 
-}  // namespace bernd_box
+}  // namespace inamata

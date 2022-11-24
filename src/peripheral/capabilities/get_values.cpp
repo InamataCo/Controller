@@ -1,6 +1,6 @@
 #include "get_values.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace peripheral {
 namespace capabilities {
 
@@ -24,7 +24,7 @@ String GetValues::invalidTypeError(const utils::UUID& uuid,
   return error;
 }
 
-const __FlashStringHelper* GetValues::get_values_error_ = F("GetValues error");
+const __FlashStringHelper* GetValues::get_values_error_ = FPSTR("GetValues error");
 
 std::set<String>& GetValues::getSupportedTypes() {
   static std::set<String> supported_types;
@@ -33,4 +33,4 @@ std::set<String>& GetValues::getSupportedTypes() {
 
 }  // namespace capabilities
 }  // namespace peripheral
-}  // namespace bernd_box
+}  // namespace inamata

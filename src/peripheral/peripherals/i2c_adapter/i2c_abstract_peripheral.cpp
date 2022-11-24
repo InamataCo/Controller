@@ -2,7 +2,7 @@
 
 #include "managers/services.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace peripheral {
 namespace peripherals {
 namespace i2c_adapter {
@@ -50,15 +50,15 @@ String I2CAbstractPeripheral::invalidI2CAdapterError(const utils::UUID& uuid,
 }
 
 const __FlashStringHelper* I2CAbstractPeripheral::i2c_address_key_ =
-    F("i2c_address");
+    FPSTR("i2c_address");
 const __FlashStringHelper* I2CAbstractPeripheral::i2c_address_key_error_ =
-    F("Missing property: i2c_address (uint16_t)");
+    FPSTR("Missing property: i2c_address (uint16_t)");
 const __FlashStringHelper* I2CAbstractPeripheral::i2c_adapter_key_ =
-    F("i2c_adapter");
+    FPSTR("i2c_adapter");
 const __FlashStringHelper* I2CAbstractPeripheral::i2c_adapter_key_error_ =
-    F("Missing property: i2c_adapter (uuid)");
+    FPSTR("Missing property: i2c_adapter (uuid)");
 
 }  // namespace i2c_adapter
 }  // namespace peripherals
 }  // namespace peripheral
-}  // namespace bernd_box
+}  // namespace inamata

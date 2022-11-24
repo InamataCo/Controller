@@ -4,10 +4,10 @@
 #include <WiFiUdp.h>
 #include <ArduinoOTA.h>
 
-namespace sdg {
+namespace inamata {
 
 void setup_ota(const char* hostname, const char* password);
 
 void handle_ota();
 
-}  // namespace sdg
+}  // namespace inamata

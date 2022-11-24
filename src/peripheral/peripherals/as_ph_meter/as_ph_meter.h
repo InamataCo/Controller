@@ -7,7 +7,7 @@
 #include "peripheral/capabilities/start_measurement.h"
 #include "peripheral/peripherals/i2c_adapter/i2c_abstract_peripheral.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace peripheral {
 namespace peripherals {
 namespace as_ph_meter {
@@ -88,4 +88,4 @@ class AsPhMeterI2C : public peripherals::i2c_adapter::I2CAbstractPeripheral,
 }  // namespace as_rtd_meter
 }  // namespace peripherals
 }  // namespace peripheral
-}  // namespace bernd_box
+}  // namespace inamata

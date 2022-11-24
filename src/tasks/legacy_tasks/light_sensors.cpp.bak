@@ -3,7 +3,7 @@
 #include <array>
 #include <type_traits>
 
-namespace bernd_box {
+namespace inamata {
 namespace tasks {
 
 template <typename T, std::size_t N>
@@ -212,4 +212,4 @@ Result LightSensors::addSensor(const JsonObjectConst& doc) {
 }
 
 }  // namespace tasks
-}  // namespace bernd_box
+}  // namespace inamata

@@ -10,7 +10,7 @@
 #include "utils/color.h"
 #include "utils/uuid.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace tasks {
 namespace set_rgb_led {
 
@@ -50,4 +50,4 @@ class SetRgbLed : public BaseTask {
 
 }  // namespace set_rgb_led
 }  // namespace tasks
-}  // namespace bernd_box
+}  // namespace inamata

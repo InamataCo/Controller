@@ -8,7 +8,7 @@
 #include "peripheral/capabilities/start_measurement.h"
 #include "tasks/get_values_task/get_values_task.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace tasks {
 namespace poll_sensor {
 
@@ -52,4 +52,4 @@ class PollSensor : public get_values_task::GetValuesTask {
 
 }  // namespace poll_sensor
 }  // namespace tasks
-}  // namespace bernd_box
+}  // namespace inamata

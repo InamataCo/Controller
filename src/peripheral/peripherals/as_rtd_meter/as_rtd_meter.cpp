@@ -1,8 +1,9 @@
+#ifndef MINIMAL_BUILD
 #include "as_rtd_meter.h"
 
 #include "peripheral/peripheral_factory.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace peripheral {
 namespace peripherals {
 namespace as_rtd_meter {
@@ -108,9 +109,11 @@ bool AsRtdMeterI2C::capability_get_values_ =
 bool AsRtdMeterI2C::capability_start_measurement_ =
     capabilities::StartMeasurement::registerType(type());
 
-const __FlashStringHelper* AsRtdMeterI2C::sleep_code_ = F("Sleep");
+const __FlashStringHelper* AsRtdMeterI2C::sleep_code_ = FPSTR("Sleep");
 
 }  // namespace as_rtd_meter
 }  // namespace peripherals
 }  // namespace peripheral
-}  // namespace bernd_box
+}  // namespace inamata
+
+#endif

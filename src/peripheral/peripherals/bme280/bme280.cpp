@@ -1,8 +1,9 @@
+#ifndef MINIMAL_BUILD
 #include "bme280.h"
 
 #include "peripheral/peripheral_factory.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace peripheral {
 namespace peripherals {
 namespace bme280 {
@@ -112,24 +113,26 @@ bool BME280::capability_get_values_ =
     capabilities::GetValues::registerType(type());
 
 const __FlashStringHelper* BME280::temperature_data_point_type_key_ =
-    F("temperature_data_point_type");
+    FPSTR("temperature_data_point_type");
 const __FlashStringHelper* BME280::temperature_data_point_type_key_error_ =
-    F("Missing property: temperature_data_point_type (UUID)");
+    FPSTR("Missing property: temperature_data_point_type (UUID)");
 
 const __FlashStringHelper* BME280::pressure_data_point_type_key_ =
-    F("pressure_data_point_type");
+    FPSTR("pressure_data_point_type");
 const __FlashStringHelper* BME280::pressure_data_point_type_key_error_ =
-    F("Missing property: pressure_data_point_type (UUID)");
+    FPSTR("Missing property: pressure_data_point_type (UUID)");
 
 const __FlashStringHelper* BME280::humidity_data_point_type_key_ =
-    F("humidity_data_point_type");
+    FPSTR("humidity_data_point_type");
 const __FlashStringHelper* BME280::humidity_data_point_type_key_error_ =
-    F("Missing property: humidity_data_point_type (UUID)");
+    FPSTR("Missing property: humidity_data_point_type (UUID)");
 
 const __FlashStringHelper* BME280::invalid_chip_type_error_ =
-    F("Failed BME/P280 setup");
+    FPSTR("Failed BME/P280 setup");
 
 }  // namespace bme280
 }  // namespace peripherals
 }  // namespace peripheral
-}  // namespace bernd_box
+}  // namespace inamata
+
+#endif

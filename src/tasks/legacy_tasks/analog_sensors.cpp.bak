@@ -1,6 +1,6 @@
 #include "analog_sensors.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace tasks {
 
 AnalogSensors::AnalogSensors(Scheduler* scheduler, Io& io, Mqtt& mqtt)
@@ -46,4 +46,4 @@ void AnalogSensors::OnDisable() {
 }
 
 }  // namespace tasks
-}  // namespace bernd_box
+}  // namespace inamata

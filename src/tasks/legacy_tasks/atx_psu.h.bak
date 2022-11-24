@@ -5,7 +5,7 @@
 #include "managers/io.h"
 #include "managers/mqtt.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace tasks {
 
 /**
@@ -28,4 +28,4 @@ class AtxPsu : public Task {
 };
 
 }  // namespace tasks
-}  // namespace bernd_box
+}  // namespace inamata

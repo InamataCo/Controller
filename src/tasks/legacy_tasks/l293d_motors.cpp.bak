@@ -1,6 +1,6 @@
 #include "l293d_motors.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace tasks {
 
 L293dMotors::L293dMotors(Scheduler* scheduler, Io& io, Mqtt& mqtt)
@@ -386,4 +386,4 @@ Result L293dMotors::disableDevice(const JsonObjectConst& doc) {
 }
 
 }  // namespace tasks
-}  // namespace bernd_box
+}  // namespace inamata

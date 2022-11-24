@@ -1,12 +1,13 @@
 #pragma once
 
+#include <chrono>
 #include <functional>
 #include <map>
 
-#include "managers/io_types.h"
+#include "managers/types.h"
 #include "utils/uuid.h"
 
-namespace bernd_box {
+namespace inamata {
 
 /**
  * Interface class for connections to the server
@@ -50,4 +51,4 @@ class Server {
   static const __FlashStringHelper* task_id_key_;
   static const __FlashStringHelper* system_type_;
 };
-}  // namespace bernd_box
+}  // namespace inamata

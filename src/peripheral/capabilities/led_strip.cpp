@@ -1,6 +1,6 @@
 #include "led_strip.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace peripheral {
 namespace capabilities {
 
@@ -31,4 +31,4 @@ std::set<String>& LedStrip::getSupportedTypes() {
 
 }  // namespace capabilities
 }  // namespace peripheral
-}  // namespace bernd_box
+}  // namespace inamata

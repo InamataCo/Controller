@@ -7,7 +7,7 @@
 #include "managers/mqtt.h"
 #include "TaskSchedulerDeclarations.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace tasks {
 class L293dMotors : public Task {
  private:
@@ -101,4 +101,4 @@ class L293dMotors : public Task {
   std::vector<Run> runs_;
 };
 }  // namespace tasks
-}  // namespace bernd_box
+}  // namespace inamata

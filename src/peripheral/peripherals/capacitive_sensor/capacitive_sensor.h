@@ -8,7 +8,7 @@
 #include "peripheral/capabilities/get_values.h"
 #include "peripheral/peripheral.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace peripheral {
 namespace peripherals {
 namespace capacative_sensor {
@@ -49,4 +49,4 @@ class CapacitiveSensor : public Peripheral, public capabilities::GetValues {
 }  // namespace capacative_sensor
 }  // namespace peripherals
 }  // namespace peripheral
-}  // namespace bernd_box
+}  // namespace inamata

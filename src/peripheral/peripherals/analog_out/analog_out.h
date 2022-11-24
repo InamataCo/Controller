@@ -6,7 +6,7 @@
 #include "peripheral/capabilities/set_value.h"
 #include "peripheral/peripheral.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace peripheral {
 namespace peripherals {
 namespace analog_out {
@@ -58,4 +58,4 @@ class AnalogOut : public Peripheral, public capabilities::SetValue {
 }  // namespace analog_out
 }  // namespace peripherals
 }  // namespace peripheral
-}  // namespace bernd_box
+}  // namespace inamata

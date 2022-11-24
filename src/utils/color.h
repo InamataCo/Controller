@@ -2,7 +2,7 @@
 
 #include "Arduino.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace utils {
 
 class Color : public Printable {
@@ -30,4 +30,4 @@ class Color : public Printable {
 
 }  // namespace utils
 
-}  // namespace bernd_box
+}  // namespace inamata

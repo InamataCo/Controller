@@ -8,7 +8,7 @@
 #include "base_task.h"
 #include "managers/service_getters.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace tasks {
 
 /**
@@ -70,10 +70,9 @@ class TaskFactory {
   /// Refernce to the Scheduler
   Scheduler& scheduler_;
 
-  const __FlashStringHelper* type_key_ = F("type");
-  const __FlashStringHelper* type_key_error_ =
-      F("Missing property: type (string)");
+  static const __FlashStringHelper* type_key_;
+  static const __FlashStringHelper* type_key_error_;
 };
 
 }  // namespace tasks
-}  // namespace bernd_box
+}  // namespace inamata

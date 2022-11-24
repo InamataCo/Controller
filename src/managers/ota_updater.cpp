@@ -1,3 +1,4 @@
+#ifdef ESP32
 #include "ota_updater.h"
 
 #include <ArduinoJson.h>
@@ -6,7 +7,7 @@
 #include <chrono>
 #include <memory>
 
-namespace bernd_box {
+namespace inamata {
 
 OtaUpdater::OtaUpdater(Scheduler& scheduler) : BaseTask(scheduler) {}
 
@@ -199,24 +200,26 @@ void OtaUpdater::sendResult(const __FlashStringHelper* status,
   server->sendResults(result_doc.as<JsonObject>());
 }
 
-const __FlashStringHelper* OtaUpdater::update_command_key_ = F("update");
-const __FlashStringHelper* OtaUpdater::url_key_ = F("url");
-const __FlashStringHelper* OtaUpdater::image_size_key_ = F("size");
-const __FlashStringHelper* OtaUpdater::md5_hash_key_ = F("md5");
-const __FlashStringHelper* OtaUpdater::restart_key_ = F("restart");
+const __FlashStringHelper* OtaUpdater::update_command_key_ = FPSTR("update");
+const __FlashStringHelper* OtaUpdater::url_key_ = FPSTR("url");
+const __FlashStringHelper* OtaUpdater::image_size_key_ = FPSTR("size");
+const __FlashStringHelper* OtaUpdater::md5_hash_key_ = FPSTR("md5");
+const __FlashStringHelper* OtaUpdater::restart_key_ = FPSTR("restart");
 
-const __FlashStringHelper* OtaUpdater::status_key_ = F("status");
-const __FlashStringHelper* OtaUpdater::status_start_ = F("start");
-const __FlashStringHelper* OtaUpdater::status_updating_ = F("updating");
-const __FlashStringHelper* OtaUpdater::status_finish_ = F("finish");
-const __FlashStringHelper* OtaUpdater::status_fail_ = F("fail");
-const __FlashStringHelper* OtaUpdater::detail_key_ = F("detail");
+const __FlashStringHelper* OtaUpdater::status_key_ = FPSTR("status");
+const __FlashStringHelper* OtaUpdater::status_start_ = FPSTR("start");
+const __FlashStringHelper* OtaUpdater::status_updating_ = FPSTR("updating");
+const __FlashStringHelper* OtaUpdater::status_finish_ = FPSTR("finish");
+const __FlashStringHelper* OtaUpdater::status_fail_ = FPSTR("fail");
+const __FlashStringHelper* OtaUpdater::detail_key_ = FPSTR("detail");
 const __FlashStringHelper* OtaUpdater::failed_to_connect_error_ =
-    F("Failed to connect");
+    FPSTR("Failed to connect");
 const __FlashStringHelper* OtaUpdater::connection_lost_error_ =
-    F("Connection lost");
+    FPSTR("Connection lost");
 const __FlashStringHelper* OtaUpdater::update_in_progress_error_ =
-    F("OTA update already running");
-const __FlashStringHelper* OtaUpdater::http_code_error_ = F("HTTP code: ");
+    FPSTR("OTA update already running");
+const __FlashStringHelper* OtaUpdater::http_code_error_ = FPSTR("HTTP code: ");
 
-}  // namespace bernd_box
+}  // namespace inamata
+
+#endif

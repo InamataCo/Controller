@@ -1,6 +1,6 @@
 #include "atx_psu.h"
 
-namespace bernd_box {
+namespace inamata {
 
 namespace tasks {
 
@@ -26,4 +26,4 @@ void AtxPsu::OnDisable() {
 
 }  // namespace tasks
 
-}  // namespace bernd_box
+}  // namespace inamata

@@ -1,12 +1,25 @@
 #pragma once
 
-#include <WiFiMulti.h>
+#include <WiFiManager.h>
 
 #include <chrono>
+#include <vector>
 
 #include "managers/types.h"
 
-namespace bernd_box {
+namespace inamata {
+
+struct NetworkInfo {
+  int16_t id;
+  String ssid;
+  int32_t rssi;
+  uint8_t encType;
+  uint8_t* bssid;
+  int32_t channel;
+  #ifndef ESP32
+  bool hidden;
+  #endif
+};
 
 /**
  * Wifi related functionality
@@ -15,23 +28,27 @@ namespace bernd_box {
  */
 class Network {
  public:
+  enum class ConnectMode {
+    kFastConnect,
+    kScanning,
+    kMultiConnect,
+    kHiddenConnect
+  };
+
   /**
    * WiFi helper class that deals with connection time-outs and checking its
    * state
-   * 
+   *
    * \param acces_points The WiFi access points to try to connect to
    */
-  Network(std::vector<WiFiAP>& access_points);
+  Network(std::vector<WiFiAP>& access_points, String& controller_name);
 
   /**
-   * Connects to the configured WiFi access point and contacts the SDG server
+   * Connects to the configured WiFi access point
    *
-   * Blocks until the connection has been made.
-   *
-   * \param timeout The length of time to wait until aborting
-   * \return True if successful
+   * \return True if connected
    */
-  bool connect(std::chrono::steady_clock::duration timeout);
+  bool connect();
 
   /**
    * Prints the current WiFi state to the serial terminal
@@ -46,16 +63,31 @@ class Network {
 
   String getSsid();
 
+  static bool populateNetworkInfo(NetworkInfo& network_info);
+
   /**
-   * Checks whether the ESP is connected to WiFi
+   * Sorts WiFi networks by descending signal strength (unknown to back)
    *
-   * \return isConnected True if connected
+   * @return true if rhs has weaker signal or unknown internal ID
+   * @return false if lhs has weaker signal or unknown internal ID
    */
-  bool isConnected();
+  static bool sortRssi(const WiFiAP& lhs, const WiFiAP& rhs);
 
  private:
-  WiFiMulti wiFiMulti_;
   std::vector<WiFiAP> wifi_aps_;
+  std::vector<WiFiAP>::iterator current_wifi_ap_;
+  String controller_name_;
+
+  ConnectMode connect_mode_ = ConnectMode::kFastConnect;
+  std::chrono::steady_clock::time_point connect_start_ =
+      std::chrono::steady_clock::time_point::min();
+  std::chrono::milliseconds connect_timeout_ = std::chrono::seconds(5);
+
+  std::chrono::steady_clock::time_point scan_start_ =
+      std::chrono::steady_clock::time_point::min();
+  std::chrono::milliseconds scan_timeout_ = std::chrono::seconds(5);
+
+  bool multi_connect_first_run_ = true;
 };
 
-}  // namespace bernd_box
+}  // namespace inamata

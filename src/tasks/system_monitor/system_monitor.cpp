@@ -1,6 +1,7 @@
+#ifdef ESP32
 #include "system_monitor.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace tasks {
 namespace system_monitor {
 
@@ -69,4 +70,6 @@ const std::chrono::seconds SystemMonitor::default_interval_{60};
 
 }  // namespace system_monitor
 }  // namespace tasks
-}  // namespace bernd_box
+}  // namespace inamata
+
+#endif

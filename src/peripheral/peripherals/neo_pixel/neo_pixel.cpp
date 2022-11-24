@@ -1,8 +1,9 @@
+#ifndef MINIMAL_BUILD
 #include "neo_pixel.h"
 
 #include "peripheral/peripheral_factory.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace peripheral {
 namespace peripherals {
 namespace neo_pixel {
@@ -77,14 +78,14 @@ bool NeoPixel::registered_ =
 bool NeoPixel::capability_led_strip_ =
     capabilities::LedStrip::registerType(type());
 
-const __FlashStringHelper* NeoPixel::color_encoding_key_ = F("color_encoding");
-const __FlashStringHelper* NeoPixel::color_encoding_key_error_ F(
+const __FlashStringHelper* NeoPixel::color_encoding_key_ = FPSTR("color_encoding");
+const __FlashStringHelper* NeoPixel::color_encoding_key_error_ FPSTR(
     "Missing property: color_encoding (string)");
-const __FlashStringHelper* NeoPixel::led_pin_key_ = F("led_pin");
+const __FlashStringHelper* NeoPixel::led_pin_key_ = FPSTR("led_pin");
 const __FlashStringHelper* NeoPixel::led_pin_key_error_ =
-    F("Missing property: led_pin (unsigned int)");
-const __FlashStringHelper* NeoPixel::led_count_key_ = F("led_count");
-const __FlashStringHelper* NeoPixel::led_count_key_error_ F(
+    FPSTR("Missing property: led_pin (unsigned int)");
+const __FlashStringHelper* NeoPixel::led_count_key_ = FPSTR("led_count");
+const __FlashStringHelper* NeoPixel::led_count_key_error_ FPSTR(
     "Missing property: led_count (unsigned int)");
 
 uint8_t NeoPixel::getColorEncoding(String encoding_str) {
@@ -142,4 +143,6 @@ bool NeoPixel::cleanColorEncoding(String& color_encoding) {
 }  // namespace neo_pixel
 }  // namespace peripherals
 }  // namespace peripheral
-}  // namespace bernd_box
+}  // namespace inamata
+
+#endif

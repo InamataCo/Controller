@@ -2,13 +2,14 @@
 
 #include <Arduino.h>
 
+#include <chrono>
 #include <memory>
 #include <set>
 
 #include "peripheral/peripheral.h"
 #include "utils/uuid.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace peripheral {
 namespace capabilities {
 
@@ -59,4 +60,4 @@ class StartMeasurement {
 
 }  // namespace capabilities
 }  // namespace peripheral
-}  // namespace bernd_box
+}  // namespace inamata

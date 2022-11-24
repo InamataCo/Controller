@@ -1,6 +1,6 @@
 #include "invalid_task.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace tasks {
 
 InvalidTask::InvalidTask(Scheduler& scheduler) : BaseTask(scheduler) {
@@ -22,4 +22,4 @@ const String& InvalidTask::type() {
 }
 
 }  // namespace tasks
-}  // namespace bernd_box
+}  // namespace inamata

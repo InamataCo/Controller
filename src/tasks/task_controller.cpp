@@ -2,7 +2,7 @@
 
 #include <ArduinoJson.h>
 
-namespace bernd_box {
+namespace inamata {
 namespace tasks {
 
 TaskController::TaskController(Scheduler& scheduler, TaskFactory& factory)
@@ -203,18 +203,18 @@ void TaskController::addResultEntry(const utils::UUID& uuid,
   }
 }
 
-const __FlashStringHelper* TaskController::task_command_key_ = F("task");
-const __FlashStringHelper* TaskController::start_command_key_ = F("start");
-const __FlashStringHelper* TaskController::stop_command_key_ = F("stop");
-const __FlashStringHelper* TaskController::status_command_key_ = F("status");
+const __FlashStringHelper* TaskController::task_command_key_ = FPSTR("task");
+const __FlashStringHelper* TaskController::start_command_key_ = FPSTR("start");
+const __FlashStringHelper* TaskController::stop_command_key_ = FPSTR("stop");
+const __FlashStringHelper* TaskController::status_command_key_ = FPSTR("status");
 
-const __FlashStringHelper* TaskController::task_results_key_ = F("task");
-const __FlashStringHelper* TaskController::result_status_key_ = F("status");
-const __FlashStringHelper* TaskController::result_detail_key_ = F("detail");
-const __FlashStringHelper* TaskController::result_success_name_ = F("success");
-const __FlashStringHelper* TaskController::result_fail_name_ = F("fail");
+const __FlashStringHelper* TaskController::task_results_key_ = FPSTR("task");
+const __FlashStringHelper* TaskController::result_status_key_ = FPSTR("status");
+const __FlashStringHelper* TaskController::result_detail_key_ = FPSTR("detail");
+const __FlashStringHelper* TaskController::result_success_name_ = FPSTR("success");
+const __FlashStringHelper* TaskController::result_fail_name_ = FPSTR("fail");
 
 const String TaskController::task_type_system_task_{"SystemTask"};
 
 }  // namespace tasks
-}  // namespace bernd_box
+}  // namespace inamata

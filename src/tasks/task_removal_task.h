@@ -5,7 +5,7 @@
 #include "managers/service_getters.h"
 #include "tasks/base_task.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace tasks {
 
 using namespace std::placeholders;
@@ -49,4 +49,4 @@ class TaskRemovalTask : public Task {
 };
 
 }  // namespace tasks
-}  // namespace bernd_box
+}  // namespace inamata

@@ -1,6 +1,6 @@
 #include "set_value.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace peripheral {
 namespace capabilities {
 
@@ -31,4 +31,4 @@ std::set<String>& SetValue::getSupportedTypes() {
 
 }  // namespace capabilities
 }  // namespace peripheral
-}  // namespace bernd_box
+}  // namespace inamata

@@ -1,18 +1,22 @@
 #pragma once
 
+#include <WString.h>
+
 #include <TaskSchedulerDeclarations.h>
 
 #include "managers/service_getters.h"
 #include "managers/network.h"
 #include "managers/server.h"
+#ifdef ESP32
 #include "managers/ota_updater.h"
+#endif
 #include "peripheral/peripheral_controller.h"
 #include "peripheral/peripheral_factory.h"
 #include "tasks/task_controller.h"
 #include "tasks/task_factory.h"
 #include "tasks/task_removal_task.h"
 
-namespace bernd_box {
+namespace inamata {
 
 /**
  * All the system services
@@ -39,7 +43,9 @@ class Services {
 
   static peripheral::PeripheralController& getPeripheralController();
   static tasks::TaskController& getTaskController();
+  #ifdef ESP32
   static OtaUpdater& getOtaUpdater();
+  #endif
 
   static Scheduler& getScheduler();
 
@@ -68,7 +74,9 @@ class Services {
   /// Singleton to delete stopped tasks and inform the server
   static tasks::TaskRemovalTask task_removal_task_;
   /// Singleton to perform OTA updates
+  #ifdef ESP32
   static OtaUpdater ota_updater_;
+  #endif
 };
 
-}  // namespace bernd_box
+}  // namespace inamata

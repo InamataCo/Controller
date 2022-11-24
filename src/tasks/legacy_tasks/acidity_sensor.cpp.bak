@@ -1,6 +1,6 @@
 #include "acidity_sensor.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace tasks {
 
 AciditySensor::AciditySensor(Scheduler* scheduler, Io& io, Mqtt& mqtt)
@@ -151,4 +151,4 @@ void AciditySensor::OnDisable() {
 }
 
 }  // namespace tasks
-}  // namespace bernd_box
+}  // namespace inamata

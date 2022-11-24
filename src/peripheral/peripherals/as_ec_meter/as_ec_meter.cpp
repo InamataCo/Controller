@@ -1,8 +1,9 @@
+#ifndef MINIMAL_BUILD
 #include "as_ec_meter.h"
 
 #include "peripheral/peripheral_factory.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace peripheral {
 namespace peripherals {
 namespace as_ec_meter {
@@ -443,75 +444,77 @@ bool AsEcMeterI2C::capability_calibrate_ =
 bool AsEcMeterI2C::capability_start_measurement_ =
     capabilities::StartMeasurement::registerType(type());
 
-const __FlashStringHelper* AsEcMeterI2C::probe_type_key_ = F("probe_type");
+const __FlashStringHelper* AsEcMeterI2C::probe_type_key_ = FPSTR("probe_type");
 
 const __FlashStringHelper* AsEcMeterI2C::probe_type_key_error_ =
-    F("Missing property: probe_type (str)");
+    FPSTR("Missing property: probe_type (str)");
 
 const __FlashStringHelper* AsEcMeterI2C::probe_type_cast_error_ =
-    F("Can't cast probe type to float");
+    FPSTR("Can't cast probe type to float");
 
-const __FlashStringHelper* AsEcMeterI2C::probe_type_code_ = F("K,");
+const __FlashStringHelper* AsEcMeterI2C::probe_type_code_ = FPSTR("K,");
 
 const __FlashStringHelper* AsEcMeterI2C::temperature_c_key_ =
-    F("temperature_c");
+    FPSTR("temperature_c");
 
 const __FlashStringHelper* AsEcMeterI2C::temperature_c_key_error_ =
-    F("Wrong property: temperature_c (float)");
+    FPSTR("Wrong property: temperature_c (float)");
 
-const __FlashStringHelper* AsEcMeterI2C::calibrate_command_key_ = F("command");
+const __FlashStringHelper* AsEcMeterI2C::calibrate_command_key_ = FPSTR("command");
 
 const __FlashStringHelper* AsEcMeterI2C::calibrate_command_key_error_ =
-    F("Missing property: command (string)");
+    FPSTR("Missing property: command (string)");
 
-const __FlashStringHelper* AsEcMeterI2C::calibrate_value_key_ = F("value");
+const __FlashStringHelper* AsEcMeterI2C::calibrate_value_key_ = FPSTR("value");
 
 const __FlashStringHelper* AsEcMeterI2C::calibrate_value_key_error_ =
-    F("Missing property: value (int)");
+    FPSTR("Missing property: value (int)");
 
-const __FlashStringHelper* AsEcMeterI2C::calibrate_dry_command_ = F("dry");
+const __FlashStringHelper* AsEcMeterI2C::calibrate_dry_command_ = FPSTR("dry");
 
-const __FlashStringHelper* AsEcMeterI2C::calibrate_dry_code_ = F("Cal,dry");
+const __FlashStringHelper* AsEcMeterI2C::calibrate_dry_code_ = FPSTR("Cal,dry");
 
 const __FlashStringHelper* AsEcMeterI2C::calibrate_single_command_ =
-    F("single");
+    FPSTR("single");
 
-const __FlashStringHelper* AsEcMeterI2C::calibrate_single_code_ = F("Cal,");
+const __FlashStringHelper* AsEcMeterI2C::calibrate_single_code_ = FPSTR("Cal,");
 
 const __FlashStringHelper* AsEcMeterI2C::calibrate_double_low_command_ =
-    F("double_low");
+    FPSTR("double_low");
 
 const __FlashStringHelper* AsEcMeterI2C::calibrate_double_low_code_ =
-    F("Cal,low,");
+    FPSTR("Cal,low,");
 
 const __FlashStringHelper* AsEcMeterI2C::calibrate_double_high_command_ =
-    F("double_high");
+    FPSTR("double_high");
 
 const __FlashStringHelper* AsEcMeterI2C::calibrate_double_high_code_ =
-    F("Cal,high,");
+    FPSTR("Cal,high,");
 
-const __FlashStringHelper* AsEcMeterI2C::calibrate_clear_command_ = F("clear");
+const __FlashStringHelper* AsEcMeterI2C::calibrate_clear_command_ = FPSTR("clear");
 
-const __FlashStringHelper* AsEcMeterI2C::calibrate_clear_code_ = F("Cal,clear");
+const __FlashStringHelper* AsEcMeterI2C::calibrate_clear_code_ = FPSTR("Cal,clear");
 
-const __FlashStringHelper* AsEcMeterI2C::calibrate_check_code_ = F("Cal,?");
+const __FlashStringHelper* AsEcMeterI2C::calibrate_check_code_ = FPSTR("Cal,?");
 
-const __FlashStringHelper* AsEcMeterI2C::not_calibrated_code_ = F("?Cal,0");
+const __FlashStringHelper* AsEcMeterI2C::not_calibrated_code_ = FPSTR("?Cal,0");
 
-const __FlashStringHelper* AsEcMeterI2C::sleep_code_ = F("Sleep");
+const __FlashStringHelper* AsEcMeterI2C::sleep_code_ = FPSTR("Sleep");
 
 const __FlashStringHelper* AsEcMeterI2C::unknown_command_error_ =
-    F("Unknown command");
+    FPSTR("Unknown command");
 
 const __FlashStringHelper* AsEcMeterI2C::invalid_transition_error_ =
-    F("Invalid transition");
+    FPSTR("Invalid transition");
 
-const __FlashStringHelper* AsEcMeterI2C::receive_error_ = F("Receive failed");
+const __FlashStringHelper* AsEcMeterI2C::receive_error_ = FPSTR("Receive failed");
 
 const __FlashStringHelper* AsEcMeterI2C::not_calibrated_error_ =
-    F("Failed calibration");
+    FPSTR("Failed calibration");
 
 }  // namespace as_ec_meter
 }  // namespace peripherals
 }  // namespace peripheral
-}  // namespace bernd_box
+}  // namespace inamata
+
+#endif

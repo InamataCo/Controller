@@ -2,7 +2,7 @@
 
 #include "tasks/task_factory.h"
 
-namespace bernd_box {
+namespace inamata {
 namespace tasks {
 namespace alert_sensor {
 
@@ -168,10 +168,10 @@ BaseTask* AlertSensor::factory(const ServiceGetters& services,
 }
 
 const std::map<AlertSensor::TriggerType, const __FlashStringHelper*>
-    AlertSensor::trigger_type_strings_{{TriggerType::kRising, F("rising")},
-                                       {TriggerType::kFalling, F("falling")},
-                                       {TriggerType::kEither, F("either")}};
+    AlertSensor::trigger_type_strings_{{TriggerType::kRising, FPSTR("rising")},
+                                       {TriggerType::kFalling, FPSTR("falling")},
+                                       {TriggerType::kEither, FPSTR("either")}};
 
 }  // namespace alert_sensor
 }  // namespace tasks
-}  // namespace bernd_box
+}  // namespace inamata
