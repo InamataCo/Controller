@@ -1,0 +1,23 @@
+# Based on https://docs.platformio.org/en/latest/integration/ci/gitlab.html#using-cmd-ci-command
+image: python:3.9
+
+cache:
+  paths:
+    - ~/.cache/pip
+    - ~/.platformio/.cache
+
+stages:
+ - test
+
+before_script:
+  - "pip install -U platformio"
+
+# pio ci is not used because it didn't work along with the extra_scripts
+# job:
+#   stage: test
+#   script: "platformio ci --project-conf=platformio.ini --board=esp32doit-devkit-v1" # --board=XXXX --lib=lib/*
+#   variables: {PLATFORMIO_CI_SRC: "src"}
+
+build:
+  stage: test
+  script: "platformio run -e esp32doit-devkit-v1 -e esp8266"
