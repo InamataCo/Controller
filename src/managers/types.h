@@ -2,6 +2,12 @@
 
 #include <Arduino.h>
 
+#if defined ENABLE_TRACE
+    #define TRACE( format, ... )   Serial.printf( "%s::%s(%d) " format, __FILE__, __FUNCTION__,  __LINE__, __VA_ARGS__ )
+#else
+    #define TRACE( format, ... )
+#endif
+
 namespace inamata {
 
 class ErrorResult {
