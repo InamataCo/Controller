@@ -24,14 +24,14 @@ void PeripheralController::handleCallback(const JsonObjectConst& message) {
   }
 
   // Init the result doc with type and the request ID
-  DynamicJsonDocument result_doc(BB_JSON_PAYLOAD_SIZE);
-  result_doc[Server::type_key_] = Server::result_type_;
-  JsonVariantConst request_id = message[Server::request_id_key_];
+  doc_out.clear();
+  doc_out[WebSocket::type_key_] = WebSocket::result_type_;
+  JsonVariantConst request_id = message[WebSocket::request_id_key_];
   if (request_id) {
-    result_doc[Server::request_id_key_] = request_id;
+    doc_out[WebSocket::request_id_key_] = request_id;
   }
   JsonObject peripheral_results =
-      result_doc.createNestedObject(peripheral_command_key_);
+      doc_out.createNestedObject(peripheral_command_key_);
 
   // Add a peripheral for each command and store the result
   JsonArrayConst add_commands =
@@ -58,12 +58,12 @@ void PeripheralController::handleCallback(const JsonObjectConst& message) {
   }
 
   // Send the command results
-  std::shared_ptr<Server> server = services_.getServer();
-  if (server) {
-    server->sendResults(result_doc.as<JsonObject>());
+  std::shared_ptr<WebSocket> web_socket = services_.getWebSocket();
+  if (web_socket) {
+    web_socket->sendResults(doc_out.as<JsonObject>());
   } else {
-    Serial.println(
-        ErrorResult(type(), ServiceGetters::server_nullptr_error_).toString());
+    TRACELN(
+        ErrorResult(type(), ServiceGetters::web_socket_nullptr_error_).toString());
   }
 }
 

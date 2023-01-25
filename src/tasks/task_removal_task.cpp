@@ -35,18 +35,17 @@ bool TaskRemovalTask::Callback() {
     return true;
   }
 
-  DynamicJsonDocument result_doc(BB_JSON_PAYLOAD_SIZE);
-  result_doc[Server::type_key_] = Server::result_type_;
+  doc_out.clear();
+  doc_out[WebSocket::type_key_] = WebSocket::result_type_;
   JsonObject task_results =
-      result_doc.createNestedObject(TaskController::task_results_key_);
+      doc_out.createNestedObject(TaskController::task_results_key_);
   JsonArray stop_results =
       task_results.createNestedArray(TaskController::stop_command_key_);
 
   for (auto it = tasks_.begin(); it != tasks_.end();) {
     Task* task = *it;
     BaseTask* base_task = dynamic_cast<BaseTask*>(task);
-    Serial.print("Deleting: ");
-    Serial.println(base_task->getType());
+    TRACEF("Deleting: %s\n", base_task->getType());
 
     // If it is not a system task, delete the task and free the memory
     // System tasks have a static memory lifetime and should not be deleted
@@ -59,11 +58,11 @@ bool TaskRemovalTask::Callback() {
   }
   tasks_.clear();
   if (stop_results.size()) {
-    std::shared_ptr<Server> server = services_.getServer();
-    if (server != nullptr) {
-      server->sendResults(result_doc.as<JsonObject>());
+    std::shared_ptr<WebSocket> web_socket = services_.getWebSocket();
+    if (web_socket != nullptr) {
+      web_socket->sendResults(doc_out.as<JsonObject>());
     } else {
-      Serial.println(ErrorResult(type(), ServiceGetters::server_nullptr_error_)
+      TRACELN(ErrorResult(type(), ServiceGetters::web_socket_nullptr_error_)
                          .toString());
     }
   }

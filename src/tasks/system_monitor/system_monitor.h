@@ -47,7 +47,7 @@ class SystemMonitor : public BaseTask {
 
   Scheduler& scheduler_;
   ServiceGetters services_;
-  std::shared_ptr<Server> server_;
+  std::shared_ptr<WebSocket> web_socket_;
 
   // Max time is ~72 minutes due to an overflow in the CPU load counter
   static const std::chrono::seconds default_interval_;

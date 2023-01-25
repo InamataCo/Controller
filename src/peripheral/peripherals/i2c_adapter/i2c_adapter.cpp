@@ -14,22 +14,22 @@ bool I2CAdapter::wire1_taken = false;
 
 I2CAdapter::I2CAdapter(const ServiceGetters& services,
                        const JsonObjectConst& parameter) {
-  server_ = services.getServer();
-  if (server_ == nullptr) {
-    setInvalid(services.server_nullptr_error_);
+  web_socket_ = services.getWebSocket();
+  if (web_socket_ == nullptr) {
+    setInvalid(services.web_socket_nullptr_error_);
     return;
   }
 
   JsonVariantConst clock_pin = parameter[F("scl")];
   if (!clock_pin.is<int>()) {
-    server_->sendError(type(), F("Missing property: scl (int)"));
+    web_socket_->sendError(type(), F("Missing property: scl (int)"));
     setInvalid();
     return;
   }
 
   JsonVariantConst data_pin = parameter[F("sda")];
   if (!data_pin.is<int>()) {
-    server_->sendError(type(), F("Missing property: sda (int)"));
+    web_socket_->sendError(type(), F("Missing property: sda (int)"));
     setInvalid();
     return;
   }
@@ -41,7 +41,7 @@ I2CAdapter::I2CAdapter(const ServiceGetters& services,
     taken_variable = &wire1_taken;
     wire_ = &Wire1;
   } else {
-    server_->sendError(type(), F("Both wires already taken :("));
+    web_socket_->sendError(type(), F("Both wires already taken :("));
     setInvalid();
     return;
   }

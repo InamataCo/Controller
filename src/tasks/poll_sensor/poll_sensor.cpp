@@ -13,9 +13,9 @@ PollSensor::PollSensor(const ServiceGetters& services,
     return;
   }
 
-  server_ = services.getServer();
-  if (server_ == nullptr) {
-    setInvalid(services.server_nullptr_error_);
+  web_socket_ = services.getWebSocket();
+  if (web_socket_ == nullptr) {
+    setInvalid(services.web_socket_nullptr_error_);
     return;
   }
 
@@ -32,7 +32,12 @@ PollSensor::PollSensor(const ServiceGetters& services,
 
   // Optionally get the duration for which to poll the sensor [default: forever]
   JsonVariantConst duration_ms = parameters[duration_ms_key_];
-  if (duration_ms.is<unsigned int>()) {
+  if (duration_ms.is<int>()) {
+    // If the duration is zero or negative, disable on first run
+    if (duration_ms <= 0) {
+      setInvalid();
+      return;
+    }
     run_until_ = std::chrono::steady_clock::now() +
                  std::chrono::milliseconds(duration_ms);
   } else if (duration_ms.isNull()) {
@@ -88,8 +93,8 @@ bool PollSensor::TaskCallback() {
   }
 
   // Create a JSON doc on the heap
-  DynamicJsonDocument result_doc(BB_JSON_PAYLOAD_SIZE);
-  JsonObject result_object = result_doc.to<JsonObject>();
+  doc_out.clear();
+  JsonObject result_object = doc_out.to<JsonObject>();
 
   // Read the peripheral's value units and its UUID and add them to the JSON doc
   ErrorResult error = makeTelemetryJson(result_object);
@@ -101,7 +106,7 @@ bool PollSensor::TaskCallback() {
   }
 
   // Send the value units and peripheral UUID to the server
-  server_->send(type(), result_doc);
+  web_socket_->send(type(), doc_out);
 
   // Check if to wait and run again or to end due to timeout
   if (run_until_ < std::chrono::steady_clock::now()) {

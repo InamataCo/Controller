@@ -32,7 +32,7 @@ class I2CAdapter : public Peripheral {
   static bool wire_taken;
   static bool wire1_taken;
 
-  std::shared_ptr<Server> server_;
+  std::shared_ptr<WebSocket> web_socket_;
 
   bool* taken_variable;
   TwoWire* wire_;

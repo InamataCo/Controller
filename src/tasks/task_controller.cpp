@@ -18,6 +18,7 @@ void TaskController::setServices(ServiceGetters services) {
 }
 
 void TaskController::handleCallback(const JsonObjectConst& message) {
+  TRACELN(F("Handling task cmd"));
   // Check if any task commands have to be processed
   JsonVariantConst task_commands = message[task_command_key_];
   if (!task_commands) {
@@ -25,13 +26,13 @@ void TaskController::handleCallback(const JsonObjectConst& message) {
   }
 
   // Init the result doc with type and the request ID
-  DynamicJsonDocument result_doc(BB_JSON_PAYLOAD_SIZE);
-  result_doc[Server::type_key_] = Server::result_type_;
-  JsonVariantConst request_id = message[Server::request_id_key_];
+  doc_out.clear();
+  doc_out[WebSocket::type_key_] = WebSocket::result_type_;
+  JsonVariantConst request_id = message[WebSocket::request_id_key_];
   if (request_id) {
-    result_doc[Server::request_id_key_] = request_id;
+    doc_out[WebSocket::request_id_key_] = request_id;
   }
-  JsonObject task_results = result_doc.createNestedObject(task_results_key_);
+  JsonObject task_results = doc_out.createNestedObject(task_results_key_);
 
   // Start a task for each command and store the result
   JsonArrayConst start_commands =
@@ -68,12 +69,12 @@ void TaskController::handleCallback(const JsonObjectConst& message) {
   }
 
   // Send the command results
-  std::shared_ptr<Server> server = services_.getServer();
-  if (server != nullptr) {
-    server->sendResults(result_doc.as<JsonObject>());
+  std::shared_ptr<WebSocket> web_socket = services_.getWebSocket();
+  if (web_socket != nullptr) {
+    web_socket->sendResults(doc_out.as<JsonObject>());
   } else {
-    Serial.println(
-        ErrorResult(type(), services_.server_nullptr_error_).toString());
+    TRACELN(
+        ErrorResult(type(), services_.web_socket_nullptr_error_).toString());
   }
 }
 
@@ -127,8 +128,8 @@ ErrorResult TaskController::stopTask(const JsonObjectConst& parameters) {
 }
 
 void TaskController::sendStatus() {
-  DynamicJsonDocument doc(BB_JSON_PAYLOAD_SIZE);
-  JsonObject status_object = doc.createNestedObject("status");
+  doc_out.clear();
+  JsonObject status_object = doc_out.createNestedObject("status");
   JsonArray tasks_array = status_object.createNestedArray("tasks");
 
   for (Task* task = scheduler_.iFirst; task; task = task->iNext) {
@@ -139,12 +140,12 @@ void TaskController::sendStatus() {
       task_object["type"] = base_task->getType().c_str();
     }
   }
-  std::shared_ptr<Server> server = services_.getServer();
-  if (server != nullptr) {
-    server->send(type(), doc);
+  std::shared_ptr<WebSocket> web_socket = services_.getWebSocket();
+  if (web_socket != nullptr) {
+    web_socket->send(type(), doc_out);
   } else {
-    Serial.println(
-        ErrorResult(type(), services_.server_nullptr_error_).toString());
+    TRACELN(
+        ErrorResult(type(), services_.web_socket_nullptr_error_).toString());
   }
 }
 

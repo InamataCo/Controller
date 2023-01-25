@@ -70,7 +70,7 @@ class AlertSensor : public get_values_task::GetValuesTask {
       trigger_type_strings_;
 
   /// Interface to send data to the server
-  std::shared_ptr<Server> server_;
+  std::shared_ptr<WebSocket> web_socket_;
 
   /// The data point type to trigger on
   utils::UUID data_point_type_;

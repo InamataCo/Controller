@@ -29,6 +29,7 @@ struct NetworkInfo {
 class Network {
  public:
   enum class ConnectMode {
+    kConnected,
     kFastConnect,
     kScanning,
     kMultiConnect,
@@ -44,12 +45,18 @@ class Network {
    */
   Network(std::vector<WiFiAP>& access_points, String& controller_name);
 
+  void setMode(ConnectMode mode);
+
   /**
    * Connects to the configured WiFi access point
    *
+   * Expects to be called periodically to handle the WiFi connection procedure.
+   * Does not block, and will cycle through, AP search, connect to known and
+   * then unknown APs, before power cycling the modem.
+   *
    * \return True if connected
    */
-  bool connect();
+  ConnectMode connect();
 
   /**
    * Checks if connected to a WiFi network
@@ -73,43 +80,44 @@ class Network {
    */
   static bool sortRssi(const WiFiAP& lhs, const WiFiAP& rhs);
 
+  std::vector<WiFiAP> wifi_aps_;
+
  private:
   /**
    * Perform WiFi fast connect attempt (non-blocking)
-   * 
+   *
    * @return True if connected
    */
   bool tryFastConnect();
 
   /**
    * Perform WiFi AP scan attempt (non-blocking)
-   * 
+   *
    * @return Always false
    */
   bool tryScanning();
 
   /**
    * Perform WiFi connection attempt (non-blocking)
-   * 
+   *
    * @return True if connected
    */
   bool tryMultiConnect();
 
   /**
    * Perform WiFi connection attempt to hidden AP (non-blocking)
-   * 
+   *
    * @return True if connected
    */
   bool tryHiddenConnect();
-  
+
   /**
    * Perform WiFi modem power cycling (non-blocking)
-   * 
+   *
    * @return Always false
    */
   bool tryCyclePower();
 
-  std::vector<WiFiAP> wifi_aps_;
   std::vector<WiFiAP>::iterator current_wifi_ap_;
   String controller_name_;
 

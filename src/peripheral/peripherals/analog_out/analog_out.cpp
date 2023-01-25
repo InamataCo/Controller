@@ -9,9 +9,9 @@ namespace analog_out {
 
 AnalogOut::AnalogOut(const ServiceGetters& services,
                      const JsonObjectConst& parameters) {
-  server_ = services.getServer();
-  if (server_ == nullptr) {
-    setInvalid(services.server_nullptr_error_);
+  web_socket_ = services.getWebSocket();
+  if (web_socket_ == nullptr) {
+    setInvalid(services.web_socket_nullptr_error_);
     return;
   }
 
@@ -52,14 +52,14 @@ void AnalogOut::setValue(utils::ValueUnit value_unit) {
   float max_value;
   if (voltage_data_point_type_.isValid()) {
     if (value_unit.data_point_type != voltage_data_point_type_) {
-      server_->sendError(type(),
+      web_socket_->sendError(type(),
                          value_unit.sourceUnitError(voltage_data_point_type_));
       return;
     }
     max_value = 3.3;
   } else if (percent_data_point_type_.isValid()) {
     if (value_unit.data_point_type != percent_data_point_type_) {
-      server_->sendError(type(),
+      web_socket_->sendError(type(),
                          value_unit.sourceUnitError(percent_data_point_type_));
       return;
     }

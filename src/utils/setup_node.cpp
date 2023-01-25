@@ -10,10 +10,8 @@ namespace inamata {
 
 bool loadNetwork(Services& services, JsonObjectConst secrets) {
   JsonArrayConst wifi_aps_doc = secrets[F("wifi_aps")];
-  if (!wifi_aps_doc.size()) {
-    Serial.println(F("No WiFi APs in secrets"));
-    return false;
-  }
+  TRACEF("Found %u APs in secrets\n", wifi_aps_doc.size());
+  
   std::vector<WiFiAP> wifi_aps;
   for (const JsonObjectConst i : wifi_aps_doc) {
     wifi_aps.emplace_back(WiFiAP{.ssid = i[F("ssid")].as<const char*>(),
@@ -30,29 +28,9 @@ bool loadWebsocket(Services& services, JsonObjectConst secrets) {
   using namespace std::placeholders;
 
   // Get the required data from the secrets file
-  const __FlashStringHelper* ws_token_key = F("ws_token");
-  JsonVariantConst ws_token = secrets[ws_token_key];
-  if (!ws_token.is<const char*>()) {
-    Serial.println(ErrorStore::genMissingProperty(
-        ws_token_key, ErrorStore::KeyType::kString));
-    return false;
-  }
-
-  const __FlashStringHelper* core_domain_key = F("core_domain");
-  JsonVariantConst core_domain = secrets[core_domain_key];
-  if (!core_domain.is<const char*>()) {
-    Serial.println(ErrorStore::genMissingProperty(
-        core_domain_key, ErrorStore::KeyType::kString));
-    return false;
-  }
-
-  const __FlashStringHelper* secure_url_key = F("secure_url");
-  JsonVariantConst secure_url = secrets[secure_url_key];
-  if (!secure_url.is<bool>()) {
-    Serial.println(ErrorStore::genMissingProperty(
-        secure_url_key, ErrorStore::KeyType::kString));
-    return false;
-  }
+  JsonVariantConst ws_token = secrets[WebSocket::ws_token_key_];
+  JsonVariantConst core_domain = secrets[WebSocket::core_domain_key_];
+  JsonVariantConst secure_url = secrets[WebSocket::secure_url_key_];
 
   // Load the root certificate authority files for TLS encryption
   String root_cas;
@@ -92,7 +70,7 @@ bool loadWebsocket(Services& services, JsonObjectConst secrets) {
       .core_domain = core_domain.as<const char*>(),
       .ws_token = ws_token.as<const char*>(),
       .secure_url = secure_url};
-  services.setServer(std::make_shared<WebSocket>(config, std::move(root_cas)));
+  services.setWebSocket(std::make_shared<WebSocket>(config, std::move(root_cas)));
   return true;
 }
 
@@ -111,12 +89,12 @@ bool createSystemTasks(Services& services) {
   // Check if they were created, enable them and check if they started
   for (tasks::BaseTask* task : tasks) {
     if (!task) {
-      Serial.println(F("Failed creating task"));
+      TRACELN(F("Failed creating task"));
       return false;
     }
     task->enable();
     if (!task->isValid()) {
-      Serial.println(task->getError().toString());
+      TRACELN(task->getError().toString());
       delete task;
       return false;
     }
@@ -131,35 +109,19 @@ bool setupNode(Services& services) {
   Serial.println(WebSocket::firmware_version_);
   WiFi.begin();
 
-  // Initialize the file system
-  if (!LittleFS.begin()) {
-    Serial.println(F("Failed mounting SPIFFS"));
-    return false;
-  }
-
-  // Load a common config file for the subsystems
-  fs::File secrets_file = LittleFS.open("/secrets.json", "r");
-  if (!secrets_file) {
-    Serial.println(F("Failed opening secrets.json"));
-    return false;
-  }
-  DynamicJsonDocument secrets_doc(secrets_file.size() * 1.5);
-  DeserializationError error = deserializeJson(secrets_doc, secrets_file);
-  secrets_file.close();
-  if (error) {
-    Serial.println(F("Failed parsing secrets.json"));
-    return false;
-  }
-
-  // Load and start subsystems
-  bool success = loadNetwork(services, secrets_doc.as<JsonObjectConst>());
+  // Load and start subsystems that need secrets
+  services.setStorage(std::make_shared<Storage>());
+  JsonVariantConst secrets = services.getStorage()->openSecrets();
+  bool success = loadNetwork(services, secrets);
   if (!success) {
     return false;
   }
-  success = loadWebsocket(services, secrets_doc.as<JsonObjectConst>());
+  success = loadWebsocket(services, secrets);
   if (!success) {
     return false;
   }
+  services.getStorage()->closeSecrets(false);
+
   success = createSystemTasks(services);
   if (!success) {
     return false;

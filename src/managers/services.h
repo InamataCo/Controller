@@ -6,7 +6,7 @@
 
 #include "managers/service_getters.h"
 #include "managers/network.h"
-#include "managers/server.h"
+#include "managers/web_socket.h"
 #ifdef ESP32
 #include "managers/ota_updater.h"
 #endif
@@ -38,8 +38,11 @@ class Services {
   std::shared_ptr<Network> getNetwork();
   void setNetwork(std::shared_ptr<Network> network);
 
-  std::shared_ptr<Server> getServer();
-  void setServer(std::shared_ptr<Server> server);
+  std::shared_ptr<WebSocket> getWebSocket();
+  void setWebSocket(std::shared_ptr<WebSocket> web_socket);
+
+  std::shared_ptr<Storage> getStorage();
+  void setStorage(std::shared_ptr<Storage> storage);
 
   static peripheral::PeripheralController& getPeripheralController();
   static tasks::TaskController& getTaskController();
@@ -60,7 +63,9 @@ class Services {
   /// Handles network connectivity and time synchronization
   std::shared_ptr<Network> network_;
   /// Handles communication to the server
-  std::shared_ptr<Server> server_;
+  std::shared_ptr<WebSocket> web_socket_;
+  /// Handles FS / EEPROM storage
+  std::shared_ptr<Storage> storage_;
   /// Executes the active tasks
   static Scheduler scheduler_;
   /// Creates peripherals with the registered peripheral factory callbacks

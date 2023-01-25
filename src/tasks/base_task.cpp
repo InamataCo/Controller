@@ -52,7 +52,7 @@ void BaseTask::OnDisable() {
   if (task_removal_callback_) {
     task_removal_callback_(*this);
   } else {
-    Serial.println(F("Task removal callback not set. Rebooting in 10s"));
+    TRACELN(F("Task removal callback not set. Rebooting in 10s"));
     delay(10000);
     ESP.restart();
   }

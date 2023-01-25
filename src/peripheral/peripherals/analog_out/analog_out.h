@@ -37,7 +37,7 @@ class AnalogOut : public Peripheral, public capabilities::SetValue {
   static bool capability_set_value_;
 
   /// Interface to send data to the server
-  std::shared_ptr<Server> server_;
+  std::shared_ptr<WebSocket> web_socket_;
 
   /// The pin to be used as a GPIO output
   unsigned int pin_;

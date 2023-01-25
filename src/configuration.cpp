@@ -8,13 +8,11 @@
 
 namespace inamata {
 
-// Check Connectivity Task
-const std::chrono::milliseconds check_connectivity_period{200};
+const __FlashStringHelper* wifi_portal_ssid = FPSTR("InamataSetup");
+const __FlashStringHelper* wifi_portal_password = FPSTR("12345678");
 
-// WiFi
-const std::chrono::seconds wifi_connect_timeout(30);
+StaticJsonDocument<JSON_PAYLOAD_SIZE> doc_in;
+StaticJsonDocument<JSON_PAYLOAD_SIZE> doc_out;
 
-// Server certificate authorities TLS certificates
-const std::chrono::seconds server_connect_timeout{30};
 
 }  // namespace inamata

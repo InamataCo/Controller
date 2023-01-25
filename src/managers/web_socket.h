@@ -4,11 +4,11 @@
 #include <ArduinoJson.h>
 #include <WebSocketsClient.h>
 
+#include <functional>
 #include <map>
 #include <vector>
 
 #include "configuration.h"
-#include "server.h"
 #include "utils/uuid.h"
 
 namespace inamata {
@@ -22,14 +22,19 @@ using namespace std::placeholders;
  * peripheral and tasks on the controller, and return their output to the
  * server.
  */
-class WebSocket : public Server, private WebSocketsClient {
+class WebSocket {
  public:
+  enum class ConnectState { kConnected, kConnecting, kFailed };
+
+  using Callback = std::function<void(const JsonObjectConst& message)>;
+  using CallbackMap = std::map<String, Callback>;
+
   struct Config {
     std::function<std::vector<utils::UUID>()> get_peripheral_ids;
-    Server::Callback peripheral_controller_callback;
+    Callback peripheral_controller_callback;
     std::function<std::vector<utils::UUID>()> get_task_ids;
-    Server::Callback task_controller_callback;
-    Server::Callback ota_update_callback;
+    Callback task_controller_callback;
+    Callback ota_update_callback;
     const char* core_domain;
     const char* ws_token;
     bool secure_url;
@@ -48,36 +53,61 @@ class WebSocket : public Server, private WebSocketsClient {
 
   const String& type();
 
-  bool isConnected() final;
-  bool connect(std::chrono::seconds timeout) final;
+  ConnectState handle();
 
-  void handle() final;
+  void send(const String& name, double value);
+  void send(const String& name, int value);
+  void send(const String& name, bool value);
+  void send(const String& name, JsonDocument& doc);
+  void send(const String& name, const char* value, size_t length);
 
-  void send(const String& name, double value) final;
-  void send(const String& name, int value) final;
-  void send(const String& name, bool value) final;
-  void send(const String& name, DynamicJsonDocument& doc) final;
-  void send(const String& name, const char* value, size_t length) final;
+  void sendTelemetry(const utils::UUID& uuid, JsonObject data);
+  void sendRegister();
+  void sendError(const String& who, const String& message);
+  void sendError(const ErrorResult& error, const String& request_id = "");
 
-  void sendTelemetry(const utils::UUID& uuid, JsonObject data) final;
-  void sendRegister() final;
-  void sendError(const String& who, const String& message) final;
-  void sendError(const ErrorResult& error, const String& request_id = "") final;
+  void sendResults(JsonObjectConst results);
+  void sendSystem(JsonObject data);
 
-  void sendResults(JsonObjectConst results) final;
-  void sendSystem(JsonObject data) final;
-
-  const String& getRootCas() const final;
+  const char* getRootCas() const;
+  void setWsToken(const char* token);
+  const bool isWsTokenSet() const;
 
   static const __FlashStringHelper* firmware_version_;
+  String core_domain_;
+  static const char* core_domain_key_;
+  bool secure_url_;
+  static const char* secure_url_key_;
+  static const char* ws_token_key_;
+
+  static const __FlashStringHelper* request_id_key_;
+  static const __FlashStringHelper* type_key_;
+  static const __FlashStringHelper* result_type_;
+  static const __FlashStringHelper* telemetry_type_;
+  static const __FlashStringHelper* task_id_key_;
+  static const __FlashStringHelper* system_type_;
 
  private:
+  /**
+   * Checks if the WebSocket connected to the server
+   * 
+   * @return true if connected
+   */
+  bool isConnected();
+
+  /**
+   * Perform setup and check if connect timeout has been reached
+   * 
+   * @return ConnectState kConnecting if retrying, kFailed if timed out
+   */
+  ConnectState connect();
+
   void handleEvent(WStype_t type, uint8_t* payload, size_t length);
   void handleData(const uint8_t* payload, size_t length);
 
   /**
    * Save the up/down durations and timepoints when the connection state changes
-   * 
+   *
    * @param is_connected True if the connection is currently connected
    */
   void updateUpDownTime(const bool is_connected);
@@ -89,6 +119,7 @@ class WebSocket : public Server, private WebSocketsClient {
 
   /// Whether the WebSocket was connected during the last check
   bool was_connected_ = false;
+  bool send_on_connect_messages_ = false;
   /// The timepoint when the connection last went up
   std::chrono::steady_clock::time_point last_connect_up_ =
       std::chrono::steady_clock::time_point::min();
@@ -108,11 +139,9 @@ class WebSocket : public Server, private WebSocketsClient {
   Callback task_controller_callback_;
   Callback ota_update_callback_;
 
-  String core_domain_;
-  bool secure_url_;
-  const char* controller_path_ = "/controller-ws/v1/";
-  String ws_token_;
   String root_cas_;
+  String ws_token_;
+  const char* controller_path_ = "/controller-ws/v1/";
 };
 
 }  // namespace inamata

@@ -52,7 +52,7 @@ class Pwm : public Peripheral, public capabilities::SetValue {
   static bool capability_set_value_;
 
   /// Interface to send data to the server
-  std::shared_ptr<Server> server_;
+  std::shared_ptr<WebSocket> web_socket_;
 
   /// Marks which PWM channels are currently in use
   static std::bitset<16> busy_channels_;

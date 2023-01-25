@@ -27,7 +27,8 @@ void OtaUpdater::handleCallback(const JsonObjectConst& message) {
   }
 
   // Abort if an update is already running and use the new request ID
-  const char* request_id = message[Server::request_id_key_].as<const char*>();
+  const char* request_id =
+      message[WebSocket::request_id_key_].as<const char*>();
   if (is_updating_) {
     sendResult(status_fail_, update_in_progress_error_, request_id);
     return;
@@ -70,14 +71,14 @@ void OtaUpdater::handleCallback(const JsonObjectConst& message) {
   bool connected;
   if (strcmp(url_str, "https") == 0) {
     // Get and set the CA if available
-    std::shared_ptr<Server> server = services_.getServer();
-    if (server == nullptr) {
-      Serial.println(ErrorResult(type(), ServiceGetters::server_nullptr_error_)
-                         .toString());
+    std::shared_ptr<WebSocket> web_socket = services_.getWebSocket();
+    if (web_socket == nullptr) {
+      TRACELN(
+          ErrorResult(type(), ServiceGetters::web_socket_nullptr_error_)
+              .toString());
       return;
     }
-    connected =
-        client_.begin(url.as<const char*>(), server->getRootCas().c_str());
+    connected = client_.begin(url.as<const char*>(), web_socket->getRootCas());
   } else {
     // Use an unencrypted connection
     connected = client_.begin(url.as<const char*>());
@@ -175,29 +176,30 @@ void OtaUpdater::OnTaskDisable() {
 void OtaUpdater::sendResult(const __FlashStringHelper* status,
                             const String& detail, const char* request_id) {
   // Get the server instance to send the error message
-  std::shared_ptr<Server> server = services_.getServer();
-  if (server == nullptr) {
-    Serial.println(
-        ErrorResult(type(), ServiceGetters::server_nullptr_error_).toString());
+  std::shared_ptr<WebSocket> web_socket = services_.getWebSocket();
+  if (web_socket == nullptr) {
+    TRACELN(
+        ErrorResult(type(), ServiceGetters::web_socket_nullptr_error_)
+            .toString());
     return;
   }
   // Create the error message
-  DynamicJsonDocument result_doc(BB_JSON_PAYLOAD_SIZE);
-  result_doc[Server::type_key_] = Server::result_type_;
+  doc_out.clear();
+  doc_out[WebSocket::type_key_] = WebSocket::result_type_;
   // Favor request ID from parameters over class member. Ignore if none given
   if (request_id != nullptr) {
-    result_doc[Server::request_id_key_] = request_id;
+    doc_out[WebSocket::request_id_key_] = request_id;
   } else if (!request_id_.isEmpty()) {
-    result_doc[Server::request_id_key_] = request_id_.c_str();
+    doc_out[WebSocket::request_id_key_] = request_id_.c_str();
   }
 
-  JsonObject update_result = result_doc.createNestedObject(update_command_key_);
+  JsonObject update_result = doc_out.createNestedObject(update_command_key_);
   update_result[status_key_] = status;
   if (!detail.isEmpty()) {
     update_result[detail_key_] = detail.c_str();
   }
   // Send the error and clear the request ID to end trace line
-  server->sendResults(result_doc.as<JsonObject>());
+  web_socket->sendResults(doc_out.as<JsonObject>());
 }
 
 const __FlashStringHelper* OtaUpdater::update_command_key_ = FPSTR("update");

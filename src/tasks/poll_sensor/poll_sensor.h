@@ -42,7 +42,7 @@ class PollSensor : public get_values_task::GetValuesTask {
                            const JsonObjectConst& parameters,
                            Scheduler& scheduler);
 
-  std::shared_ptr<Server> server_;
+  std::shared_ptr<WebSocket> web_socket_;
 
   std::chrono::milliseconds interval_;
   std::chrono::steady_clock::time_point run_until_;

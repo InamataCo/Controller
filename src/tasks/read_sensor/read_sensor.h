@@ -57,7 +57,7 @@ class ReadSensor : public get_values_task::GetValuesTask {
   std::shared_ptr<peripheral::capabilities::StartMeasurement>
       start_measurement_peripheral_ = nullptr;
 
-  std::shared_ptr<Server> server_;
+  std::shared_ptr<WebSocket> web_socket_;
 };
 
 }  // namespace read_sensor

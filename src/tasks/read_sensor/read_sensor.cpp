@@ -13,9 +13,9 @@ ReadSensor::ReadSensor(const ServiceGetters& services,
     return;
   }
 
-  server_ = services.getServer();
-  if (server_ == nullptr) {
-    setInvalid(services.server_nullptr_error_);
+  web_socket_ = services.getWebSocket();
+  if (web_socket_ == nullptr) {
+    setInvalid(services.web_socket_nullptr_error_);
     return;
   }
 
@@ -65,8 +65,8 @@ bool ReadSensor::TaskCallback() {
   }
 
   // Create the JSON doc
-  DynamicJsonDocument result_doc(BB_JSON_PAYLOAD_SIZE);
-  JsonObject result_object = result_doc.to<JsonObject>();
+  doc_out.clear();
+  JsonObject result_object = doc_out.to<JsonObject>();
 
   // Insert the value units and peripheral UUID
   ErrorResult error = makeTelemetryJson(result_object);
@@ -76,7 +76,7 @@ bool ReadSensor::TaskCallback() {
   }
 
   // Send the result to the server
-  server_->sendTelemetry(getTaskID(), result_object);
+  web_socket_->sendTelemetry(getTaskID(), result_object);
   return false;
 }
 

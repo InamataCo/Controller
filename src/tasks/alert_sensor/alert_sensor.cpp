@@ -14,9 +14,9 @@ AlertSensor::AlertSensor(const ServiceGetters& services,
     return;
   }
 
-  server_ = services.getServer();
-  if (server_ == nullptr) {
-    setInvalid(services.server_nullptr_error_);
+  web_socket_ = services.getWebSocket();
+  if (web_socket_ == nullptr) {
+    setInvalid(services.web_socket_nullptr_error_);
     return;
   }
 
@@ -132,19 +132,19 @@ AlertSensor::TriggerType AlertSensor::getTriggerType() { return trigger_type_; }
 bool AlertSensor::sendAlert(TriggerType trigger_type) {
   if (trigger_type == TriggerType::kRising ||
       trigger_type == TriggerType::kFalling) {
-    DynamicJsonDocument doc(BB_JSON_PAYLOAD_SIZE);
-    doc[threshold_key_] = threshold_;
+    doc_out.clear();
+    doc_out[threshold_key_] = threshold_;
 
     auto trigger_type_string = trigger_type_strings_.find(trigger_type);
     if (trigger_type_string != trigger_type_strings_.end()) {
-      doc[trigger_type_key_] = trigger_type_string->second;
+      doc_out[trigger_type_key_] = trigger_type_string->second;
     } else {
       return false;
     }
 
-    doc[peripheral_key_] = getPeripheralUUID().toString();
+    doc_out[peripheral_key_] = getPeripheralUUID().toString();
 
-    server_->send(type(), doc);
+    web_socket_->send(type(), doc_out);
     return true;
   }
 
@@ -168,9 +168,10 @@ BaseTask* AlertSensor::factory(const ServiceGetters& services,
 }
 
 const std::map<AlertSensor::TriggerType, const __FlashStringHelper*>
-    AlertSensor::trigger_type_strings_{{TriggerType::kRising, FPSTR("rising")},
-                                       {TriggerType::kFalling, FPSTR("falling")},
-                                       {TriggerType::kEither, FPSTR("either")}};
+    AlertSensor::trigger_type_strings_{
+        {TriggerType::kRising, FPSTR("rising")},
+        {TriggerType::kFalling, FPSTR("falling")},
+        {TriggerType::kEither, FPSTR("either")}};
 
 }  // namespace alert_sensor
 }  // namespace tasks

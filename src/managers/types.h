@@ -2,10 +2,16 @@
 
 #include <Arduino.h>
 
-#if defined ENABLE_TRACE
-    #define TRACE( format, ... )   Serial.printf( "%s::%s(%d) " format, __FILE__, __FUNCTION__,  __LINE__, __VA_ARGS__ )
+#ifdef ENABLE_TRACE
+#define TRACEF(format, ...)                                       \
+  Serial.printf("%s::%s(%d) ", __FILE__, __FUNCTION__, __LINE__); \
+  Serial.printf(String(F(format)).c_str(), __VA_ARGS__)
+#define TRACELN(msg, ...)                                         \
+  Serial.printf("%s::%s(%d) ", __FILE__, __FUNCTION__, __LINE__); \
+  Serial.println(msg)
 #else
-    #define TRACE( format, ... )
+#define TRACEF(format, ...) (void)sizeof(__VA_ARGS__)
+#define TRACELN(format, ...)
 #endif
 
 namespace inamata {

@@ -9,9 +9,9 @@ namespace peripherals {
 namespace pwm {
 
 Pwm::Pwm(const ServiceGetters& services, const JsonObjectConst& parameters) {
-  server_ = services.getServer();
-  if (server_ == nullptr) {
-    setInvalid(services.server_nullptr_error_);
+  web_socket_ = services.getWebSocket();
+  if (web_socket_ == nullptr) {
+    setInvalid(services.web_socket_nullptr_error_);
     return;
   }
 
@@ -46,7 +46,7 @@ const String& Pwm::type() {
 
 void Pwm::setValue(utils::ValueUnit value_unit) {
   if (value_unit.data_point_type != data_point_type_) {
-    server_->sendError(type(), value_unit.sourceUnitError(data_point_type_));
+    web_socket_->sendError(type(), value_unit.sourceUnitError(data_point_type_));
     return;
   }
 

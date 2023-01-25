@@ -2,7 +2,8 @@
 #include <functional>
 
 #include "managers/network.h"
-#include "managers/server.h"
+#include "managers/storage.h"
+#include "managers/web_socket.h"
 
 namespace inamata {
 /**
@@ -11,15 +12,24 @@ namespace inamata {
 struct ServiceGetters {
   ServiceGetters() = default;
   ServiceGetters(std::function<std::shared_ptr<Network>()> get_network,
-                 std::function<std::shared_ptr<Server>()> get_server)
-      : getNetwork(get_network), getServer(get_server) {}
+                 std::function<std::shared_ptr<WebSocket>()> get_web_socket,
+                 std::function<std::shared_ptr<Storage>()> get_storage)
+      : getNetwork(get_network),
+        getWebSocket(get_web_socket),
+        getStorage(get_storage) {}
 
   std::function<std::shared_ptr<Network>()> getNetwork = []() {
     return nullptr;
   };
-  std::function<std::shared_ptr<Server>()> getServer = []() { return nullptr; };
+  std::function<std::shared_ptr<WebSocket>()> getWebSocket = []() {
+    return nullptr;
+  };
+  std::function<std::shared_ptr<Storage>()> getStorage = []() {
+    return nullptr;
+  };
 
   static const __FlashStringHelper* network_nullptr_error_;
-  static const __FlashStringHelper* server_nullptr_error_;
+  static const __FlashStringHelper* web_socket_nullptr_error_;
+  static const __FlashStringHelper* storage_nullptr_error_;
 };
 }  // namespace inamata

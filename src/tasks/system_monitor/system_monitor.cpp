@@ -26,8 +26,8 @@ void SystemMonitor::SetInterval(std::chrono::milliseconds interval) {
 }
 
 bool SystemMonitor::OnTaskEnable() {
-  server_ = services_.getServer();
-  if (server_ == nullptr) {
+  web_socket_ = services_.getWebSocket();
+  if (web_socket_ == nullptr) {
     setInvalid(services_.network_nullptr_error_);
     return false;
   }
@@ -46,12 +46,12 @@ bool SystemMonitor::TaskCallback() {
   size_t max_malloc_bytes = heap_caps_get_largest_free_block(MALLOC_CAP_8BIT);
   size_t least_free_bytes = heap_caps_get_minimum_free_size(MALLOC_CAP_8BIT);
 
-  DynamicJsonDocument doc(BB_JSON_PAYLOAD_SIZE);
-  doc["free_memory_bytes"] = free_bytes;
-  doc["heap_fragmentation_percent"] =
+  doc_out.clear();
+  doc_out["free_memory_bytes"] = free_bytes;
+  doc_out["heap_fragmentation_percent"] =
       (float(free_bytes) - float(max_malloc_bytes)) / float(free_bytes) *
       float(100);
-  doc["least_free_bytes"] = least_free_bytes;
+  doc_out["least_free_bytes"] = least_free_bytes;
 
   float cpuTotal = scheduler_.getCpuLoadTotal();
   float cpuCycles = scheduler_.getCpuLoadCycle();
@@ -59,10 +59,10 @@ bool SystemMonitor::TaskCallback() {
   scheduler_.cpuLoadReset();
 
   // Productive work (not idle, not scheduling) --> time in task callbacks
-  doc["productive_percent"] = 100 - ((cpuIdle + cpuCycles) / cpuTotal * 100.0);
-  doc["wifi_rssi"] = WiFi.RSSI();
+  doc_out["productive_percent"] = 100 - ((cpuIdle + cpuCycles) / cpuTotal * 100.0);
+  doc_out["wifi_rssi"] = WiFi.RSSI();
 
-  server_->sendSystem(doc.as<JsonObject>());
+  web_socket_->sendSystem(doc_out.as<JsonObject>());
   return true;
 }
 
