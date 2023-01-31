@@ -49,7 +49,7 @@ bool Network::isConnected(wl_status_t* wifi_status) {
   // If connected, set connect mode to fast connect for reconnect
   if (status == WL_CONNECTED) {
     connect_mode_ = ConnectMode::kFastConnect;
-#ifdef MONITOR_MEMORY
+#ifdef ENABLE_TRACE
     if (connect_start_ != std::chrono::steady_clock::time_point::min()) {
       Serial.printf("Network: Connected to %s, IP: %s\n", WiFi.SSID().c_str(),
                     WiFi.localIP().toString().c_str());

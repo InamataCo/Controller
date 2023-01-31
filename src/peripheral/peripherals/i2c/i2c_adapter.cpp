@@ -41,7 +41,7 @@ I2CAdapter::I2CAdapter(const ServiceGetters& services,
     taken_variable = &wire1_taken;
     wire_ = &Wire1;
   } else {
-    web_socket_->sendError(type(), F("Both wires already taken :("));
+    web_socket_->sendError(type(), F("Both wires already taken"));
     setInvalid();
     return;
   }
@@ -50,7 +50,11 @@ I2CAdapter::I2CAdapter(const ServiceGetters& services,
   wire_->begin(data_pin, clock_pin, 0);
 }
 
-I2CAdapter::~I2CAdapter() { *taken_variable = false; }
+I2CAdapter::~I2CAdapter() {
+  if (taken_variable) {
+    *taken_variable = false;
+  }
+}
 
 const String& I2CAdapter::getType() const { return type(); }
 

@@ -52,8 +52,9 @@ WebSocket::ConnectState WebSocket::connect() {
       return ConnectState::kFailed;
     }
     if (secure_url_) {
-      websocket_client.beginSslWithCA(core_domain_.c_str(), 443, controller_path_,
-                                default_root_ca, ws_token_.c_str());
+      websocket_client.beginSslWithCA(core_domain_.c_str(), 443,
+                                      controller_path_, getRootCas(),
+                                      ws_token_.c_str());
     } else {
       websocket_client.begin(core_domain_.c_str(), 8000, controller_path_,
                              ws_token_.c_str());
@@ -181,7 +182,7 @@ void WebSocket::sendError(const String& who, const String& message) {
 
 void WebSocket::sendError(const ErrorResult& error, const String& request_id) {
   TRACEF("origin: %s message: %s request_id: %s\n", error.who_.c_str(),
-                error.detail_.c_str(), request_id.c_str());
+         error.detail_.c_str(), request_id.c_str());
   doc_out.clear();
 
   // Use ther error message type
@@ -195,6 +196,22 @@ void WebSocket::sendError(const ErrorResult& error, const String& request_id) {
 
   // The request ID to enable tracing
   doc_out["request_id"] = request_id.c_str();
+
+  std::vector<char> register_buf = std::vector<char>(measureJson(doc_out) + 1);
+  size_t n = serializeJson(doc_out, register_buf.data(), register_buf.size());
+
+  websocket_client.sendTXT(register_buf.data(), n);
+}
+
+void WebSocket::sendDebug(const String& message) {
+  TRACEF("message: %s\n", message.c_str());
+  doc_out.clear();
+
+  // Use ther error message type
+  doc_out["type"] = "dbg";
+
+  // The error itself
+  doc_out["message"] = message.c_str();
 
   std::vector<char> register_buf = std::vector<char>(measureJson(doc_out) + 1);
   size_t n = serializeJson(doc_out, register_buf.data(), register_buf.size());
@@ -239,6 +256,7 @@ void WebSocket::handleEvent(WStype_t type, uint8_t* payload, size_t length) {
   switch (type) {
     case WStype_DISCONNECTED: {
       TRACELN(F(": Disconnected!"));
+      last_connect_up_ = std::chrono::steady_clock::now();
     } break;
     case WStype_CONNECTED: {
       TRACEF("Connected to: %s\n", reinterpret_cast<char*>(payload));
@@ -284,9 +302,7 @@ void WebSocket::updateUpDownTime(const bool is_connected) {
     was_connected_ = is_connected;
     const auto now = std::chrono::steady_clock::now();
     if (is_connected) {
-#ifdef MONITOR_MEMORY
-      Serial.println("WS connected");
-#endif
+      TRACELN("WS connected");
       // Connection went up
       if (last_connect_down_ != std::chrono::steady_clock::time_point::min()) {
         // Only update if last_connect_down_ has been set

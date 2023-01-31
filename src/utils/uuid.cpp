@@ -1,5 +1,9 @@
 #include "uuid.h"
 
+#ifdef ESP8266
+#include "esp8266_peri.h"
+#endif
+
 namespace inamata {
 namespace utils {
 

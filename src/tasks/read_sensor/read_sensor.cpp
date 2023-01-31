@@ -26,6 +26,9 @@ ReadSensor::ReadSensor(const ServiceGetters& services,
       std::dynamic_pointer_cast<peripheral::capabilities::StartMeasurement>(
           getPeripheral());
   if (start_measurement_peripheral_) {
+    // Repeatedly run task to call handleMeasurement
+    Task::setIterations(-1);
+
     auto result = start_measurement_peripheral_->startMeasurement(parameters);
     if (result.error.isError()) {
       setInvalid(result.error.toString());

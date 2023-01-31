@@ -2,6 +2,8 @@
 
 #include <Arduino.h>
 
+#include "utils/uuid.h"
+
 namespace inamata {
 class ErrorStore {
  public:
@@ -13,6 +15,8 @@ class ErrorStore {
   };
 
   static String genMissingProperty(String key, KeyType key_type);
+
+  static String genNotAValid(const utils::UUID& uuid, const String& type);
 
  private:
   /**

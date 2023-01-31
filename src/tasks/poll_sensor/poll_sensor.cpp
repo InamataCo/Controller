@@ -21,25 +21,25 @@ PollSensor::PollSensor(const ServiceGetters& services,
 
   // Get the interval with which to poll the sensor
   JsonVariantConst interval_ms = parameters[interval_ms_key_];
-  if (!interval_ms.is<unsigned int>()) {
+  if (!interval_ms.is<float>()) {
     setInvalid(interval_ms_key_error_);
     return;
   }
-  interval_ = std::chrono::milliseconds(interval_ms);
+  interval_ = std::chrono::milliseconds(interval_ms.as<int>());
 
   // Inifite iterations until end time
   Task::setIterations(-1);
 
   // Optionally get the duration for which to poll the sensor [default: forever]
   JsonVariantConst duration_ms = parameters[duration_ms_key_];
-  if (duration_ms.is<int>()) {
+  if (duration_ms.is<float>()) {
     // If the duration is zero or negative, disable on first run
     if (duration_ms <= 0) {
       setInvalid();
       return;
     }
     run_until_ = std::chrono::steady_clock::now() +
-                 std::chrono::milliseconds(duration_ms);
+                 std::chrono::milliseconds(duration_ms.as<int>());
   } else if (duration_ms.isNull()) {
     run_until_ = std::chrono::steady_clock::time_point::max();
   } else {
@@ -50,11 +50,11 @@ PollSensor::PollSensor(const ServiceGetters& services,
   // Check if the peripheral supports the startMeasurement capability. Start a
   // measurement if yes. Wait the returned amount of time to check the
   // measurement state. If doesn't support it, enable the task without delay.
-  auto start_measurement_peripheral =
+  start_measurement_peripheral_ =
       std::dynamic_pointer_cast<peripheral::capabilities::StartMeasurement>(
           getPeripheral());
-  if (start_measurement_peripheral) {
-    auto result = start_measurement_peripheral->startMeasurement(parameters);
+  if (start_measurement_peripheral_) {
+    auto result = start_measurement_peripheral_->startMeasurement(parameters);
     if (result.error.isError()) {
       setInvalid(result.error.toString());
       return;

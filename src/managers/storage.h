@@ -9,7 +9,8 @@
 #include <StreamUtils.h>
 #endif
 
-#include "types.h"
+#include "managers/logging.h"
+#include "managers/types.h"
 
 namespace inamata {
 

@@ -5,10 +5,6 @@
 
 #include <array>
 
-#ifdef ESP8266
-#include "esp8266_peri.h"
-#endif
-
 #include "managers/io_types.h"
 
 namespace inamata {

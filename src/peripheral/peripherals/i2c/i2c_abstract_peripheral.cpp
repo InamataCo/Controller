@@ -5,7 +5,7 @@
 namespace inamata {
 namespace peripheral {
 namespace peripherals {
-namespace i2c_adapter {
+namespace i2c {
 
 I2CAbstractPeripheral::I2CAbstractPeripheral(const JsonObjectConst& parameter) {
   utils::UUID i2c_adapter_uuid(parameter[i2c_adapter_key_]);

@@ -5,6 +5,7 @@
 #include <chrono>
 #include <vector>
 
+#include "managers/logging.h"
 #include "managers/types.h"
 
 namespace inamata {

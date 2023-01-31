@@ -7,7 +7,7 @@
 #include "peripheral/capabilities/calibrate.h"
 #include "peripheral/capabilities/get_values.h"
 #include "peripheral/capabilities/start_measurement.h"
-#include "peripheral/peripherals/i2c_adapter/i2c_abstract_peripheral.h"
+#include "peripheral/peripherals/i2c/i2c_abstract_peripheral.h"
 
 namespace inamata {
 namespace peripheral {
@@ -17,7 +17,7 @@ namespace as_ec_meter {
 /**
  * Peripheral interface for the Atlas Scientific EZO EC Meter over I2C
  */
-class AsEcMeterI2C : public peripherals::i2c_adapter::I2CAbstractPeripheral,
+class AsEcMeterI2C : public peripherals::i2c::I2CAbstractPeripheral,
                      public capabilities::GetValues,
                      public capabilities::StartMeasurement,
                      public capabilities::Calibrate,

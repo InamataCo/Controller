@@ -5,14 +5,14 @@
 
 #include "peripheral/capabilities/get_values.h"
 #include "peripheral/capabilities/start_measurement.h"
-#include "peripheral/peripherals/i2c_adapter/i2c_abstract_peripheral.h"
+#include "peripheral/peripherals/i2c/i2c_abstract_peripheral.h"
 
 namespace inamata {
 namespace peripheral {
 namespace peripherals {
 namespace as_ph_meter {
 
-class AsPhMeterI2C : public peripherals::i2c_adapter::I2CAbstractPeripheral,
+class AsPhMeterI2C : public peripherals::i2c::I2CAbstractPeripheral,
                      public capabilities::GetValues,
                      public capabilities::StartMeasurement,
                      private Ezo_board {

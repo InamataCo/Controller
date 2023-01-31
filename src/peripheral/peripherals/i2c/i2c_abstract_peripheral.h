@@ -3,19 +3,19 @@
 #include <Wire.h>
 
 #include "peripheral/peripheral.h"
-#include "peripheral/peripherals/i2c_adapter/i2c_adapter.h"
+#include "peripheral/peripherals/i2c/i2c_adapter.h"
 
 namespace inamata {
 namespace peripheral {
 namespace peripherals {
-namespace i2c_adapter {
+namespace i2c {
 
 /**
  * Interface for sensors to access peripherals over the I2C bus
  */
 class I2CAbstractPeripheral : public Peripheral {
  public:
-  I2CAbstractPeripheral(const JsonObjectConst& parameter);
+  I2CAbstractPeripheral(const JsonObjectConst& parameters);
   virtual ~I2CAbstractPeripheral() = default;
 
   static const String& type();

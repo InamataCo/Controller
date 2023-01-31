@@ -6,6 +6,7 @@
 #include <functional>
 #include <set>
 
+#include "managers/logging.h"
 #include "managers/types.h"
 #include "utils/uuid.h"
 
@@ -19,7 +20,7 @@ class BaseTask : public Task {
    *
    * If the task ID is not defined, it is marked as a system task which won't
    * be deleted by the task remover.
-   * 
+   *
    * \param scheduler The scheduler that executes the tasks
    * \param uuid Unique identifier created locally
    */
@@ -40,7 +41,7 @@ class BaseTask : public Task {
   /**
    * Called by the task scheduler when the task is enabled and checks if the
    * task is valid
-   * 
+   *
    * \see OnTaskEnable()
    *
    * \return True if the task is valid
@@ -52,7 +53,7 @@ class BaseTask : public Task {
    * enabled
    *
    * \see OnEnable()
-   * 
+   *
    * \return True if the derived task inited successfully
    */
   virtual bool OnTaskEnable();
@@ -61,7 +62,7 @@ class BaseTask : public Task {
    * Called by the task scheduler when the task is to be executed
    *
    * \see TaskCallback()
-   * 
+   *
    * \return True if the task performed work
    */
   bool Callback() final;
@@ -71,9 +72,9 @@ class BaseTask : public Task {
    *
    * Use the setInvalid() functions to set error states. The task is cleaned up
    * and the error reported if it is not valid before or after being executed.
-   * 
+   *
    * \see Callback()
-   * 
+   *
    * \return True to continue, false to end normally
    */
   virtual bool TaskCallback() = 0;
@@ -83,14 +84,14 @@ class BaseTask : public Task {
    *
    * Contains a static TaskRemovalTask which is tasked with removing disabled
    * tasks.
-   * 
+   *
    * \see OnTaskDisable()
    */
   void OnDisable() final;
 
   /**
    * For derived classes to perform clean up
-   * 
+   *
    * \see OnDisable()
    */
   virtual void OnTaskDisable();
@@ -118,7 +119,7 @@ class BaseTask : public Task {
 
   /**
    * Checks if it is a system task
-   * 
+   *
    * \return True if it is a system task
    */
   bool isSystemTask() const;

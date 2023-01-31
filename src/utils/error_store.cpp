@@ -31,6 +31,13 @@ String ErrorStore::genMissingProperty(String key, KeyType key_type) {
   return error;
 }
 
+String ErrorStore::genNotAValid(const utils::UUID& uuid, const String& type) {
+  String error = uuid.toString();
+  error += F(" not a valid ");
+  error += type;
+  return error;
+}
+
 const __FlashStringHelper* ErrorStore::missing_property_prefix_ =
     FPSTR("Missing property: ");
 const __FlashStringHelper* ErrorStore::uuid_type_ = FPSTR("uuid");

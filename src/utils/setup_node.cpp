@@ -2,9 +2,7 @@
 
 #include "managers/web_socket.h"
 #include "tasks/connectivity/connectivity.h"
-#ifdef ESP32
 #include "tasks/system_monitor/system_monitor.h"
-#endif
 
 namespace inamata {
 
@@ -81,10 +79,8 @@ bool createSystemTasks(Services& services) {
   // Create the system tasks
   tasks.push_back(new tasks::connectivity::CheckConnectivity(
       services.getGetters(), services.getScheduler()));
-#ifdef ESP32
   tasks.push_back(new tasks::system_monitor::SystemMonitor(
       services.getGetters(), services.getScheduler()));
-#endif
 
   // Check if they were created, enable them and check if they started
   for (tasks::BaseTask* task : tasks) {

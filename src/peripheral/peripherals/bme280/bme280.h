@@ -6,14 +6,14 @@
 #include "managers/service_getters.h"
 #include "peripheral/capabilities/get_values.h"
 #include "peripheral/peripheral.h"
-#include "peripheral/peripherals/i2c_adapter/i2c_abstract_peripheral.h"
+#include "peripheral/peripherals/i2c/i2c_abstract_peripheral.h"
 
 namespace inamata {
 namespace peripheral {
 namespace peripherals {
 namespace bme280 {
 
-class BME280 : public peripherals::i2c_adapter::I2CAbstractPeripheral,
+class BME280 : public peripherals::i2c::I2CAbstractPeripheral,
                public capabilities::GetValues {
  public:
   BME280(const JsonObjectConst& parameters);

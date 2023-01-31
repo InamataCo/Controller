@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "configuration.h"
+#include "managers/logging.h"
 #include "utils/uuid.h"
 
 namespace inamata {
@@ -65,6 +66,8 @@ class WebSocket {
   void sendRegister();
   void sendError(const String& who, const String& message);
   void sendError(const ErrorResult& error, const String& request_id = "");
+  
+  void sendDebug(const String& message);
 
   void sendResults(JsonObjectConst results);
   void sendSystem(JsonObject data);
@@ -90,14 +93,14 @@ class WebSocket {
  private:
   /**
    * Checks if the WebSocket connected to the server
-   * 
+   *
    * @return true if connected
    */
   bool isConnected();
 
   /**
    * Perform setup and check if connect timeout has been reached
-   * 
+   *
    * @return ConnectState kConnecting if retrying, kFailed if timed out
    */
   ConnectState connect();
