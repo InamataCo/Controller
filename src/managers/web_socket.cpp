@@ -64,8 +64,12 @@ WebSocket::ConnectState WebSocket::connect() {
     websocket_client.setReconnectInterval(5000);
   }
 
+  if (last_connect_start_ == last_connect_start_.min()) {
+    last_connect_start_ = std::chrono::steady_clock::now();
+  }
+
   // If timed out, say failed, else attempt to connect
-  if (std::chrono::steady_clock::now() - last_connect_up_ >
+  if (std::chrono::steady_clock::now() - last_connect_start_ >
       web_socket_connect_timeout) {
     return ConnectState::kFailed;
   }
@@ -87,6 +91,10 @@ WebSocket::ConnectState WebSocket::handle() {
   }
 
   return connect();
+}
+
+void WebSocket::resetConnectAttempt() {
+  last_connect_start_ = last_connect_start_.min();
 }
 
 void WebSocket::send(const String& name, double value) {

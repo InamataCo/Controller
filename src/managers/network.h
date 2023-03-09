@@ -30,11 +30,17 @@ struct NetworkInfo {
 class Network {
  public:
   enum class ConnectMode {
+    /// Connected to WiFi AP
     kConnected,
+    /// Try connecting using cached WiFi credentials
     kFastConnect,
+    /// Scan for WiFi networks
     kScanning,
+    /// Try to connect to any visible and known WiFi networks
     kMultiConnect,
+    /// Try to connect to hidden and known WiFi networks
     kHiddenConnect,
+    /// Cycle the WiFi modem's power to reset state
     kCyclePower
   };
 
@@ -67,9 +73,16 @@ class Network {
    */
   bool isConnected(wl_status_t* wifi_status = nullptr);
 
-  // Not sure if WiFiClientSecure checks the validity date of the certificate.
-  // Setting clock just to be sure...
-  int setClock(std::chrono::seconds timeout_s);
+  /**
+   * Updates clock from NTP server
+   * 
+   * Not sure if WiFiClientSecure checks the validity date of the certificate.
+   * Setting clock just to be sure...
+   * 
+   * @param timeout Time after which the update should timeout
+   * @return True if the time was updated
+   */
+  bool setClock(std::chrono::seconds timeout);
 
   static bool populateNetworkInfo(NetworkInfo& network_info);
 

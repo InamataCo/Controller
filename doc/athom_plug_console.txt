@@ -1,0 +1,21 @@
+http://ota.tasmota.com/tasmota/release/tasmota.bin.gz
+
+
+00:00:00.001 HDW: ESP8266EX
+00:00:00.050 CFG: Loaded from flash at F7, Count 21
+00:00:00.055 SER: Set to 8E1 4800 bit/s
+00:00:00.056 QPC: Count 1
+00:00:00.065 Project tasmota - Tasmota Version 10.1.0(tasmota)-2_7_4_9(2021-12-20T16:00:46)
+00:00:00.069 SER: Set to 8E1 4800 bit/s
+00:00:00.072 SNS: Hardware Serial
+00:00:00.561 WIF: Connecting to AP1 Berge24 Channel 6 BSSId 74:42:7F:32:48:E5 in mode 11n as tasmota-DD5416-5142...
+00:00:03.773 WIF: Connected
+17:09:22.005 HTP: Web server active on tasmota-DD5416-5142 with IP address 192.168.178.43
+17:09:23.033 RSL: INFO1 = {"Info1":{"Module":"Athom Plug V2","Version":"10.1.0(tasmota)","FallbackTopic":"cmnd/DVES_DD5416_fb/","GroupTopic":"cmnd/tasmotas/"}}
+17:09:23.035 RSL: INFO2 = {"Info2":{"WebServerMode":"Admin","Hostname":"tasmota-DD5416-5142","IPAddress":"192.168.178.43"}}
+17:09:23.037 RSL: INFO3 = {"Info3":{"RestartReason":"External System"}}
+17:09:23.039 RSL: RESULT = {"POWER":"ON"}
+17:09:23.041 RSL: POWER = ON
+17:09:24.876 QPC: Reset
+17:09:27.848 RSL: STATE = {"Time":"2023-01-18T17:09:27","Uptime":"0T00:00:10","UptimeSec":10,"Heap":29,"SleepMode":"Dynamic","Sleep":50,"LoadAvg":19,"MqttCount":0,"POWER":"ON","Wifi":{"AP":1,"SSId":"Berge24","BSSId":"74:42:7F:32:48:E5","Channel":11,"Mode":"11n","RSSI":74,"Signal":-63,"LinkCount":1,"Downtime":"0T00:00:04"}}
+17:09:27.856 RSL: SENSOR = {"Time":"2023-01-18T17:09:27","ENERGY":{"TotalStartTime":"2022-12-19T19:28:01","Total":0.000,"Yesterday":0.000,"Today":0.000,"Period": 0,"Power": 0,"ApparentPower": 0,"ReactivePower": 0,"Factor":0.00,"Voltage":235,"Current":0.000}}

@@ -295,7 +295,7 @@ bool Network::tryCyclePower() {
   return false;
 }
 
-int Network::setClock(std::chrono::seconds timeout_s) {
+bool Network::setClock(std::chrono::seconds timeout) {
   // #TODO: Make operation non-blocking
   configTime(0, 0, "pool.ntp.org", "time.nist.gov");
 
@@ -310,12 +310,12 @@ int Network::setClock(std::chrono::seconds timeout_s) {
     Serial.print(F("."));
     yield();
     nowSecs = time(nullptr);
-    if (tries * delay_duration > timeout_s) {
+    if (tries * delay_duration > timeout) {
       Serial.println();
       Serial.print(F("Timed out after "));
-      Serial.print(static_cast<long>(timeout_s.count()));
+      Serial.print(static_cast<long>(timeout.count()));
       Serial.println("s");
-      return 1;
+      return false;
     }
   }
   Serial.println();
@@ -324,7 +324,7 @@ int Network::setClock(std::chrono::seconds timeout_s) {
   gmtime_r(&nowSecs, &timeinfo);
   Serial.print(F("Current time: "));
   Serial.print(asctime(&timeinfo));
-  return 0;
+  return true;
 }
 
 bool Network::populateNetworkInfo(NetworkInfo& network_info) {

@@ -56,6 +56,11 @@ class WebSocket {
 
   ConnectState handle();
 
+  /**
+   * Resets the last connect time to start a new connect attempt
+   */
+  void resetConnectAttempt();
+
   void send(const String& name, double value);
   void send(const String& name, int value);
   void send(const String& name, bool value);
@@ -123,6 +128,9 @@ class WebSocket {
   /// Whether the WebSocket was connected during the last check
   bool was_connected_ = false;
   bool send_on_connect_messages_ = false;
+  /// The timepoint when the last connect attempt started
+  std::chrono::steady_clock::time_point last_connect_start_ =
+      std::chrono::steady_clock::time_point::min();
   /// The timepoint when the connection last went up
   std::chrono::steady_clock::time_point last_connect_up_ =
       std::chrono::steady_clock::time_point::min();

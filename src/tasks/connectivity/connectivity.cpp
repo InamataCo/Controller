@@ -41,7 +41,9 @@ bool CheckConnectivity::OnTaskEnable() {
 bool CheckConnectivity::TaskCallback() {
   if (mode_ == Mode::ConnectWiFi) {
     Network::ConnectMode connect_mode = network_->connect();
-    if (connect_mode == Network::ConnectMode::kCyclePower) {
+    // Disable starting WiFi captive portal if the WebSocket connects once
+    if (connect_mode == Network::ConnectMode::kCyclePower &&
+        !web_socket_connected_since_boot_) {
       setMode(Mode::RunCaptivePortal);
     }
     if (connect_mode == Network::ConnectMode::kConnected) {
@@ -65,26 +67,33 @@ bool CheckConnectivity::TaskCallback() {
   return true;
 }
 
-bool CheckConnectivity::checkInternetTime() {
+CheckConnectivity::TimeCheckResult CheckConnectivity::checkInternetTime() {
+  TimeCheckResult result = TimeCheckResult::kNoCheck;
   if (utils::chrono_abs(std::chrono::steady_clock::now() - last_time_check_) >
       time_check_period_) {
     last_time_check_ = std::chrono::steady_clock::now();
 
-    int error = network_->setClock(std::chrono::seconds(30));
-    if (error) {
-      TRACELN(F("Failed to update time.Restarting in 10s"));
-      delay(10000);
-      ESP.restart();
+    bool success = network_->setClock(std::chrono::seconds(30));
+    if (success) {
+      result = TimeCheckResult::kUpdated;
+    } else {
+      result = TimeCheckResult::kUpdateFailed;
     }
   }
-  return true;
+  return result;
 }
 
 void CheckConnectivity::handleWebSocket() {
   WebSocket::ConnectState state = web_socket_->handle();
-  if (state == WebSocket::ConnectState::kFailed) {
+  if (state == WebSocket::ConnectState::kConnected) {
+    web_socket_connected_since_boot_ = true;
+  } else if (state == WebSocket::ConnectState::kFailed){
     TRACELN(F("WS failed"));
-    setMode(Mode::RunCaptivePortal);
+    if (web_socket_connected_since_boot_) {
+      web_socket_->resetConnectAttempt();
+    } else {
+      setMode(Mode::RunCaptivePortal);
+    }
   }
 }
 

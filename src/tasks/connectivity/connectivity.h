@@ -29,12 +29,18 @@ class CheckConnectivity : public BaseTask {
   static const String& type();
 
  private:
+  enum class TimeCheckResult {
+    kNoCheck,
+    kUpdated,
+    kUpdateFailed,
+  };
+
   bool OnTaskEnable() final;
   bool TaskCallback() final;
 
   /**
    * Change connectivity mode
-   * 
+   *
    * @param mode connect to server or run captive portal
    */
   void setMode(Mode mode);
@@ -47,7 +53,7 @@ class CheckConnectivity : public BaseTask {
    *
    * \return True if all is ok
    */
-  bool checkInternetTime();
+  TimeCheckResult checkInternetTime();
 
   /**
    * Performs WebSocket processing and ensure connected state
@@ -93,6 +99,10 @@ class CheckConnectivity : public BaseTask {
   std::unique_ptr<WiFiManagerParameter> core_domain_parameter_;
   std::unique_ptr<WiFiManagerParameter> secure_url_parameter_;
   bool disable_captive_portal_timeout_ = false;
+
+  /// Set true once WebSocket connects. Will not set false on disconnect. Avoids
+  /// starting captive portal during normal operation. Only on boot
+  bool web_socket_connected_since_boot_ = false;
 
   std::chrono::steady_clock::time_point wifi_connect_start_ =
       std::chrono::steady_clock::time_point::min();

@@ -24,8 +24,10 @@ class Storage {
   size_t fileToDocSize(size_t file_size);
 
   DynamicJsonDocument secrets_doc_ = DynamicJsonDocument(0);
+#ifdef ESP32
   const char* secrets_path_ = "/secrets.json";
-  const size_t min_doc_size_ = 1024;
-  const size_t max_doc_size_ = 2048;
+#endif
+  static constexpr size_t min_doc_size_ = 1024;
+  static constexpr size_t max_doc_size_ = 2048;
 };
 }  // namespace inamata

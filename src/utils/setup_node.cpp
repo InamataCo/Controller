@@ -99,6 +99,13 @@ bool createSystemTasks(Services& services) {
 }
 
 bool setupNode(Services& services) {
+  #ifdef ATHOM_PLUG_V2
+  // TODO: Place in setup function or create default boot pin config
+  const uint8_t relay_pin = 12;
+  pinMode(relay_pin, OUTPUT);
+  digitalWrite(relay_pin, HIGH);
+  #endif
+
   // Enable serial communication and prints
   Serial.begin(115200);
   Serial.print(F("Fimware version: "));
