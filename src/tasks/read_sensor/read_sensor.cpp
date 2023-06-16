@@ -72,7 +72,7 @@ bool ReadSensor::TaskCallback() {
   JsonObject result_object = doc_out.to<JsonObject>();
 
   // Insert the value units and peripheral UUID
-  ErrorResult error = makeTelemetryJson(result_object);
+  ErrorResult error = packageValues(result_object);
   if (error.isError()) {
     setInvalid(error.toString());
     return false;

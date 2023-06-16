@@ -94,6 +94,7 @@ The server translates `run_until` parameters for task start commands to `duratio
 ```
 {
   type: "tel",
+  task: "...",
   peripheral: "...",
   <time: "...",>
   data_points: [

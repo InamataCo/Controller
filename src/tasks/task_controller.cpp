@@ -63,10 +63,10 @@ void TaskController::handleCallback(const JsonObjectConst& message) {
     }
   }
 
-  // Send the status for each running task
-  if (!task_commands[status_command_key_].isNull()) {
-    sendStatus();
-  }
+  // // Send the status for each running task
+  // if (!task_commands[status_command_key_].isNull()) {
+  //   sendStatus();
+  // }
 
   // Send the command results
   std::shared_ptr<WebSocket> web_socket = services_.getWebSocket();
@@ -127,27 +127,27 @@ ErrorResult TaskController::stopTask(const JsonObjectConst& parameters) {
   return ErrorResult();
 }
 
-void TaskController::sendStatus() {
-  doc_out.clear();
-  JsonObject status_object = doc_out.createNestedObject("status");
-  JsonArray tasks_array = status_object.createNestedArray("tasks");
+// void TaskController::sendStatus() {
+//   doc_out.clear();
+//   JsonObject status_object = doc_out.createNestedObject("status");
+//   JsonArray tasks_array = status_object.createNestedArray("tasks");
 
-  for (Task* task = scheduler_.iFirst; task; task = task->iNext) {
-    BaseTask* base_task = dynamic_cast<BaseTask*>(task);
-    if (base_task) {
-      JsonObject task_object = tasks_array.createNestedObject();
-      task_object["task"] = base_task->getTaskID().toString();
-      task_object["type"] = base_task->getType().c_str();
-    }
-  }
-  std::shared_ptr<WebSocket> web_socket = services_.getWebSocket();
-  if (web_socket != nullptr) {
-    web_socket->send(type(), doc_out);
-  } else {
-    TRACELN(
-        ErrorResult(type(), services_.web_socket_nullptr_error_).toString());
-  }
-}
+//   for (Task* task = scheduler_.iFirst; task; task = task->iNext) {
+//     BaseTask* base_task = dynamic_cast<BaseTask*>(task);
+//     if (base_task) {
+//       JsonObject task_object = tasks_array.createNestedObject();
+//       task_object["task"] = base_task->getTaskID().toString();
+//       task_object["type"] = base_task->getType().c_str();
+//     }
+//   }
+//   std::shared_ptr<WebSocket> web_socket = services_.getWebSocket();
+//   if (web_socket != nullptr) {
+//     web_socket->send(type(), doc_out);
+//   } else {
+//     TRACELN(
+//         ErrorResult(type(), services_.web_socket_nullptr_error_).toString());
+//   }
+// }
 
 BaseTask* TaskController::findTask(const utils::UUID& uuid) {
   // Go through all tasks in the scheduler
@@ -207,7 +207,7 @@ void TaskController::addResultEntry(const utils::UUID& uuid,
 const __FlashStringHelper* TaskController::task_command_key_ = FPSTR("task");
 const __FlashStringHelper* TaskController::start_command_key_ = FPSTR("start");
 const __FlashStringHelper* TaskController::stop_command_key_ = FPSTR("stop");
-const __FlashStringHelper* TaskController::status_command_key_ = FPSTR("status");
+// const __FlashStringHelper* TaskController::status_command_key_ = FPSTR("status");
 
 const __FlashStringHelper* TaskController::task_results_key_ = FPSTR("task");
 const __FlashStringHelper* TaskController::result_status_key_ = FPSTR("status");

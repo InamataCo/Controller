@@ -144,7 +144,7 @@ bool AlertSensor::sendAlert(TriggerType trigger_type) {
 
     doc_out[peripheral_key_] = getPeripheralUUID().toString();
 
-    web_socket_->send(type(), doc_out);
+    web_socket_->sendTelemetry(getTaskID(), doc_out.to<JsonObject>());
     return true;
   }
 

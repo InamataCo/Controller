@@ -97,36 +97,36 @@ void WebSocket::resetConnectAttempt() {
   last_connect_start_ = last_connect_start_.min();
 }
 
-void WebSocket::send(const String& name, double value) {
-  restartOnUnimplementedFunction();
-}
-void WebSocket::send(const String& name, int value) {
-  restartOnUnimplementedFunction();
-}
-void WebSocket::send(const String& name, bool value) {
-  restartOnUnimplementedFunction();
-}
+// void WebSocket::send(const String& name, double value) {
+//   restartOnUnimplementedFunction();
+// }
+// void WebSocket::send(const String& name, int value) {
+//   restartOnUnimplementedFunction();
+// }
+// void WebSocket::send(const String& name, bool value) {
+//   restartOnUnimplementedFunction();
+// }
 
-void WebSocket::send(const String& name, JsonDocument& doc) {
-  doc["type"] = "tel";
-  doc["name"] = name;
+// void WebSocket::send(const String& name, JsonDocument& doc) {
+//   doc["type"] = "tel";
+//   doc["name"] = name;
 
-  // Calculate the size of the resultant serialized JSON, create a buffer of
-  // that size and serialize the JSON into that buffer.
-  // Add extra byte for the null terminator
-  std::vector<char> register_buf = std::vector<char>(measureJson(doc) + 1);
-  size_t n = serializeJson(doc, register_buf.data(), register_buf.size());
+//   // Calculate the size of the resultant serialized JSON, create a buffer of
+//   // that size and serialize the JSON into that buffer.
+//   // Add extra byte for the null terminator
+//   std::vector<char> register_buf = std::vector<char>(measureJson(doc) + 1);
+//   size_t n = serializeJson(doc, register_buf.data(), register_buf.size());
 
-  websocket_client.sendTXT(register_buf.data(), n);
-}
+//   websocket_client.sendTXT(register_buf.data(), n);
+// }
 
-void WebSocket::send(const String& name, const char* value, size_t length) {
-  restartOnUnimplementedFunction();
-}
+// void WebSocket::send(const String& name, const char* value, size_t length) {
+//   restartOnUnimplementedFunction();
+// }
 
 void WebSocket::sendTelemetry(const utils::UUID& task_id, JsonObject data) {
   data[WebSocket::type_key_] = WebSocket::telemetry_type_;
-  data[WebSocket::task_id_key_] = task_id.toString();
+  data[WebSocket::task_key_] = task_id.toString();
 
   std::vector<char> register_buf = std::vector<char>(measureJson(data) + 1);
   size_t n = serializeJson(data, register_buf.data(), register_buf.size());
@@ -375,7 +375,7 @@ const __FlashStringHelper* WebSocket::request_id_key_ = FPSTR("request_id");
 const __FlashStringHelper* WebSocket::type_key_ = FPSTR("type");
 const __FlashStringHelper* WebSocket::result_type_ = FPSTR("result");
 const __FlashStringHelper* WebSocket::telemetry_type_ = FPSTR("tel");
-const __FlashStringHelper* WebSocket::task_id_key_ = FPSTR("task_id");
+const __FlashStringHelper* WebSocket::task_key_ = FPSTR("task_id");
 const __FlashStringHelper* WebSocket::system_type_ = FPSTR("sys");
 
 }  // namespace inamata

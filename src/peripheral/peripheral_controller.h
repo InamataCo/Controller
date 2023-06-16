@@ -72,6 +72,7 @@ class PeripheralController {
   static const __FlashStringHelper* uuid_key_;
   static const __FlashStringHelper* uuid_key_error_;
   static const __FlashStringHelper* add_command_key_;
+  static const __FlashStringHelper* update_command_key_;
   static const __FlashStringHelper* remove_command_key_;
 };
 

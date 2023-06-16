@@ -97,7 +97,7 @@ bool PollSensor::TaskCallback() {
   JsonObject result_object = doc_out.to<JsonObject>();
 
   // Read the peripheral's value units and its UUID and add them to the JSON doc
-  ErrorResult error = makeTelemetryJson(result_object);
+  ErrorResult error = packageValues(result_object);
 
   // Check if the values could be successfully read
   if (error.isError()) {
@@ -106,7 +106,7 @@ bool PollSensor::TaskCallback() {
   }
 
   // Send the value units and peripheral UUID to the server
-  web_socket_->send(type(), doc_out);
+  web_socket_->sendTelemetry(getTaskID(), result_object);
 
   // Check if to wait and run again or to end due to timeout
   if (run_until_ < std::chrono::steady_clock::now()) {

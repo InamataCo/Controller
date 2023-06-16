@@ -22,6 +22,19 @@ This is a controller's typical start up sequence:
 3. Connect to the server via a WebSocket
 4. Register its supported peripherals and task types with the server
 
+## WiFi AP Setup
+
+1. Power on the controller
+2. Connect to the InamataSetup WiFi
+3. Your browser should open the captive portal on 192.168.4.1 (check not https)
+4. Press configure WiFi and enter the details:
+    - Select WiFi name
+    - Enter WiFi password
+    - Enter the controller auth key
+    - For local dev enter your IP such as `192.168.1.3`. The port used is 8000
+    - For local dev enter `n` to use HTTP instead of HTTPS
+5. Press save and possibly reboot the device
+
 ## WebSocket Actions
 
 Commands to create an LED and turn it on:

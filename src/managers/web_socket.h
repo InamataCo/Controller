@@ -61,11 +61,11 @@ class WebSocket {
    */
   void resetConnectAttempt();
 
-  void send(const String& name, double value);
-  void send(const String& name, int value);
-  void send(const String& name, bool value);
-  void send(const String& name, JsonDocument& doc);
-  void send(const String& name, const char* value, size_t length);
+  // void send(const String& name, double value);
+  // void send(const String& name, int value);
+  // void send(const String& name, bool value);
+  // void send(const String& name, JsonDocument& doc);
+  // void send(const String& name, const char* value, size_t length);
 
   void sendTelemetry(const utils::UUID& uuid, JsonObject data);
   void sendRegister();
@@ -92,7 +92,7 @@ class WebSocket {
   static const __FlashStringHelper* type_key_;
   static const __FlashStringHelper* result_type_;
   static const __FlashStringHelper* telemetry_type_;
-  static const __FlashStringHelper* task_id_key_;
+  static const __FlashStringHelper* task_key_;
   static const __FlashStringHelper* system_type_;
 
  private:

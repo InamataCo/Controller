@@ -59,10 +59,10 @@ class TaskController {
    */
   ErrorResult stopTask(const JsonObjectConst& parameters);
 
-  /**
-   * Sends the current status of the task factory
-   */
-  void sendStatus();
+  // /**
+  //  * Sends the current status of the task factory
+  //  */
+  // void sendStatus();
 
   /**
    * Find the base task by UUID
@@ -87,7 +87,7 @@ class TaskController {
   static const __FlashStringHelper* task_command_key_;
   static const __FlashStringHelper* start_command_key_;
   static const __FlashStringHelper* stop_command_key_;
-  static const __FlashStringHelper* status_command_key_;
+  // static const __FlashStringHelper* status_command_key_;
 
   static const __FlashStringHelper* task_results_key_;
   static const __FlashStringHelper* result_status_key_;

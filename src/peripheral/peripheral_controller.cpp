@@ -62,8 +62,8 @@ void PeripheralController::handleCallback(const JsonObjectConst& message) {
   if (web_socket) {
     web_socket->sendResults(doc_out.as<JsonObject>());
   } else {
-    TRACELN(
-        ErrorResult(type(), ServiceGetters::web_socket_nullptr_error_).toString());
+    TRACELN(ErrorResult(type(), ServiceGetters::web_socket_nullptr_error_)
+                .toString());
   }
 }
 
@@ -82,12 +82,16 @@ ErrorResult PeripheralController::add(const JsonObjectConst& doc) {
     return ErrorResult(type(), uuid_key_error_);
   }
 
-  // Check if element is present
-  if (peripherals_.count(uuid) > 0) {
-    return ErrorResult(type(), F("This peripheral has already been added"));
+  // If the peripheral is present, try to replace it
+  auto iterator = peripherals_.find(uuid);
+  if (iterator != peripherals_.end()) {
+    if (iterator->second.use_count() > 1) {
+      return ErrorResult(type(), String(F("Peripheral still in use")));
+    }
+    peripherals_.erase(iterator);
   }
 
-  // Not present, so try to create a new instance
+  // Try to create a new instance
   std::shared_ptr<peripheral::Peripheral> peripheral(
       peripheral_factory_.createPeripheral(services_, doc));
   if (peripheral) {
@@ -153,6 +157,8 @@ const __FlashStringHelper* PeripheralController::uuid_key_error_ =
     FPSTR("Missing property: uuid (uuid)");
 const __FlashStringHelper* PeripheralController::add_command_key_ =
     FPSTR("add");
+const __FlashStringHelper* PeripheralController::update_command_key_ =
+    FPSTR("update");
 const __FlashStringHelper* PeripheralController::remove_command_key_ =
     FPSTR("remove");
 
