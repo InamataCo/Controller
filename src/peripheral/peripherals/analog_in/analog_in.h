@@ -50,6 +50,10 @@ class AnalogIn : public Peripheral, public capabilities::GetValues {
   /// Data point type for the reading as voltage
   utils::UUID voltage_data_point_type_{nullptr};
   static const __FlashStringHelper* voltage_data_point_type_key_;
+  utils::UUID unit_data_point_type_{nullptr};
+  static const __FlashStringHelper* unit_data_point_type_key_;
+  utils::UUID percent_data_point_type_{nullptr};
+  static const __FlashStringHelper* percent_data_point_type_key_;
   /// Error if neither unit nor voltage data point types are set
   static const __FlashStringHelper* data_point_type_key_error_;
 
@@ -58,13 +62,11 @@ class AnalogIn : public Peripheral, public capabilities::GetValues {
   float max_unit_ = NAN;
   float v_to_unit_slope_ = NAN;
   bool limit_unit_ = true;
-  utils::UUID unit_data_point_type_{nullptr};
   static const __FlashStringHelper* min_v_key_;  
   static const __FlashStringHelper* max_v_key_;
   static const __FlashStringHelper* min_unit_key_;
   static const __FlashStringHelper* max_unit_key_;  
   static const __FlashStringHelper* limit_unit_key_;
-  static const __FlashStringHelper* unit_data_point_type_key_;
 };
 
 }  // namespace analog_in
