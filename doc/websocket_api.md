@@ -1,50 +1,5 @@
 # WebSocket API
 
-## Peripheral Parameters
-
-The add command creates a new peripheral. It has to be called before the execute command can be sent to a created peripheral. Each add command has to have the following JSON parameters in addition to peripheral specific parameters.
-
-| parameter | content                     |
-| --------- | --------------------------- |
-| uuid      | unique ID of the peripheral |
-| type      | type of the peripheral      |
-
-### LED Peripheral
-
-The peripheral supports the *SetValue* capability for which *WriteActuator* is the simplest task to set a value. Expects a value between 0 and 1.
-
-| parameter       | content                                            |
-| --------------- | -------------------------------------------------- |
-| pin             | PWM output pin                                     |
-| data_point_type | UUID of the data point type setting the brightness |
-
-### I2C Adapter Peripheral
-
-| parameter | content          |
-| --------- | ---------------- |
-| scl       | clock signal pin |
-| sda       | data signal pin  |
-
-### BH1750 Peripheral
-
-| parameter   | content                            |
-| ----------- | ---------------------------------- |
-| i2c_adapter | name of the I2C adapter peripheral |
-| address     | address of the BH1750 sensor       |
-
-Note: The I2C adapter has to have been added
-
-### Atlas Scientific EC Meter (I2C)
-
-| parameter     | Required | content                                 |
-| ------------- | -------- | --------------------------------------- |
-| i2c_adapter   | ✔️        | name of the I2C adapter peripheral      |
-| address       | ✔️        | address of the BH1750 sensor            |
-| probe_type    | ❌        | the type of probe used 10 - 0.01        |
-| enable_pin    | ❌        | A pin to pull high to enable the sensor |
-| invert_enable | ❌        | Invert enable pin to pull low to enable |
-
-
 ## Controller Messages
 
 ### Command
@@ -161,7 +116,6 @@ The server translates `run_until` parameters for task start commands to `duratio
   <tasks: [uuid, ...]>
 ```
 
-
 ### System
 
 ```
@@ -170,9 +124,6 @@ The server translates `run_until` parameters for task start commands to `duratio
   ...
 }
 ```
-
-
-
 
 ## Tasks
 
