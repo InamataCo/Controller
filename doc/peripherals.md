@@ -69,7 +69,7 @@ Either voltage or percent data point has to be defined.
 | Parameter       | Type   | Req. | Content                          |
 | --------------- | ------ | ---- | -------------------------------- |
 | i2c_adapter     | String | Yes  | ID of the I2C adapter peripheral |
-| i2c_address     | String | Yes  | I2C address of the EC sensor     |
+| i2c_address     | Number | Yes  | I2C address of the EC sensor     |
 | data_point_type | String | Yes  | The data point type for EC       |
 | probe_type      | String | Yes  | The type of probe used 10 - 0.01 |
 
@@ -123,7 +123,7 @@ Valid `command` values are `clear`, `dry`, `single`, `double_low` and `double_hi
 | Parameter                   | Type   | Req. | Content                                                |
 | --------------------------- | ------ | ---- | ------------------------------------------------------ |
 | i2c_adapter                 | String | Yes  | name of the I2C adapter peripheral                     |
-| address                     | String | Yes  | address of the BME / BMP280 sensor                     |
+| i2c_address                 | Number | Yes  | address of the BME / BMP280 sensor                     |
 | temperature_data_point_type | String | Yes  | Data point type for temperature readings (0 - 60 °C)   |
 | pressure_data_point_type    | String | Yes  | Data point type for pressure readings (300 - 1100 hPa) |
 | humidity_data_point_type    | String | No   | Data point type for humidity readings (0 - 100 RH)     |
@@ -145,7 +145,7 @@ ESP32 and a wire only has to be connected to one of the compatible pins.
 
 | Parameter               | Type   | Req. | Content                                  |
 | ----------------------- | ------ | ---- | ---------------------------------------- |
-| uart_adapter            | String | Yes  | name of the I2C adapter peripheral       |
+| uart_adapter            | String | Yes  | ID of the UART adapter peripheral        |
 | voltage_data_point_type | String | Yes  | Data point type for voltage readings (V) |
 | current_data_point_type | String | Yes  | Data point type for current readings (A) |
 | power_data_point_type   | String | Yes  | Data point type for power readings (W)   |
@@ -194,19 +194,19 @@ The `color_encoding` is a string with a permutation of the `rgbw` characters.
 The peripheral supports the _SetValue_ capability for which _SetValue_ is the
 simplest task to set a value. Expects a value between 0 and 1.
 
-| Parameter       | JSON type | Content                                            |
-| --------------- | --------- | -------------------------------------------------- |
-| pin             | Number    | PWM output pin                                     |
-| data_point_type | String    | UUID of the data point type setting the brightness |
+| Parameter       | Type   | Req. | Content                                            |
+| --------------- | ------ | ---- | -------------------------------------------------- |
+| pin             | Number | Yes  | PWM output pin                                     |
+| data_point_type | String | Yes  | UUID of the data point type setting the brightness |
 
 ### UART Adapter
 
-| Parameter | JSON type | Content                                   |
-| --------- | --------- | ----------------------------------------- |
-| rx        | Number    | RX pin number                             |
-| tx        | Number    | TX pin number                             |
-| config    | String    | Config characters for encoding and parity |
-| baud_rate | Number    | Baud rate of the connection               |
+| Parameter | Type   | Req. | Content                                   |
+| --------- | ------ | ---- | ----------------------------------------- |
+| rx        | Number | Yes  | RX pin number                             |
+| tx        | Number | Yes  | TX pin number                             |
+| config    | String | Yes  | Config characters for encoding and parity |
+| baud_rate | Number | Yes  | Baud rate of the connection               |
 
 The `config` is expected in the format of `8N1` where the first char is the
 number of data bits, the second the parity bit and the last the number of stop
