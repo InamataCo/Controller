@@ -52,7 +52,7 @@ bool CheckConnectivity::TaskCallback() {
     }
   } else {
     if (std::chrono::steady_clock::now() - mode_start_ >
-        std::chrono::minutes(3)) {
+        std::chrono::minutes(5)) {
       if (disable_captive_portal_timeout_) {
         TRACELN(F("Captive portal timeout reset"));
         mode_start_ = std::chrono::steady_clock::now();

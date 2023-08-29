@@ -110,7 +110,6 @@ bool setupNode(Services& services) {
   Serial.begin(115200);
   Serial.print(F("Fimware version: "));
   Serial.println(WebSocket::firmware_version_);
-  WiFi.begin();
 
   // Load and start subsystems that need secrets
   services.setStorage(std::make_shared<Storage>());
