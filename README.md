@@ -55,6 +55,18 @@ Development is mainly done in a private GitLab repository but changes are automa
 
 The Google C++ code style is used. It is recommended to use clang-format to automatically format your code with the provided `.clang-format` file.
 
+## Troubleshooting
+
+### Erase Flash
+
+Clear all flash on the microcontroller with the `Erase Flash` command in PlatformIO - VS Code. This will remove saved secrets and temporarily saved WiFi credentials.
+
+![Erase flash](doc/images/erase_flash_platformio.png)
+
+### Build with Trace Logs
+
+To enable more details when debugging, uncomment `ENABLE_TRACE` in `platformio.ini`. When working with AutoConnect (WiFi setup portal), uncomment the `AC_DEBUG` build flag to gain insights there.
+
 #### References
 
 - [ESPHome Doc](https://esphome.io/components/sensor/cse7766.html)
