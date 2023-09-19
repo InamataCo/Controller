@@ -39,7 +39,8 @@ class Pwm : public Peripheral, public capabilities::SetValue {
    * \param resolution Resolution of the duty cycle
    * \return True if an error occured while setting up the channel
    */
-  bool setup(uint pin, uint frequency = 5000, uint resolution = 8);
+  bool setup(const uint8_t pin, const uint32_t frequency = 5000,
+             const uint8_t resolution = 8);
 
   /**
    * Frees the configured PWM channel and pin

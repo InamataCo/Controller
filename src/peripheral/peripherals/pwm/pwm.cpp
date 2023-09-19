@@ -46,18 +46,28 @@ const String& Pwm::type() {
 
 void Pwm::setValue(utils::ValueUnit value_unit) {
   if (value_unit.data_point_type != data_point_type_) {
-    web_socket_->sendError(type(), value_unit.sourceUnitError(data_point_type_));
+    web_socket_->sendError(type(),
+                           value_unit.sourceUnitError(data_point_type_));
     return;
   }
 
   // Clamp the value as a percentage between 0 and 1
+  // With this calculation, 0.5 input results 128/255 duty cycle and
+  // the oscilloscope reports 50.05% duty cycle.
+  // 0 input is 0 V output, 1 input is constant 3.3 V output
+  // as measured by:
+  // - Moritz on the 19th Sept. 2023
+  // - On an ESP32-WROOM-32, pin 32
+  // - RIGOL DS1102
+  // - 220 ohm and difuse red LED
   value_unit.value = std::fmax(0, std::fmin(1, value_unit.value));
-
-  const uint max_value = (2 << resolution_) - 1;
-  ledcWrite(channel_, value_unit.value * max_value);
+  const uint32_t max_value = (1 << resolution_) - 1;
+  const uint32_t duty = roundf(value_unit.value * max_value);
+  ledcWrite(channel_, duty);
 }
 
-bool Pwm::setup(uint pin, uint frequency, uint resolution) {
+bool Pwm::setup(const uint8_t pin, const uint32_t frequency,
+                const uint8_t resolution) {
   // If the PWM has already been setup, free it
   if (channel_ != -1 || pin_ != -1) {
     freeResources();
