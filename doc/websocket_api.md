@@ -101,7 +101,7 @@ The server translates `run_until` parameters for task start commands to `duratio
     ]
   },
   update: {
-    status: <"fail", "updating", "finish", "success">,
+    status: <"fail", "updating", "finish">,
     detail: "..."
   }
 }
@@ -114,6 +114,7 @@ The server translates `run_until` parameters for task start commands to `duratio
   type: "reg",
   <peripherals: [uuid, ...]>,
   <tasks: [uuid, ...]>
+  version: "..."
 ```
 
 ### System
