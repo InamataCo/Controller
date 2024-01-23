@@ -1,3 +1,5 @@
+#ifndef ARDUINO_ESP32S3_DEV
+
 #include "analog_out.h"
 
 #include "peripheral/peripheral_factory.h"
@@ -52,15 +54,15 @@ void AnalogOut::setValue(utils::ValueUnit value_unit) {
   float max_value;
   if (voltage_data_point_type_.isValid()) {
     if (value_unit.data_point_type != voltage_data_point_type_) {
-      web_socket_->sendError(type(),
-                         value_unit.sourceUnitError(voltage_data_point_type_));
+      web_socket_->sendError(
+          type(), value_unit.sourceUnitError(voltage_data_point_type_));
       return;
     }
     max_value = 3.3;
   } else if (percent_data_point_type_.isValid()) {
     if (value_unit.data_point_type != percent_data_point_type_) {
-      web_socket_->sendError(type(),
-                         value_unit.sourceUnitError(percent_data_point_type_));
+      web_socket_->sendError(
+          type(), value_unit.sourceUnitError(percent_data_point_type_));
       return;
     }
     max_value = 1.0;
@@ -106,3 +108,5 @@ const __FlashStringHelper* AnalogOut::data_point_type_key_error_ =
 }  // namespace peripherals
 }  // namespace peripheral
 }  // namespace inamata
+
+#endif

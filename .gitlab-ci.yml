@@ -1,5 +1,5 @@
 # Based on https://docs.platformio.org/en/latest/integration/ci/gitlab.html#using-cmd-ci-command
-image: python:3.9
+image: python:3.10
 
 cache:
   paths:
@@ -18,6 +18,14 @@ before_script:
 #   script: "platformio ci --project-conf=platformio.ini --board=esp32doit-devkit-v1" # --board=XXXX --lib=lib/*
 #   variables: {PLATFORMIO_CI_SRC: "src"}
 
-build:
+build:esp32:
   stage: test
-  script: "platformio run -e esp32doit-devkit-v1 -e esp8266"
+  script: "platformio run -e esp32doit-devkit-v1 -e esp32doit-devkit-v1-dbg"
+
+build:esp32-s3:
+  stage: test
+  script: "platformio run -e esp32-s3-devkitc-1"
+
+build:esp8266:
+  stage: test
+  script: "platformio run -e athom-plug-v2 -e esp8266"
