@@ -127,11 +127,7 @@ void WebSocket::resetConnectAttempt() {
 void WebSocket::sendTelemetry(const utils::UUID& task_id, JsonObject data) {
   data[WebSocket::type_key_] = WebSocket::telemetry_type_;
   data[WebSocket::task_key_] = task_id.toString();
-
-  std::vector<char> register_buf = std::vector<char>(measureJson(data) + 1);
-  size_t n = serializeJson(data, register_buf.data(), register_buf.size());
-
-  websocket_client.sendTXT(register_buf.data(), n);
+  sendJson(data);
 }
 
 void WebSocket::sendRegister() {
@@ -163,17 +159,10 @@ void WebSocket::sendRegister() {
     }
   }
 
-  // Calculate the size of the resultant serialized JSON, create a buffer of
-  // that size and serialize the JSON into that buffer.
-  // Add extra byte for the null terminator
-  std::vector<char> register_buf = std::vector<char>(measureJson(doc_out) + 1);
-  size_t n = serializeJson(doc_out, register_buf.data(), register_buf.size());
-
-  websocket_client.sendTXT(register_buf.data(), n);
+  sendJson(doc_out);
 }
 
 void WebSocket::sendError(const String& who, const String& message) {
-  TRACELN(message);
   doc_out.clear();
 
   // Use ther error message type
@@ -182,15 +171,10 @@ void WebSocket::sendError(const String& who, const String& message) {
   // Place the error message
   doc_out["message"] = message.c_str();
 
-  std::vector<char> register_buf = std::vector<char>(measureJson(doc_out) + 1);
-  size_t n = serializeJson(doc_out, register_buf.data(), register_buf.size());
-
-  websocket_client.sendTXT(register_buf.data(), n);
+  sendJson(doc_out);
 }
 
 void WebSocket::sendError(const ErrorResult& error, const String& request_id) {
-  TRACEF("origin: %s message: %s request_id: %s\n", error.who_.c_str(),
-         error.detail_.c_str(), request_id.c_str());
   doc_out.clear();
 
   // Use ther error message type
@@ -205,14 +189,10 @@ void WebSocket::sendError(const ErrorResult& error, const String& request_id) {
   // The request ID to enable tracing
   doc_out["request_id"] = request_id.c_str();
 
-  std::vector<char> register_buf = std::vector<char>(measureJson(doc_out) + 1);
-  size_t n = serializeJson(doc_out, register_buf.data(), register_buf.size());
-
-  websocket_client.sendTXT(register_buf.data(), n);
+  sendJson(doc_out);
 }
 
 void WebSocket::sendDebug(const String& message) {
-  TRACEF("message: %s\n", message.c_str());
   doc_out.clear();
 
   // Use ther error message type
@@ -221,26 +201,14 @@ void WebSocket::sendDebug(const String& message) {
   // The error itself
   doc_out["message"] = message.c_str();
 
-  std::vector<char> register_buf = std::vector<char>(measureJson(doc_out) + 1);
-  size_t n = serializeJson(doc_out, register_buf.data(), register_buf.size());
-
-  websocket_client.sendTXT(register_buf.data(), n);
+  sendJson(doc_out);
 }
 
-void WebSocket::sendResults(JsonObjectConst results) {
-  std::vector<char> buffer = std::vector<char>(measureJson(results) + 1);
-  size_t n = serializeJson(results, buffer.data(), buffer.size());
-  TRACELN(buffer.data());
-  websocket_client.sendTXT(buffer.data(), n);
-}
+void WebSocket::sendResults(JsonObjectConst results) { sendJson(doc_out); }
 
 void WebSocket::sendSystem(JsonObject data) {
   data[WebSocket::type_key_] = WebSocket::system_type_;
-
-  std::vector<char> data_buf = std::vector<char>(measureJson(data) + 1);
-  size_t n = serializeJson(data, data_buf.data(), data_buf.size());
-
-  websocket_client.sendTXT(data_buf.data(), n);
+  sendJson(doc_out);
 }
 
 const char* WebSocket::getRootCas() const {
@@ -356,6 +324,13 @@ void WebSocket::sendUpDownTimeData() {
     }
     sendSystem(doc_out.as<JsonObject>());
   }
+}
+
+void WebSocket::sendJson(JsonVariantConst doc) {
+  std::vector<char> buffer = std::vector<char>(measureJson(doc) + 1);
+  size_t n = serializeJson(doc, buffer.data(), buffer.size());
+  TRACELN(buffer.data());
+  websocket_client.sendTXT(buffer.data(), n);
 }
 
 void WebSocket::restartOnUnimplementedFunction() {

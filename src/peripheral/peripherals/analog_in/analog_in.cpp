@@ -16,8 +16,17 @@ AnalogIn::AnalogIn(const JsonObjectConst& parameters) {
   }
   pin_ = pin;
 
-  if (std::find(valid_pins_.begin(), valid_pins_.end(), pin_) ==
-      valid_pins_.end()) {
+  // Check if the pin supports analog input (ADC)
+  if (valid_pins_.size()) {
+    // Skip valid pins check if first value is -1
+    if (valid_pins_[0] != -1) {
+      if (std::find(valid_pins_.begin(), valid_pins_.end(), pin_) ==
+          valid_pins_.end()) {
+        setInvalid(invalid_pin_error_);
+        return;
+      }
+    }
+  } else {
     setInvalid(invalid_pin_error_);
     return;
   }
@@ -94,10 +103,9 @@ capabilities::GetValues::Result AnalogIn::getValues() {
         .value = voltage, .data_point_type = voltage_data_point_type_}});
   }
   if (percent_data_point_type_.isValid()) {
-    const float percentage = value / 4096.0; 
+    const float percentage = value / 4096.0;
     values.push_back({utils::ValueUnit{
-      .value = percentage, .data_point_type = percent_data_point_type_
-    }});
+        .value = percentage, .data_point_type = percent_data_point_type_}});
   }
   if (unit_data_point_type_.isValid()) {
     float unit_value = min_unit_ + v_to_unit_slope_ * (voltage - min_v_);
@@ -127,14 +135,23 @@ bool AnalogIn::registered_ =
 bool AnalogIn::capability_get_values_ =
     capabilities::GetValues::registerType(type());
 
+#ifdef ESP32
 const std::array<uint8_t, 8> AnalogIn::valid_pins_ = {
     32, 33, 34, 35, 36, 37, 38, 39,
 };
+const __FlashStringHelper* AnalogIn::invalid_pin_error_ =
+    FPSTR("Pin # not valid (only ADC1: 32 - 39)");
+#elif ESP8266
+const std::array<uint8_t, 1> AnalogIn::valid_pins_ = {16};
+const __FlashStringHelper* AnalogIn::invalid_pin_error_ =
+    FPSTR("Pin # not valid (only 16)");
+#else
+const std::array<uint8_t, 1> AnalogIn::valid_pins_ = {-1};
+const __FlashStringHelper* AnalogIn::invalid_pin_error_ = FPSTR("");
+#endif
 const __FlashStringHelper* AnalogIn::pin_key_ = FPSTR("pin");
 const __FlashStringHelper* AnalogIn::pin_key_error_ =
     FPSTR("Missing property: pin (unsigned int)");
-const __FlashStringHelper* AnalogIn::invalid_pin_error_ =
-    FPSTR("Pin # not valid (only ADC1: 32 - 39)");
 
 const __FlashStringHelper* AnalogIn::voltage_data_point_type_key_ =
     FPSTR("voltage_data_point_type");

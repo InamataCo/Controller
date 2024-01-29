@@ -42,7 +42,13 @@ class AnalogIn : public Peripheral, public capabilities::GetValues {
 
   /// The pin to be used as a GPIO output
   unsigned int pin_;
+#ifdef ESP32
   static const std::array<uint8_t, 8> valid_pins_;
+#elif ESP8266
+  static const std::array<uint8_t, 1> valid_pins_;
+#else
+  static const std::array<uint8_t, 1> valid_pins_;
+#endif
   static const __FlashStringHelper* pin_key_;
   static const __FlashStringHelper* pin_key_error_;
   static const __FlashStringHelper* invalid_pin_error_;
@@ -62,10 +68,10 @@ class AnalogIn : public Peripheral, public capabilities::GetValues {
   float max_unit_ = NAN;
   float v_to_unit_slope_ = NAN;
   bool limit_unit_ = true;
-  static const __FlashStringHelper* min_v_key_;  
+  static const __FlashStringHelper* min_v_key_;
   static const __FlashStringHelper* max_v_key_;
   static const __FlashStringHelper* min_unit_key_;
-  static const __FlashStringHelper* max_unit_key_;  
+  static const __FlashStringHelper* max_unit_key_;
   static const __FlashStringHelper* limit_unit_key_;
 };
 

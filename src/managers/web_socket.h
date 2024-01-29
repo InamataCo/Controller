@@ -71,7 +71,7 @@ class WebSocket {
   void sendRegister();
   void sendError(const String& who, const String& message);
   void sendError(const ErrorResult& error, const String& request_id = "");
-  
+
   void sendDebug(const String& message);
 
   void sendResults(JsonObjectConst results);
@@ -120,6 +120,17 @@ class WebSocket {
    */
   void updateUpDownTime(const bool is_connected);
   void sendUpDownTimeData();
+
+  /**
+   * Send JSON data to the server
+   *
+   * Calculate the size of the resultant serialized JSON, create a buffer of
+   * that size and serialize the JSON into that buffer.
+   * Add extra byte for the null terminator
+   *
+   * @param doc JSON data to be sent
+   */
+  void sendJson(JsonVariantConst doc);
 
   void restartOnUnimplementedFunction();
 

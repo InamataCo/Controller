@@ -28,4 +28,4 @@ build:esp32-s3:
 
 build:esp8266:
   stage: test
-  script: "platformio run -e athom-plug-v2 -e esp8266"
+  script: "platformio run -e athom-plug-v2 -e athom-plug-v2-dbg -e esp8266"
