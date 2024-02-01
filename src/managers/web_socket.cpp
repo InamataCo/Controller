@@ -350,7 +350,7 @@ const __FlashStringHelper* WebSocket::request_id_key_ = FPSTR("request_id");
 const __FlashStringHelper* WebSocket::type_key_ = FPSTR("type");
 const __FlashStringHelper* WebSocket::result_type_ = FPSTR("result");
 const __FlashStringHelper* WebSocket::telemetry_type_ = FPSTR("tel");
-const __FlashStringHelper* WebSocket::task_key_ = FPSTR("task_id");
+const __FlashStringHelper* WebSocket::task_key_ = FPSTR("task");
 const __FlashStringHelper* WebSocket::system_type_ = FPSTR("sys");
 
 }  // namespace inamata
